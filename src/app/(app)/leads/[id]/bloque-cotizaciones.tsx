@@ -1,9 +1,9 @@
 import { cn } from 'cn'
 import type { Route } from 'next'
 import Link from 'next/link'
-import { CotizacionesDelLead } from '@/modules/cotizaciones/pantallas/lead'
 import { buttonVariants } from '@/shared/ui/button'
 import { TituloDeBloqueConAccion } from '@/shared/ui/ficha-en-bloques'
+import { TarjetasDelLeadConCompartir } from './tarjetas-del-lead'
 
 type Props = {
   leadId: string
@@ -15,7 +15,7 @@ type Props = {
 const ID_DEL_TITULO = 'cotizaciones-titulo'
 
 // «Cotizaciones» de la ficha del lead: el título lo dibuja el servidor con su única acción, «Cotizar» (el primer `h2` del bloque, el que
-// enfoca el índice; se ve antes de leer), y debajo la isla que lee las 3 más recientes al acercarse. `leads` no conoce `cotizaciones`: lo
+// enfoca el índice; se ve antes de leer), y debajo la fila de tarjetas que lee las 10 más recientes al acercarse. `leads` no conoce `cotizaciones`: lo
 // compone esta ruta, como la ficha del vehículo. La `key` empieza de cero con otro lead.
 export function BloqueCotizacionesDelLead({ leadId, cotizar }: Props) {
   return (
@@ -38,7 +38,7 @@ export function BloqueCotizacionesDelLead({ leadId, cotizar }: Props) {
           )
         }
       />
-      <CotizacionesDelLead key={leadId} leadId={leadId} />
+      <TarjetasDelLeadConCompartir leadId={leadId} />
     </section>
   )
 }

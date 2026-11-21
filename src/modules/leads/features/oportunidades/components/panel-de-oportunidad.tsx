@@ -21,6 +21,8 @@ type Props = {
   // La que se edita; null = «Nueva oportunidad».
   oportunidad: Oportunidad | null
   embudos: readonly Embudo[]
+  // El embudo que se ve en el bloque: al crear, empieza en ése si está libre.
+  embudoPreferido: string | null
   // Dónde el lead ya tiene una abierta: al crear, esos embudos van apagados (una abierta por lead y embudo).
   abiertas: readonly AbiertaEnEmbudo[]
   alGuardar: (oportunidad: Oportunidad) => void
@@ -33,12 +35,13 @@ export function PanelDeOportunidad({
   leadId,
   oportunidad,
   embudos,
+  embudoPreferido,
   abiertas,
   alGuardar,
   alCerrar,
 }: Props) {
   // Con lo que había al abrir: lo que se crea después no cambia las opciones de un panel que ya se cierra.
-  const [paraCrear] = useState(() => embudosParaCrear(embudos, abiertas))
+  const [paraCrear] = useState(() => embudosParaCrear(embudos, abiertas, embudoPreferido))
   const formulario = useFormularioDeOportunidad({
     leadId,
     oportunidad,

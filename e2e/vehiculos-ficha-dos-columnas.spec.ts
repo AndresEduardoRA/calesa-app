@@ -96,10 +96,9 @@ const region = (page: Page, nombre: string): Locator =>
   page.getByRole('region', { name: nombre, exact: true })
 // La subasta y el costo de la izquierda (sin título a la vista): «Subasta y costo» o, en un origen manual, «Precio y costo».
 const costo = (page: Page): Locator => page.getByRole('region', { name: / y costo$/ })
+// Las cotizaciones del vehículo son tarjetas en una fila (`article`).
 const filas = (page: Page): Locator =>
-  page
-    .getByRole('list', { name: 'Cotizaciones de este vehículo' })
-    .locator('[data-de-este-vehiculo]')
+  page.getByRole('list', { name: 'Cotizaciones de este vehículo' }).locator('article')
 
 const BLOQUES = ['Cotizaciones de este vehículo', 'Relacionados', 'Actividad reciente', 'Vitrina']
 
@@ -136,7 +135,7 @@ test('E2E ficha en dos columnas · a la derecha sólo lo de ventas, en su orden'
   // Las cotizaciones llegan al acercarse: la aprobada primero.
   await region(page, 'Cotizaciones de este vehículo').scrollIntoViewIfNeeded()
   await expect(filas(page)).toHaveCount(2)
-  await expect(filas(page).first()).toHaveAttribute('data-aprobada', '')
+  await expect(filas(page).first()).toContainText('Aprobada')
   await region(page, 'Vitrina').scrollIntoViewIfNeeded()
   await capturar(page, info, 'ficha-abajo')
 })

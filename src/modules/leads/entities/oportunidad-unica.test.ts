@@ -98,6 +98,12 @@ describe('embudosParaCrear', () => {
   it('sin embudos todavía, el de por defecto (lo crea la base)', () => {
     expect(embudosParaCrear([], []).inicial).toBe('')
   })
+  it('arranca en el embudo que se ve en la ficha si está libre; si está ocupado, en el de siempre', () => {
+    expect(embudosParaCrear(EMBUDOS, [], POSVENTA).inicial).toBe(POSVENTA)
+    expect(embudosParaCrear(EMBUDOS, [], VENTAS).inicial).toBe('')
+    expect(embudosParaCrear(EMBUDOS, [abierta(POSVENTA, 'Posventa')], POSVENTA).inicial).toBe('')
+    expect(embudosParaCrear(EMBUDOS, [], 'de-otra-persona').inicial).toBe('')
+  })
 })
 
 describe('abiertaDelRechazo', () => {

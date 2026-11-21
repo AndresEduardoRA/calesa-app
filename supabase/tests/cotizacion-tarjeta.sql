@@ -36,7 +36,8 @@ begin
   return v_id;
 end $f$;
 
--- Pone una plantilla publicada en el origen sin pasar por `plantilla_publicar` (archiva la que había: plantillas_publicada_unica).
+-- Pone una plantilla publicada en el origen sin pasar por `plantilla_publicar`: cuelga de su fórmula de trabajo (la única del origen en estas pruebas) y
+-- archiva la que había (plantillas_publicada_unica, una por fórmula del origen).
 create or replace function pg_temp.ct_publicar(p_origen uuid, p_def jsonb) returns void language plpgsql as $f$
 begin
   update public.plantillas_tarjeta set estado = 'archivada' where origen_id = p_origen and estado = 'publicada';
@@ -249,7 +250,7 @@ begin
 end $$;
 rollback;
 
--- @test tarjeta K4: por cada nivel (costos y uno creado con nivel_crear), un nodo del nivel no sale ni por su id, ni por su etiqueta, ni por su descripción, ni por el texto de la plantilla: en la forma 1 (miembro de la N+1, nombrado por una plantilla metida directo o suelto) y en la cuadrícula (un dato de etiqueta, de monto y de descripción, el nodo de una fila, el pct de un porcentaje y el tipo de cambio de un bucket)
+-- @test tarjeta K4: por cada nivel (costos y uno creado con nivel_crear), un nodo del nivel no sale ni por su id, ni por su etiqueta, ni por su descripción, ni por el texto de la plantilla: en la forma 1 (miembro de la N+1, nombrado por una plantilla metida directo o suelto) y en la cuadrícula (un dato de etiqueta, de monto y de descripción, el nodo de una fila, el pct de un porcentaje, el tipo de cambio de un bucket y las condiciones: una lista de respaldo, una condición sobre el nodo o sobre un dato, una rama, el «si no» y la condición de una fila)
 begin;
 do $$
 declare
@@ -269,7 +270,18 @@ begin
     'fila', pg_temp.ct_cuadricula('[{"tipo": "texto", "texto": "Fila"}]', '{"ocultar_si": "no_aplica", "nodo": "cent"}'),
     'pct', pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "pp", "mostrar": "porcentaje"}]'),
     'tipo_de_cambio', pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "pub2", "mostrar": "tc_nombre"}]'),
-    'abierta', pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "pub", "mostrar": "tc_valor"}, {"tipo": "dato", "nodo": "pp", "mostrar": "monto"}, {"tipo": "dato", "nodo": "pub2", "mostrar": "plazo"}]'));
+    'abierta', pg_temp.ct_cuadricula('[{"tipo": "dato", "nodo": "pub", "mostrar": "tc_valor"}, {"tipo": "dato", "nodo": "pp", "mostrar": "monto"}, {"tipo": "dato", "nodo": "pub2", "mostrar": "plazo"}]'),
+    -- Las condiciones de la tarjeta: en una lista de respaldo, en una condición sobre el nodo o sobre un dato, en el contenido de una rama, en el «si no» y en la
+    -- condición de una fila.
+    'respaldo', pg_temp.ct_cuadricula('[{"tipo": "respaldo", "datos": [{"tipo": "dato", "variable": "titulo"}, {"tipo": "dato", "nodo": "cent", "mostrar": "etiqueta"}]}]'),
+    'condicion', pg_temp.ct_cuadricula('[{"tipo": "condiciones", "ramas": [{"si": [{"es": "cero", "nodo": "cent"}], "contenido": {"tipo": "texto", "texto": "Sí"}}], "si_no": {"tipo": "vacio"}}]'),
+    'condicion_de_dato', pg_temp.ct_cuadricula('[{"tipo": "condiciones", "ramas": [{"si": [{"es": "vacio", "dato": {"tipo": "dato", "nodo": "cent", "mostrar": "descripcion"}}],
+                                                                                    "contenido": {"tipo": "texto", "texto": "Sí"}}], "si_no": {"tipo": "vacio"}}]'),
+    'rama', pg_temp.ct_cuadricula('[{"tipo": "condiciones", "ramas": [{"si": [{"es": "cero", "nodo": "pub"}], "contenido": {"tipo": "dato", "nodo": "cent", "mostrar": "monto"}}],
+                                     "si_no": {"tipo": "vacio"}}]'),
+    'si_no', pg_temp.ct_cuadricula('[{"tipo": "condiciones", "ramas": [{"si": [{"es": "cero", "nodo": "pub"}], "contenido": {"tipo": "vacio"}}],
+                                      "si_no": {"tipo": "dato", "nodo": "cent", "mostrar": "etiqueta"}}]'),
+    'fila_condicion', pg_temp.ct_cuadricula('[{"tipo": "texto", "texto": "Fila"}]', '{"ocultar_si": "condiciones", "si": [{"es": "no_cero", "nodo": "cent"}]}'));
   foreach v_nivel in array array['costos', (select clave from public.cotizaciones_niveles where nombre = 'Gerencia CT')] loop
     v_i := v_i + 1; v_tag := 'k4n' || v_i;
     insert into public.origenes (clave, nombre) values ('ct_k4a_' || v_i, 'CT K4 A ' || v_i) returning id into o_a;
@@ -292,7 +304,8 @@ begin
     asesora := pg_temp.ct_persona(jsonb_build_array(jsonb_build_object('clave', 'cotizaciones.ver'), jsonb_build_object('clave', 'cotizaciones.nivel.' || v_nivel || '.ver'),
                                                     jsonb_build_object('clave', 'cotizaciones.nivel.' || v_nivel || '.editar')));
     foreach v_quien in array array[duena, asesora] loop
-      foreach v_caso in array array['i', 'ii', 'iii', 'etiqueta', 'monto', 'descripcion', 'fila', 'pct', 'tipo_de_cambio', 'abierta'] loop
+      foreach v_caso in array array['i', 'ii', 'iii', 'etiqueta', 'monto', 'descripcion', 'fila', 'pct', 'tipo_de_cambio', 'abierta', 'respaldo', 'condicion',
+                                     'condicion_de_dato', 'rama', 'si_no', 'fila_condicion'] loop
         if v_cuadriculas ? v_caso then perform pg_temp.ct_publicar(o_d, v_cuadriculas -> v_caso); end if;
         r := pg_temp.ct_tarjeta(v_quien, case v_caso when 'i' then f_i when 'ii' then f_ii when 'iii' then f_iii else f_iv end);
         if r ? 'error' then raise exception 'nivel %, caso %: %', v_nivel, v_caso, r; end if;

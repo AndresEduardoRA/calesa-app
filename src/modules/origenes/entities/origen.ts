@@ -65,10 +65,11 @@ export type UsoDeOrigen = {
   camposActivos: number
   categorias: number
   fases: number
+  // Si tiene fórmula activa (la que se cotiza: una activa siempre tiene versión publicada).
   formulaPublicada: boolean
   concesiones: number
-  // La tarjeta de la cotización publicada (sin ella se usa la de siempre). La cuenta la base: la RLS de las plantillas la esconde a quien
-  // no configura el cotizador.
+  // La tarjeta de la cotización publicada en la fórmula activa (sin ella se usa la de siempre). La cuenta la base: la RLS de las
+  // plantillas la esconde a quien no configura el cotizador.
   tarjetaPublicada: boolean
 }
 

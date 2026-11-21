@@ -16,19 +16,25 @@ import { pedidoDeLaPlantilla } from '../../../entities/plantillas-de-v1/pedido'
 import type { Aplicada } from '../../../entities/plantillas-de-v1/pedido'
 import { esquemaDeAplicarPlantillaDeV1 } from '../schemas/plantilla-de-v1'
 
-// Empieza un origen desde una plantilla de V1 (`cotizacion_paquete_aplicar()`): crea los borradores de la fórmula (con su diseño) y de la tarjeta, y los colores que
+// Empieza una fórmula del origen desde una plantilla de V1 (`cotizacion_paquete_aplicar()`): crea sus borradores de la fórmula (con su diseño) y de la tarjeta, y los colores que
 // falten, todo o nada; no publica. El navegador manda la clave del paquete y las versiones de los borradores que leyó; el paquete sale del código. Los colores se
 // eligen aquí contra el catálogo de ahora (si no caben, no se llama a la base) y la base vuelve a mirar el reuso y el tope bajo su candado. Repetir el pedido no duplica
 // nada: es todo o nada, y si el primero entró, el segundo trae las mismas versiones nulas o viejas y la base responde el PT409 de los borradores. docs/COTIZADOR.md › «Plantillas de V1».
 export const aplicarLaPlantillaDeV1 = actionClient
   .inputSchema(esquemaDeAplicarPlantillaDeV1)
   .action(async ({ parsedInput, ctx }): Promise<ResultadoDeAccion<Aplicada>> => {
-    const { origenId, plantilla: clave, formulaEsperada, plantillaEsperada } = parsedInput
+    const {
+      origenId,
+      formulaDelOrigenId,
+      plantilla: clave,
+      formulaEsperada,
+      plantillaEsperada,
+    } = parsedInput
     if (!puede(ctx.permisos, 'cotizaciones.configurar', origenId)) {
       return fallo('sin_permiso', MOTIVO_SIN_PERMISO_DE_PLANTILLA)
     }
     const plantilla = plantillaDeV1(clave)
-    const estado = await plantillasDeV1.leerEstado(origenId)
+    const estado = await plantillasDeV1.leerEstado(formulaDelOrigenId)
     if (!estado.ok) return estado
     const colores = coloresDeLaPlantilla(plantilla, estado.data.catalogo, TOPE_DE_TONOS)
     if (!colores.ok) return fallo('regla', motivoDeColores(colores))
@@ -39,6 +45,7 @@ export const aplicarLaPlantillaDeV1 = actionClient
     )
     const hecho = await plantillasDeV1.aplicar({
       origenId,
+      formulaDelOrigenId,
       pedido,
       formulaEsperada,
       plantillaEsperada,

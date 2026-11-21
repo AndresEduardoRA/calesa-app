@@ -10,7 +10,7 @@ import { limpiarListado, prepararListado, type TerrenoDelListado } from './sopor
 import { embudoPorDefecto, enLaBase, etapa, oportunidad } from './soporte/leads-oportunidades'
 import { PRESUPUESTO_DE_LA_FICHA_EN_KB } from './soporte/presupuestos'
 
-// La sección «Oportunidades» de la ficha (`?seccion=oportunidades`): las de quien mira sobre el lead,
+// El bloque «Oportunidades» de la ficha (`?seccion=oportunidades`), el embudo del lead: las de quien mira sobre el lead en una columna por etapa,
 // sólo con el lead en la cartera. «Nueva oportunidad» y «Editar» en un panel con su URL, «Mover a…» y
 // eliminar con «Deshacer». Nadie más ve las de otra persona, ni la dueña con «todos».
 test.describe.configure({ mode: 'serial' })
@@ -38,7 +38,14 @@ async function irAOportunidades(page: Parameters<typeof irAFicha>[0], leadId: st
 const item = (page: Parameters<typeof irAFicha>[0], titulo: string) =>
   aLaVista(page.getByRole('article', { name: titulo }))
 
-// «Mover a» del «⋯» de la fila: un submenú con las etapas de su embudo.
+// La columna de una etapa del embudo que se ve (`<section>` con el nombre de la etapa).
+const columna = (page: Parameters<typeof irAFicha>[0], etapa: string) =>
+  page.getByRole('region', { name: 'Oportunidades', exact: true }).getByRole('region', {
+    name: etapa,
+    exact: true,
+  })
+
+// «Mover a» del «⋯» de la tarjeta: un submenú con las etapas de su embudo.
 async function moverEnLaFicha(
   page: Parameters<typeof irAFicha>[0],
   titulo: string,
@@ -58,7 +65,7 @@ test('crear desde el panel: lo que falta se dice junto al campo y entra en la et
   const lead = await leadDeBerta(`Op Crear ${info.project.name}`)
   await entrar(page, t.personas.berta)
   await irAOportunidades(page, lead.id)
-  await expect(page.getByText('Sin oportunidades abiertas.')).toBeVisible()
+  await expect(page.getByText(/^Sin oportunidades/)).toBeVisible()
   await page.getByRole('button', { name: 'Nueva oportunidad' }).click()
   await expect(page).toHaveURL(/panel=nueva-oportunidad/)
   const panel = page.getByRole('dialog', { name: 'Nueva oportunidad' })
@@ -72,8 +79,8 @@ test('crear desde el panel: lo que falta se dice junto al campo y entra en la et
   await panel.getByLabel('Notas (opcional)').fill('Quiere financiar')
   await panel.getByRole('button', { name: 'Crear oportunidad' }).click()
   await expect(item(page, titulo)).toBeVisible()
-  // Una línea: el título, la etapa y el monto (las notas se ven al editarla).
-  await expect(item(page, titulo).getByText('Nuevo', { exact: true })).toBeVisible()
+  // En la columna de la etapa inicial, con el título y el monto (las notas se ven al editarla).
+  await expect(columna(page, 'Nuevo').getByRole('article', { name: titulo })).toBeVisible()
   await expect(item(page, titulo).getByText(/25\.000,50/)).toBeVisible()
 })
 
@@ -102,10 +109,10 @@ test('editar con versión: otra pestaña la cambió y se ofrece «Recargar» sin
   await panel.getByRole('button', { name: 'Guardar' }).click()
   await expect(panel.getByText(/Cambiaste esta oportunidad .* desde otra ventana/)).toBeVisible()
   await expect(panel.getByLabel('Título')).toHaveValue(`${titulo} 2`)
-  await expect(panel.getByRole('button', { name: 'Recargar' })).toBeVisible()
+  await expect(panel.getByRole('button', { name: 'Recargar', exact: true })).toBeVisible()
 })
 
-test('mover a una ganada desde la ficha la saca de las abiertas; eliminar ofrece «Deshacer»', async ({
+test('mover desde la ficha la pasa a la columna de su etapa (también a una ganada); eliminar ofrece «Deshacer»', async ({
   page,
 }, info) => {
   const lead = await leadDeBerta(`Op Mover ${info.project.name}`)
@@ -114,12 +121,11 @@ test('mover a una ganada desde la ficha la saca de las abiertas; eliminar ofrece
   await entrar(page, t.personas.berta)
   await irAOportunidades(page, lead.id)
   await moverEnLaFicha(page, titulo, 'Contactado')
-  await expect(item(page, titulo).getByText('Contactado', { exact: true })).toBeVisible()
+  await expect(columna(page, 'Contactado').getByRole('article', { name: titulo })).toBeVisible()
+  await expect(columna(page, 'Nuevo').getByRole('article')).toHaveCount(0)
   await moverEnLaFicha(page, titulo, 'Ganado')
-  // Cerrada: sale de la vista y queda en «Ver todas».
-  await expect(item(page, titulo)).toHaveCount(0)
-  await expect(page.getByText('Sin oportunidades abiertas.')).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Ver todas' })).toBeVisible()
+  // Cerrada: queda a la vista, en la columna de las ganadas.
+  await expect(columna(page, 'Ganado').getByRole('article', { name: titulo })).toBeVisible()
   await expect.poll(async () => (await enLaBase(op.id))?.estado).toBe('ganada')
 
   const otra = `Otra ${info.project.name}`
@@ -151,7 +157,7 @@ test('quién la ve: el compartido tiene la sección pero no la de Berta; la due�
   expect(error).toBeNull()
   await entrar(page, t.personas.carlos)
   await irAOportunidades(page, lead.id)
-  await expect(page.getByText('Sin oportunidades abiertas.')).toBeVisible()
+  await expect(page.getByText(/^Sin oportunidades/)).toBeVisible()
   await expect(page.getByText(titulo)).toHaveCount(0)
 
   const otra = await otraPersona(browser, page)

@@ -282,9 +282,9 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   sin assert) y «Ver más» hasta 500, que ofrece «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`).
   `e2e/cotizar-historial-del-vehiculo.spec.ts`:
   ≤ 5.250 B la primera respuesta y ≤ 65 nodos. «Cotizado (n)» es la misma consulta con `select('id')`, en paralelo con la hoja.
-- «Cotizaciones de este vehículo» de `/vehiculos/[id]`: «De este vehículo» (`cotizaciones_de_este_vehiculo`, de a `TAMANO_DE_ESTE_VEHICULO` = 10 hasta
-  `TOPE_DE_ESTE_VEHICULO` = 100), al acercarse el bloque (nunca con el documento), código con el `diferido()` de la isla. `e2e/vehiculos-cotizaciones.spec.ts`:
-  ≤ 5.250 B la 1.ª respuesta, ≤ 201 nodos con 10 y ≤ 1.997 con 100 (medidos 191 y 1.901 más un 5 %), con las casillas; la 10.ª respuesta pesa lo que la 1.ª.
+- «Cotizaciones de este vehículo» de `/vehiculos/[id]`: la fila de tarjetas lee `cotizaciones_de_este_vehiculo` una vez (`TARJETAS_EN_LA_FICHA` = 10, la aprobada fijada aparte), sin cursor ni
+  «Ver más» propio: lo demás es la tarjeta «Ver más» al listado filtrado. Al acercarse el bloque (nunca con el documento), código con el `diferido()` de la isla. `e2e/vehiculos-cotizaciones.spec.ts`:
+  ≤ 5.150 B la respuesta (medido 4.884) y ≤ 395 nodos la fila con 10 tarjetas (con la imagen, «Compartir», «Aprobar esta» y la casilla; medido 375), en los dos proyectos más un 5 %.
 - **Comparar cotizaciones** (`/cotizaciones/comparar`): a lo sumo 3 `cotizacion_hoja_guardada()` (por `cotizaciones_pkey`) y una lectura de las marcas por
   PostgREST de ≤ 3 filas (`cotizaciones_pkey` con la aprobada por `cotizaciones_aprobadas_cotizacion_id_key`, `.limit(ids.length)`), todo en paralelo tras
   `<Suspense>`; sin `cotizacion_evaluar`. Ninguna lista que crezca: sin cursor, sin conteo, sin medición propia. Lo dibujado: ≤ 3 columnas × los nodos
@@ -298,8 +298,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   ms y 6 la profunda; ≈ 440 buffers en total por el costo fijo de la RLS), sin recorrer la tabla y sin crecer con N; Ana («propios», 5 de 5.000) ≤ 100 ms como en
   el listado (medido 40, recorre las del vehículo). La línea de la guardada y la decisión de dibujar son una lectura del servidor por PostgREST con `limit 101`
   (`conteoAcotado`, `cache()`), la forma de «Cotizado (n)»: sin medición propia. En pantalla (`e2e/cotizaciones-de-este-vehiculo.spec.ts`, 10 filas y la
-  aprobada): la primera respuesta ≤ 5.250 B (columnas cortas, `total`, `moneda`, `editada_en`, como el alias `a` del historial; con los nombres largos medía
-  5.219) y ≤ 240 nodos (medido 165: ≈ 15 por fila, porque cada una lleva n.º, título, insignias, `<Monto>`, modo, autor, fecha y dos acciones; el tope de 65
+  aprobada): la primera respuesta ≤ 5.600 B (columnas cortas, `total`, `moneda`, `editada_en`, `vence_el`, como el alias `a` del historial; medido 5.327) y ≤ 240 nodos (medido 165: ≈ 15 por fila, porque cada una lleva n.º, título, insignias, `<Monto>`, modo, autor, fecha y dos acciones; el tope de 65
   del historial era para filas de 3 nodos). Código: la isla al acercarse y la cáscara `diferido()` en su `diferidos.tsx`; el bloque, al acercarse (guardada) o
   al abrir el resumen. En frío, sólo la cáscara del hueco (el resumen ya es diferido).
 - **La barra del resumen** (`e2e/cotizaciones-drawer.spec.ts`): abrir el resumen no pide nada nuevo: el «⋯» y «Compartir» salen de lo que la página ya leyó. La
@@ -313,7 +312,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   `lazy`, y la completa (≤ 1.600 px) sólo de lo marcado. Cambiar de pestaña, formato o zona no pide nada. Código: el panel entero por `diferido()`; en frío sólo el
   botón del detalle y la línea del «⋯» (que no se dibuja hasta abrir el menú); la hoja nueva no dibuja el botón.
 - **Los retoques de la tarjeta** (`e2e/cotizar-retoques.spec.ts`): sin lista ni consulta que crezca. `cotizacion_retocar_tarjeta()` lee la cotización por
-  `cotizaciones_pkey` y la tarjeta por `cotizacion_tarjeta()` (la publicada por `plantillas_publicada_unica`, la versión por `formulas_pkey`); los retoques
+  `cotizaciones_pkey` y la tarjeta por `cotizacion_tarjeta()` (la versión por `formulas_pkey`, la publicada de su fórmula del origen por `plantillas_publicada_unica`); los retoques
   tienen el tope de su forma (≤ 1.000 celdas, ≤ 120 filas, 300 caracteres por texto, 24 KiB) y la revisión guarda sólo cantidades. Lo que se dibuja en el
   modo: un botón por celda y uno por fila, los topes de la plantilla. Código: la vista previa (ya diferida) suma el estado del modo, `aplicarRetoques()` y
   «Retocar»; la interfaz del modo, en su propio chunk (`components/retoques/diferidos.tsx`). En frío sólo una prop del proveedor (la de los retoques, unos
@@ -331,7 +330,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   lotes más de la dueña: por el índice, sin recorrer `lotes_papelera` ni `cotizaciones`; quien no tiene la clave descarta los lotes ajenos
   (tope 600; crece con ellos, no con la página).
 - `/cotizaciones/papelera` (`e2e/cotizaciones-papelera.spec.ts`): una página (`tamano + 1`) y «Mostrar los N» un lote al pedirlo. JS en frío
-  ≤ 440 KB. Página 1 con 5 × 20: ≤ 3.000 nodos y ≤ 475.000 B de documento, igual (± 2 %) con lotes de 21 que
+  ≤ 440 KB. Página 1 con 5 × 20: ≤ 3.000 nodos y ≤ 480.000 B de documento (medido: 477.234; subido desde 475.000 por los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, un 1 %), igual (± 2 %) con lotes de 21 que
   de 200 (≈ 1 KB por botón «Purgar»: las clases de `Button`). Purgar no lee nada: una llamada por confirmación y relee una página.
 - Orígenes: resumen y categorías con uso, 100 / 50 ms (exento, administración). Tipos de cambio: historial de 30 («Mostrando los 30
   cambios más recientes.»).
@@ -606,7 +605,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB` de `e2e/soporte/presupuestos.ts`, lo medido más un 5 % a la decena; uno pasado por ≤ 5 % se sube con la regla del 5 %):
   `/leads` 560, `/leads/[id]` 590, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 400 (con las tarjetas de la lista, la imagen de la tarjeta en frío y el hook de los menús de las filas que comparte con las fichas),
-  `/cotizaciones/nuevo` 465 (con la subasta, `?origen=`; la línea «Descargar PDF» y el contexto del «⋯» de la guardada viajan con la hoja), `/cotizaciones/[id]` 480
+  `/cotizaciones/nuevo` 470 (465,4 medidos con los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, un 1 % sobre los 465 de antes; con la subasta, `?origen=`; la línea «Descargar PDF» y el contexto del «⋯» de la guardada viajan con la hoja), `/cotizaciones/[id]` 480
   (el título de la cotización y la cabecera compacta, con el menú de Base UI del «⋯» en frío), `/cotizaciones/comparar` 380, `/logistica` 390,
   `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470; `/cotizaciones/papelera` 440 (en su spec).
 - Medido: `/leads` 526,5 KB en 36 chunks y `/leads/[id]` 558,3 KB (el «+» y los «⋯» de los bloques de la derecha van en frío: `DropdownMenu` y `MasAcciones` ya
@@ -618,7 +617,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `diferido()`) (`docs/PENDIENTES.md`).
 - La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada
   ruta). dnd-kit (el orden del diseño y las asas de fila del editor de la tarjeta) viaja sólo en los `diferido()` de las pestañas «Hoja» y «Tarjeta»
-  (`/configuracion/origenes/<id>/formula/hoja|tarjeta`), que no tienen tope; lo que se sume a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB).
+  (`/configuracion/origenes/<id>/formulas/<fórmula>/hoja|tarjeta`), que no tienen tope; lo que se sume a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB).
   La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/vehiculos` (el inventario): ≤ 530 KB, medido 506,8 en 33 chunks (los filtros «Subasta» y «Fase» y el orden por cierre con su ubicación: +3,4). El «⋯» de la fila sigue siendo un botón (su contenido se arma al abrirse) y sus
   paneles van una vez por lista con `diferido()` + `useAbiertoAlgunaVez()` (`listado/components/diferidos.tsx`): «Editar imágenes», la vitrina completa y
@@ -628,7 +627,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 501,9 en 32 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
   «Cotizaciones de este vehículo» y «Actividad reciente» (las cáscaras de sus islas), la ficha completa (`?ver=ficha`, con `useAbiertoAlgunaVez`), «Compartir» y el modal de las fechas de la subasta
   van con `diferido()`; la tira es la del visor; «Vitrina» es de cliente y su vista previa ya viajaba con el panel. El documento de la ficha
-  aporta 53,7 KB sobre `/perfil` con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 58;
+  aporta 53,7 KB sobre `/perfil` con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 61;
   `e2e/vehiculos-ficha-dos-columnas.spec.ts`). Lecturas por pedido, tras su `<Suspense>` y en paralelo: `vehiculo_relacionados` (≤ 9 filas), la
   subasta y sus ajustes, la aprobada (`cotizaciones_aprobadas_de_vehiculos` con un solo id: por `cotizaciones_aprobadas_pkey` y `cotizaciones_pkey`, con el modo), los datos clave (`leerDatosClave`, 1 o 2 lecturas por PK; al documento viajan sólo sus ≤ 4 campos), la
   vitrina (`vehiculo_vitrina_previa`, una, la comparten la cabecera, el bloque y el panel; al bloque viajan sólo los campos públicos de la tarjeta),
@@ -652,13 +651,22 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   «Ver todos»): no cruzan como código, son enlaces del mismo menú.
 - Configuración › Empresa (tarjetas de ajustes, cada modal con `diferido()` al abrirse por primera vez): JS en frío (KB gz, `.next-e2e`) `/empresa` 228,4, `/empresa/integraciones` 228,4, `/empresa/comprobantes` 358,9 (sin tope propio).
 - La página de un origen y Catálogos: cada pestaña y cada catálogo carga sólo su pantalla (`pantallas/origen-*`, `formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
-  JS en frío (KB gz, `medirJsEnFrio()` sobre `.next-e2e`): `/configuracion/origenes/<id>/datos` 390,1, `/campos` 392,4, `/categorias` 390,4, `/formula` 470,6,
-  `/formula/hoja` 387,3 (dnd-kit y el editor del diseño, en su `diferido()`), `/formula/tarjeta` 392,6 (la pestaña dibuja en frío el aviso de menos de 1.024 px
-  y arma la lectura del lienzo; el editor, 26,4, llega por `diferido()`), `/tablas` 388,3; `/configuracion/catalogos/colores` 356,8, `/niveles` 366,7,
-  `/vigencia` 359,3, `/puertos`, `/navieras` y `/categorias-de-gasto` 356,4, `/tipos-de-documento` 370,4, `/tablas` 359,1. El marco del origen (encabezado,
+  JS en frío (KB gz, `medirJsEnFrio()` sobre `.next-e2e`): `/configuracion/origenes/<id>/datos` 390,1, `/campos` 392,4, `/categorias` 390,4, `/formulas` 393,6
+  (la lista y el «⋯» de cada fila en frío; los paneles de nueva, renombrar, activar, archivar y eliminar, y las archivadas, por `diferido()`), y el editor de
+  una fórmula, `/formulas/<fórmula>/planilla` 476,7, `/hoja` 392,4 (dnd-kit y el editor del diseño, en su `diferido()`), `/tarjeta` 398,9 (la
+  pestaña dibuja en frío el aviso de menos de 1.024 px y arma la lectura del lienzo; el editor llega por `diferido()`; la cabeza del editor, con el nombre, el estado y el «⋯» de la fórmula, suma ≈ 6 KB a cada parte y
+  pasa su meta por ≤ 1 %: regla del 5 %), `/tablas` 392,5 («Nueva tabla» y el «⋯» de cada tabla en frío; sus paneles, por `diferido()`); `/configuracion/catalogos/colores` 356,8, `/niveles` 366,7,
+  `/vigencia` 359,3, `/puertos`, `/navieras` y `/categorias-de-gasto` 356,4, `/tipos-de-documento` 370,4, `/tablas` 368,1. El marco del origen (encabezado,
   «Para cotizar y mover» y las pestañas) lee `origenes_resumen()` una vez por pedido (`leerElOrigen`, con `cache()`, la comparten el marco y la pestaña) y,
-  en un origen de subasta, si apibara está activa: nada cuenta ni crece con las cotizaciones. `/configuracion/origenes/<id>` y `/formula` solos redirigen
-  con `route.ts` (308), sin `page.tsx` ni `loading.tsx` intermedios.
+  en un origen de subasta, si apibara está activa: nada cuenta ni crece con las cotizaciones. `/configuracion/origenes/<id>` y las rutas cortas
+  (`/formula`, `/formula/hoja`, `/formula/tarjeta`: la fórmula de trabajo, una fila por `formulas_del_origen_origen_idx`, `limit 1`) redirigen con
+  `route.ts` (308), sin `page.tsx` ni `loading.tsx` intermedios; `/formulas/<fórmula>` sola, por `next.config.ts`.
+- Las fórmulas del origen (la pestaña «Fórmulas», `infra/formulas-del-origen/`): la lista lee 51 filas por `formulas_del_origen_origen_idx` (`limit 51`) y
+  dibuja hasta 50 (el tope de `formula_del_origen_crear()`, 22023 hint `formulas`), con su versión publicada y si tiene tarjeta por los índices únicos
+  parciales, sin conteo exacto: a las 50, «Nueva fórmula» apagada con su aviso. Las archivadas se leen sólo al abrir su sección, de a 20 por cursor
+  hasta 500 con `<AvisoDeTope>`. «Copia de otro origen» ofrece los orígenes de `getOrigenes(true)` (tope 100) y lee las fórmulas del elegido desde el
+  navegador (tope 51). El editor de una fórmula lee su fila por PK con `cache()` (la comparten el layout `[formula]` y la página) y versiones,
+  borrador y tarjeta por los índices de esa fórmula. Tablas de configuración (≤ 50 vivas por origen): sin `db:medir:volumen`.
 - Configuración › Orígenes: la lista de tarjetas, 382,8 KB gz en frío en 26 chunks (`medirJsEnFrio()`); muestra sólo los orígenes que la persona
   abre, con su tira de pasos de la misma lectura. Sin `diferido()` nuevo: el bloque de datos clave se ve apenas carga «Campos».
 - «Vista y opciones» en las barras de los listados: en frío viaja sólo el botón (el panel, `Popover`, `Sheet` y las secciones van con `diferido()`); el
@@ -669,7 +677,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `loading` y el de `page`); por eso existe `pantallas/esqueleto-de-hoja.ts`. Se ve comparando `entryJSFiles` de
   `page_client-reference-manifest.js` entre dos builds.
 - react-pdf no llega al navegador, pero estar en el grafo del servidor suma ≈ 0,45 KB al runtime de Turbopack de **todas** las rutas.
-- El marco (shell): en el JS de toda pantalla viajan el menú lateral plegable (`LateralPlegable`, `ProveedorDelMenuPlegado`: un botón, un contexto y `Ctrl/Cmd+B`; sin librería nueva), el botón de la burbuja del chat, `usePathname`, el store del contador y
+- El marco (shell): en el JS de toda pantalla viajan el menú lateral plegable (`LateralPlegable`, `ProveedorDelMenuPlegado`: un botón, un contexto y `Ctrl/Cmd+B`; sin librería nueva), el botón de la burbuja del chat, los botones «Recargar la página» y «Copiar el enlace de esta página» (el modal del enlace va con `diferido()`), `usePathname`, el store del contador y
   `useAlDescansar`; el cliente de Supabase, la suscripción, el panel, la lista, el hilo y el redactor van con `diferido()`. La campana: su
   contador con Realtime y su popover van con `diferido()` (sin eso `/cotizaciones` subía ≈ 66 KB). Una `chat_no_leidos` al montar y otra por
   ráfaga de señales (≥ 250 ms). Los tipos de cambio de la barra: en frío sólo el botón con los de la barra (≤ 3, `{id, nombre, monedaA, valor}`
@@ -677,14 +685,14 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `diferido()` y su código se adelanta al pasar el puntero. Al abrirlo, una `tipos_cambio_vigentes()` de ≤ 31 filas (un `limit 1` por tipo
   sobre `tipos_cambio_historial_tipo_idx` y dos búsquedas por `perfiles_pkey`), sin caché; tras guardar se relee sin esqueleto. Es una
   tabla de configuración: sin medición de volumen.
-- Documento de `/perfil` (HTML con el payload RSC, sin comprimir) ≤ 121 KB (medido: 120,5) (`PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB`), igual con la
+- Documento de `/perfil` (HTML con el payload RSC, sin comprimir) ≤ 124 KB (medido: 123,3; subido desde 121 por los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, un 2,5 %) (`PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB`), igual con la
   semilla y con 100 + 100 + 100 catálogos (± 1 KB): lo paga toda pantalla del marco. Las ≈ 30 acciones de la paleta viajan como props del
   hueco del buscador; el formulario de «Tu ficha en la web» se monta y se pide con `diferido()` al abrirla. El layout `(app)` no manda
   catálogos al alta: `<AltaDeLead>` no recibe nada y los lee del navegador (`infra/contexto-de-alta.client.ts`, memoria de 60 s en
   `shared/lib/memoria-de-lectura.ts`).
 - Ficha del lead entera (`?seccion=` no cambia el documento; los grupos del layout y los teléfonos de «Ver más» no viajan en él: el modal se pide con
   `diferido()` al abrirlo): ≤ 138 KB sobre `/perfil` (`PRESUPUESTO_DE_LA_FICHA_EN_KB`),
-  medido 84,8 con 10 oportunidades (3 abiertas dibujadas), 3 de 10 seguimientos, el recordatorio más próximo, un vínculo, cuatro interesados y el portal,
+  medido 84,8 con 10 oportunidades (hasta 3 por etapa dibujadas; el tablero con su arrastre `@dnd-kit` llega con `diferido()`), 3 de 10 seguimientos, el recordatorio más próximo, un vínculo, cuatro interesados y el portal,
   y 84,7 con 1.000 de cada uno (`e2e/leads-ficha-dos-columnas.spec.ts`; en el celular, 84,6); lo que más pesa es el HTML de los bloques con sus acciones (Relacionados, el
   portal, las filas de la línea de tiempo y de las oportunidades, cada una con su «⋯») y su payload RSC. Igual con la semilla y con 100 orígenes + 100 tipos (manda los campos
   activos y el origen y tipo del lead; el panel de edición los lee al abrirse, `leerCatalogosDeEdicion()`); `e2e/leads-ficha.spec.ts`. Al abrirla
@@ -730,8 +738,8 @@ fallar.
 - La hoja de una guardada (`cotizacion_hoja_guardada()`, `medir-cotizacion-hoja-guardada.sql`, 50.000 y 250.000): ≤ 20 ms y 1.500
   buffers, razón de `cotizacion_crear`, 0 recorridos de `cotizaciones` (la anterior por la clave; la nueva viva por `cotizacion_padre_id`),
   `_nodos_visibles` 2 veces y la respuesta de la dueña ≤ 14.230 B. Guarda: buscar la nueva sin índice recorre.
-- Versiones de la fórmula (la pestaña «Fórmula» de un origen, `infra/formula/consulta-de-versiones.ts`): PostgREST de a 20 + 1 por
-  cursor sobre `formulas_origen_id_version_key` (`version < n`), sin `definicion`, `params`, `diseno` ni `visibilidad`; tope 500 con «Ir a la
+- Versiones de la fórmula (la pestaña «Planilla» de una fórmula del origen, `infra/formula/consulta-de-versiones.ts`): PostgREST de a 20 + 1 por
+  cursor sobre `formulas_formula_del_origen_id_version_key` (`version < n`, la serie de la fórmula de la URL), sin `definicion`, `params`, `diseno` ni `visibilidad`; tope 500 con «Ir a la
   versión»; la primera página, el estado (`limit 2`) y los autores en el servidor, «Ver más» desde el navegador. El plan lo fija
   `supabase/tests/areas/formula/versiones-por-cursor.sql` (`db:probar`); falta su `EXPLAIN` en `db:medir:volumen`.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
@@ -748,7 +756,7 @@ fallar.
   `pantallas/tarjeta-plantilla.ts` no entra a la hoja. La página del origen no tiene presupuesto de JS.
 - «Empezar desde una plantilla» (`?panel=plantillas-de-v1`, las sub-pestañas de la Fórmula de un origen): en frío sólo viajan el botón y las cáscaras de `diferido()` (medido
   en KB gz con `medirJsEnFrio()`: Fórmula 444,6, Hoja 359,8, Tarjeta 364,7 y Tablas 362,0; ≤ +1,1 por pestaña). El modal llega al abrirse y el lienzo es el
-  chunk de la pestaña Tarjeta. Al abrirlo, una vez y sin caché, `GET [origen]/plantillas-de-v1`: el borrador de la fórmula (`formulas_borrador_unico`, `limit 1`), su
+  chunk de la pestaña Tarjeta. Al abrirlo, una vez y sin caché, `GET [origen]/plantillas-de-v1`: la fórmula de trabajo (`formulas_del_origen_origen_idx`, `limit 1`), su borrador (`formulas_borrador_unico`, `limit 1`), su
   autor (`perfiles_pkey`), el de la tarjeta (`plantillas_borrador_unico`, `limit 1`) y el catálogo de colores (`limit 48`), más los tipos de cambio y los campos del
   origen; responde ≤ 80 KB sin comprimir con las cuatro lecturas de la tarjeta (lo fijan `route.test.ts` y `plantillas-de-v1.test.ts`). Se dibujan cuatro
   tarjetas de a lo sumo 54 celdas. Aplicar escribe dos borradores y ≤ 48 colores: ninguna lectura crece con los datos.
@@ -792,9 +800,9 @@ fallar.
   bloques de `cotizaciones`; con 250.000 ≤ 1,2 × los bloques de 50.000 + 20 y ≤ máx(1,5 × t; t + 3 ms); `mis_leads()` 1 vez si va la cartera
   (ninguna con `p_lead`), `origenes_con_alcance()` ≤ 2 + 2 por ruta, `en_cartera()` ≤ una por fila leída de la cartera o del vehículo,
   ninguna a `alcance_de` ni a `_bajas_en_curso`; los índices de cada caso por nombre y ningún otro con bloques. Máximo de la base: 100 (la pantalla pide hasta 50, `MAXIMO_DE_PAGINA_DE_COTIZACIONES`).
-  El bloque «Cotizaciones» de la ficha del lead (PostgREST, `lead_id = …`, 3 + 1 por `cotizaciones_lead_creado_idx`, mismo archivo): la dueña ≤ 10 ms, Ana
-  ≤ 50 con su cartera y ≤ 100 con el ajeno. Se lee al acercarse a la vista, con `diferido()` en su `diferidos.tsx`; lo demás, en «Ver todas»
-  (`/cotizaciones?lead=`); `e2e/leads-cotizaciones.spec.ts`: la respuesta ≤ 1.500 B.
+  El bloque «Cotizaciones» de la ficha del lead (`cotizaciones_listado(p_lead)`, 10 + 1 por `cotizaciones_lead_creado_idx`, más los autores por la PK de `perfiles`, los modos por `cotizaciones_modos_de()`
+  y las aprobadas por `cotizaciones_aprobadas`, sólo de las 10): la fila de tarjetas. Se lee al acercarse a la vista, con `diferido()` en su `diferidos.tsx`; lo demás, en la tarjeta «Ver más»
+  (`/cotizaciones?lead=`); `e2e/leads-cotizaciones.spec.ts`: la respuesta del listado ≤ 6.500 B.
   **La lista agrupada por vehículo** (`cotizaciones_listado_por_vehiculo()`, `medir-cotizaciones-listado-por-vehiculo.sql`, `MEDIR_SOLO=medir-cotizaciones-listado-por-vehiculo
 pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACIONES` (50) grupos + 1. Recorre lotes de `_cotizaciones_lote_del_listado()` (las rutas e índices del listado, sin la del
   vehículo; el primero de 4 × la página (204), duplicándose hasta 2.020 leídas: si no llena la página, `cortada`); hacia adelante sólo la primera de cada vehículo en la lectura
@@ -848,7 +856,7 @@ pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACION
 - El ⚙ de una constante (`e2e/cotizar-ajuste-constante.spec.ts`): como quien configura, cada ⚙ son exactamente 3 nodos (botón, `svg`,
   `use`), el ⚙ de la cabecera son 7 (la fila junto a los modos, el botón, su `svg` y sus cuatro trazos) y la subasta ≤ 585 nodos (techo 600; mide 516 al abrir
   y 540 usada); las dos personas ven las mismas celdas. Ningún pedido al abrir la hoja ni al pasar por una
-  celda; abrir un ⚙ lee una fila por `formulas_publicada_unica`, ≤ 70 B. Panel, hook, lectura y action con `diferido()`.
+  celda; abrir un ⚙ lee una fila, la publicada de la activa (`formulas_del_origen_activa_unica` y `formulas_publicada_unica`), ≤ 70 B. Panel, hook, lectura y action con `diferido()`.
 - El ⚙ de un tipo de cambio (`e2e/cotizar-ajuste-tipo-cambio.spec.ts`): una llamada a `formula_tipo_cambio_del_nodo()`, ≤ 247 B; tras
   cambiarlo la hoja no relee. Bloque, hooks y action de `empresa` van con el panel por `diferido()`.
 - Vista previa de la tarjeta (`e2e/cotizar-vista-previa.spec.ts`): ninguna lectura al abrir la hoja; suma un elemento al pie del resumen;

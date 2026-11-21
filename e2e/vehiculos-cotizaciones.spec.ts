@@ -8,18 +8,13 @@ import {
   PREFIJO_ROL_E2E,
 } from './soporte/base'
 import { idDePersona, sembrarCotizaciones } from './soporte/cotizaciones-sembradas'
+import { capturar } from './soporte/recorrido'
 import { limpiarGuardado, prepararGuardado } from './soporte/cotizar-guardar'
 import { literal, sql } from './soporte/sql'
 
-// «Cotizaciones de este vehículo» en la ficha del vehículo (`docs/UX.md` › «Vehículo»): la ven quienes tienen `cotizaciones.ver` en el origen del vehículo; la isla
-// «De este vehículo» lee desde el navegador al acercarse, de a 10 por cursor hasta 100, y en el tope dice «Ver todas en Cotizaciones» (el camino a lo antiguo). Con la
-// RLS de quien mira.
-
-// Presupuestos (`docs/RENDIMIENTO.md`): la primera respuesta, la de «De este vehículo» (`cotizaciones-de-este-vehiculo.spec.ts`: 5.250 B); los nodos de la lista con
-// 10 y con 100, con las casillas de «Comparar»: medidos 191 y 1.901 en los dos proyectos, más un 5 %.
-const TOPE_DE_BYTES = 5_250
-const TOPE_DE_NODOS_CON_10 = 201
-const TOPE_DE_NODOS_CON_100 = 1_997
+// Presupuestos de la fila de 10 tarjetas (`docs/RENDIMIENTO.md`): medidos en los dos proyectos (375 nodos, 4.884 B) más un 5 %.
+const TOPE_DE_NODOS_CON_10 = 395
+const TOPE_DE_BYTES = 5_150
 
 let origen = { id: '', nombre: '' }
 let duena = ''
@@ -119,7 +114,8 @@ const titulo = (page: Page): Locator =>
   bloque(page).getByRole('heading', { name: 'Cotizaciones de este vehículo', level: 2 })
 const lista = (page: Page): Locator =>
   page.getByRole('list', { name: 'Cotizaciones de este vehículo' })
-const filas = (page: Page): Locator => lista(page).locator('[data-de-este-vehiculo]')
+const tarjetas = (page: Page): Locator => lista(page).locator('article')
+const verMas = (page: Page): Locator => bloque(page).getByRole('link', { name: 'Ver más' })
 const esLectura = (url: string) => url.includes('/rpc/cotizaciones_de_este_vehiculo')
 
 // Los pedidos del navegador a «De este vehículo» (el bloque lee desde el navegador al acercarse; el servidor no lee cotizaciones para la derecha de la ficha).
@@ -133,9 +129,9 @@ function vigilarLecturas(page: Page): string[] {
   return lecturas
 }
 
-test('E2E la dueña: lejos del bloque no se lee nada; al saltar llegan 10 y «Ver más» lleva a 22', async ({
+test('E2E la dueña: lejos del bloque no se lee nada; al saltar llegan las últimas 10 como tarjetas y «Ver más» lleva al listado del vehículo', async ({
   page,
-}) => {
+}, info) => {
   await entrar(page, duena, { fresco: true })
   // Una ventana angosta y baja: la ficha va en una columna y el bloque, bajo la cabecera, queda lejos de la vista al llegar.
   const ancho = Math.min(page.viewportSize()?.width ?? 600, 600)
@@ -155,7 +151,7 @@ test('E2E la dueña: lejos del bloque no se lee nada; al saltar llegan 10 y «Ve
   await indice(page).getByText('Cotizaciones').click()
   await expect(titulo(page)).toBeFocused()
   const bytes = (await (await respuesta).body()).length
-  await expect(filas(page)).toHaveCount(10)
+  await expect(tarjetas(page)).toHaveCount(10)
   expect(lecturas).toHaveLength(1)
   const nodos = await lista(page).evaluate((e) => e.querySelectorAll('*').length + 1)
   const medido = `nodos con 10: ${String(nodos)}, bytes: ${String(bytes)}`
@@ -167,49 +163,37 @@ test('E2E la dueña: lejos del bloque no se lee nada; al saltar llegan 10 y «Ve
   const masNueva = sql(
     `select numero from public.cotizaciones where vehiculo_id = ${literal(vehiculos.veintidos)}::uuid order by creado_en desc, id desc limit 1`,
   )
-  await expect(filas(page).first()).toContainText(`N.º ${masNueva}`)
-  await expect(filas(page).first()).toContainText('Gala Guarda')
-  for (const ronda of [20, 22]) {
-    await bloque(page).getByRole('button', { name: 'Ver más' }).click()
-    await expect(filas(page)).toHaveCount(ronda)
-  }
-  await expect(bloque(page).getByRole('button', { name: 'Ver más' })).toHaveCount(0)
-  expect(lecturas).toHaveLength(3)
+  await expect(tarjetas(page).first()).toContainText(`N.º ${masNueva}`)
+  await expect(tarjetas(page).first()).toContainText('Gala Guarda')
+  await capturar(page, info, 'vehiculo-tarjetas')
+  // Con 22 no hay otra lectura: el camino a las demás es el listado filtrado por el vehículo, en la última tarjeta.
+  await expect(verMas(page)).toHaveAttribute(
+    'href',
+    `/cotizaciones?vehiculo=${vehiculos.veintidos}`,
+  )
+  await lista(page).evaluate((e) => {
+    e.scrollLeft = e.scrollWidth
+  })
+  await expect(verMas(page)).toBeInViewport()
+  await verMas(page).click()
+  await expect(page).toHaveURL(/\/cotizaciones\?vehiculo=/)
+  // Las de un solo vehículo no se agrupan, y el aviso lo dice (la lista nace agrupada: T319).
+  await expect(page.getByText('Cotizaciones de Pestaña veintidós, sin agrupar.')).toBeVisible()
+  expect(lecturas).toHaveLength(1)
 })
 
-test('E2E con 110: «Ver más» llega a 100, dice el tope y «Ver todas en Cotizaciones» lleva al listado', async ({
+test('E2E con 110 sigue siendo una lectura de 10 y la fila no crece: «Ver más» es el camino a las demás', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  const tamanos: number[] = []
-  page.on('response', (r) => {
-    if (esLectura(r.url()) && r.request().method() === 'POST') {
-      void r.body().then((cuerpo) => tamanos.push(cuerpo.length))
-    }
-  })
+  const lecturas = vigilarLecturas(page)
   await page.goto(`/vehiculos/${vehiculos.cientodiez}?seccion=cotizaciones`)
-  await expect(filas(page)).toHaveCount(10)
-  for (let ronda = 2; ronda <= 10; ronda += 1) {
-    await bloque(page).getByRole('button', { name: 'Ver más' }).click()
-    await expect(filas(page)).toHaveCount(10 * ronda)
-  }
-  await expect(bloque(page).getByRole('button', { name: 'Ver más' })).toHaveCount(0)
-  await expect(page.getByText('Mostrando las 100 más recientes.')).toBeVisible()
-  const nodos = await lista(page).evaluate((e) => e.querySelectorAll('*').length + 1)
-  const primera = tamanos[0] ?? 0
-  const decima = tamanos[9] ?? Number.POSITIVE_INFINITY
-  const medido = `nodos con 100: ${String(nodos)}, bytes de la 1.ª: ${String(primera)}, de la 10.ª: ${String(decima)}`
-  console.warn(`[cotizaciones de este vehículo] ${test.info().project.name}: ${medido}`)
-  test.info().annotations.push({ type: 'medido', description: medido })
-  expect(nodos).toBeLessThanOrEqual(TOPE_DE_NODOS_CON_100)
-  expect(tamanos.length).toBeGreaterThanOrEqual(10)
-  expect(decima).toBeLessThanOrEqual(primera * 1.05)
-  const camino = page.getByRole('link', { name: 'Ver todas en Cotizaciones' })
-  await expect(camino).toHaveAttribute('href', `/cotizaciones?vehiculo=${vehiculos.cientodiez}`)
-  await camino.click()
-  await expect(page).toHaveURL(/\/cotizaciones\?vehiculo=/)
-  // Las de un solo vehículo no se agrupan, y el aviso lo dice (la lista nace agrupada: T319).
-  await expect(page.getByText('Cotizaciones de Pestaña ciento diez, sin agrupar.')).toBeVisible()
+  await expect(tarjetas(page)).toHaveCount(10)
+  await expect(verMas(page)).toHaveAttribute(
+    'href',
+    `/cotizaciones?vehiculo=${vehiculos.cientodiez}`,
+  )
+  expect(lecturas).toHaveLength(1)
 })
 
 test('E2E sin cotizaciones.ver no hay bloque ni entrada en el índice y ?seccion=cotizaciones se queda arriba', async ({
@@ -225,15 +209,15 @@ test('E2E sin cotizaciones.ver no hay bloque ni entrada en el índice y ?seccion
   expect(lecturas).toEqual([])
 })
 
-test('E2E con «propios» el bloque está y lista sólo la suya (la RLS decide las filas)', async ({
+test('E2E con «propios» el bloque está y muestra sólo la suya (la RLS decide las tarjetas)', async ({
   page,
 }) => {
   await entrar(page, ana, { fresco: true })
   await page.goto(`/vehiculos/${vehiculos.propios}`)
   await expect(indice(page).getByText('Cotizaciones')).toBeVisible()
   await indice(page).getByText('Cotizaciones').click()
-  await expect(filas(page)).toHaveCount(1)
-  await expect(filas(page).first()).toContainText('Ana Propios')
+  await expect(tarjetas(page)).toHaveCount(1)
+  await expect(tarjetas(page).first()).toContainText('Ana Propios')
   await expect(lista(page)).not.toContainText('Gala Guarda')
 })
 
@@ -246,4 +230,70 @@ test('E2E un vehículo sin cotizaciones: llegar a su bloque por la URL dice que 
   await expect(page.getByText('Sin cotizaciones que puedas ver.')).toBeVisible()
   await page.reload()
   await expect(page.getByText('Sin cotizaciones que puedas ver.')).toBeVisible()
+})
+
+test('E2E una tarjeta abre el resumen sobre la ficha, queda marcada, y cerrarlo deja la ficha', async ({
+  page,
+}) => {
+  await entrar(page, duena, { fresco: true })
+  await page.goto(`/vehiculos/${vehiculos.propios}`)
+  await indice(page).getByText('Cotizaciones').click()
+  await expect(tarjetas(page)).toHaveCount(3)
+  const primera = tarjetas(page).first()
+  const numero = sql(
+    `select numero from public.cotizaciones where vehiculo_id = ${literal(vehiculos.propios)}::uuid order by creado_en desc, id desc limit 1`,
+  )
+  await primera.getByRole('button', { name: `Abrir N.º ${numero}` }).click()
+  const drawer = page.getByRole('dialog', { name: `Cotización n.º ${numero}` })
+  await expect(drawer).toBeVisible()
+  // Con el resumen abierto la ficha queda detrás (inerte): la tarjeta se halla aunque no sea accesible.
+  await expect(
+    page
+      .getByRole('list', { name: 'Cotizaciones de este vehículo', includeHidden: true })
+      .locator('article')
+      .first(),
+  ).toHaveAttribute('data-state', 'selected')
+  await page.keyboard.press('Escape')
+  await expect(drawer).toBeHidden()
+  await expect(page).toHaveURL(new RegExp(`/vehiculos/${vehiculos.propios}$`))
+  await expect(tarjetas(page)).toHaveCount(3)
+})
+
+test('E2E «Compartir» de una tarjeta abre su panel sin abrir el resumen', async ({ page }) => {
+  await entrar(page, duena, { fresco: true })
+  await page.goto(`/vehiculos/${vehiculos.propios}`)
+  await indice(page).getByText('Cotizaciones').click()
+  await expect(tarjetas(page)).toHaveCount(3)
+  await tarjetas(page).first().getByRole('button', { name: 'Compartir' }).click()
+  await expect(page).toHaveURL(/panel=compartir&para=[0-9a-f-]{36}/)
+  await expect(page).not.toHaveURL(/cotizacion=/)
+})
+
+test('E2E «Comparar» se enciende con 2 elegidas y lleva a comparar; «Aprobar esta» aprueba otra desde su tarjeta', async ({
+  page,
+}) => {
+  await entrar(page, duena, { fresco: true })
+  await page.goto(`/vehiculos/${vehiculos.propios}`)
+  await indice(page).getByText('Cotizaciones').click()
+  await expect(tarjetas(page)).toHaveCount(3)
+  const comparar = bloque(page).getByRole('button', { name: 'Comparar', exact: true })
+  await expect(comparar).toBeDisabled()
+  await tarjetas(page).nth(0).getByRole('checkbox').click()
+  await tarjetas(page).nth(1).getByRole('checkbox').click()
+  const enlace = bloque(page).getByRole('link', { name: 'Comparar', exact: true })
+  await expect(enlace).toHaveAttribute(
+    'href',
+    new RegExp(
+      `^/cotizaciones/comparar\\?ids=[0-9a-f-]{36},[0-9a-f-]{36}&returnTo=%2Fvehiculos%2F${vehiculos.propios}`,
+    ),
+  )
+  await tarjetas(page).nth(0).getByRole('checkbox').click()
+  await expect(comparar).toBeDisabled()
+
+  // Ninguna es la aprobada: «Aprobar esta» en las tres; al aprobar una, ésa pasa a primera, marcada, y ya no lo ofrece.
+  await expect(bloque(page).getByRole('button', { name: 'Aprobar esta' })).toHaveCount(3)
+  const tercera = tarjetas(page).nth(2)
+  await tercera.getByRole('button', { name: 'Aprobar esta' }).click()
+  await expect(tarjetas(page).first()).toContainText('Aprobada')
+  await expect(bloque(page).getByRole('button', { name: 'Aprobar esta' })).toHaveCount(2)
 })

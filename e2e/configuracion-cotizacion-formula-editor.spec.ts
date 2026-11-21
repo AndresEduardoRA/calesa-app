@@ -18,6 +18,7 @@ import {
   sembrarBorradorDeNFilas,
 } from './soporte/formula-editor'
 import { sembrarBorrador } from './soporte/formula-versiones'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // El editor de la fórmula en texto (4.21-3a-1, `docs/UX.md` › «Cotización: fórmula»): desde la pestaña «Fórmula», `?panel=editar-formula` lee la definición del
 // borrador o de la publicada y muestra cada fila con su texto vigente; compila al aplicar y deja el error en su fila. Cierra 4-6 (2.001 caracteres, en la fila, sin
@@ -69,8 +70,8 @@ test.afterAll(async () => {
 })
 
 async function abrirFormula(page: Page, origenId: string, resto = '') {
-  await page.goto(`/configuracion/origenes/${origenId}/formula${resto}`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origenId, 'planilla', resto)
+  await enLaPestana(page, 'Planilla')
 }
 
 const editor = (page: Page) => page.getByRole('region', { name: 'Editor de la fórmula' })

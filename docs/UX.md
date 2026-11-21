@@ -304,7 +304,7 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   la pantalla en escritorio y entera en el celular, sólo lectura, las fotos con su tira, los datos comunes, «Precio» y todos los grupos del layout; Esc y
   «atrás» la cierran y el foco vuelve a «Ver más»).
   **Derecha**: el índice quieto arriba de la columna («Índice de la ficha»; en el celular, pegajoso) y sólo lo de ventas, con su propio desplazamiento, los bloques que quien mira ve en este orden: **«Cotizaciones de este
-  vehículo»** (`cotizaciones.ver` del origen: «De este vehículo» con las casillas y «Comparar» en su fila, al acercarse; «Cotizar» en el título, la hoja con
+  vehículo»** (`cotizaciones.ver` del origen: la fila de tarjetas con «Aprobar esta» y las casillas de «Comparar» (el botón en el título), al acercarse; «Cotizar» en el título, la hoja con
   este vehículo y la vuelta a la ficha, sólo con `cotizaciones.crear` del origen; aprobar ahí pone al día el «Costo estimado» de la izquierda; ver
   «Cotizaciones del lead y del vehículo»), **«Relacionados»** compacto (`leads.ver`: el vinculado con «Desvincular» confirmado, los interesados y lo cotizado;
   ver «Relacionados (estados propios)»), **«Actividad reciente»** (`actividad.ver`: los últimos 5 cambios del vehículo como frases y «Ver toda la actividad»,
@@ -321,11 +321,14 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   `?panel=vitrina` («Publicar en la web»), `?panel=imagenes` («Editar imágenes»), `?panel=actualizar-datos` («Actualizar los datos»),
   `?panel=fechas-de-subasta`, `?ver=ficha` y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».»
   con «Reintentar»; uno caído no tumba a los demás).
-  - **Cotizaciones del lead y del vehículo** (bloque): en el lead, «Cotizar» en el título (la hoja con este lead en el primer origen donde quien mira
-    cotiza, como «Cotizar lead») y las 3 más recientes que quien mira ve, con la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma
-    lectura), y «Ver todas» (`/cotizaciones?lead=`, sin número) si hay más. En el vehículo, «De este
-    vehículo» (ver abajo): de a 10 con «Ver más» hasta 100 y «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`), con «Cotizar» en el título y las casillas
-    de «Comparar» en su fila. Los dos se leen al acercarse; esqueleto, error con «Reintentar», «Sin cotizaciones que puedas ver.».
+  - **Cotizaciones del lead y del vehículo** (bloque): una **fila de tarjetas** que se desliza, sólo tarjetas (sin filas de letras), de las **últimas 10** que quien mira ve
+    (la más reciente primero; en el vehículo, la aprobada primero) y, al final, la tarjeta **«Ver más»** a `/cotizaciones?lead=` o `?vehiculo=` (el listado filtrado). Cada tarjeta es la
+    de la lista (`docs/GLOSARIO.md` › «Fila de tarjetas»): la imagen de la tarjeta, el título en dos líneas, «N.º n» con «Aprobada», «Final», autor · hace…, el total con su modo
+    (`<Monto>`), la vigencia y **«Compartir»** a la vista (no en Modo Live); sin línea de cliente ni «⋯» (el resumen que abre lo trae). Un clic abre el resumen sobre la ficha (`?cotizacion=`)
+    y deja marcada la tarjeta abierta; cerrarlo deja la ficha donde estaba. Se desliza con el dedo, la rueda o las flechas ‹ › (escritorio); un degradado en el borde dice que sigue. En el lead, «Cotizar»
+    en el título (la hoja con este lead en el primer origen donde quien mira cotiza, como «Cotizar lead»). En el vehículo, «Cotizar» en el título, **«Aprobar esta»** al pie de cada tarjeta menos la
+    aprobada (con `cotizaciones.aprobar` del origen; apagado con su motivo; tras aprobar la ficha se refresca) y una casilla sobre la imagen para **«Comparar»** 2 o 3, cuyo botón va en el título del bloque. Los dos
+    se leen al acercarse; esqueleto de 3 tarjetas, error con «Reintentar», «Sin cotizaciones que puedas ver.».
   - **De este vehículo** (bloque de la guardada y quinta pestaña del resumen de la cotización): las cotizaciones del mismo vehículo que quien mira ve, **la aprobada
     primero** (insignia «Aprobada» y borde de acento) y después de la más nueva; de a 10 con «Ver más» y, en 100, «Mostrando las 100 más recientes.» con
     «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`). Cada fila: «N.º N · título» (`tituloDeLaCotizacion()`: el suyo, si no el del vehículo, si no «Cotización n.º N»), insignias
@@ -560,7 +563,7 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   sin «Eliminar»: se desactivan) y «Categorías de gasto» (`/categorias-de-gasto`: nombre, propósito de la lista fija de la base, orden y activa; una con
   gastos no se elimina), con `logistica.catalogos.gestionar` y sólo si algún área llena el catálogo, y «Tipos de documento» (`/tipos-de-documento`: los
   de la empresa; los cambia quien gestiona los catálogos de logística y los leen quien configura un flujo o los repuestos); y, sin rótulo,
-  **«Tablas compartidas»** (`/tablas`, `cotizaciones.configurar`; `?tabla=<id>`, `?panel=publicar-tabla`): las tablas de referencia sin origen, con el
+  **«Tablas compartidas»** (`/tablas`, `cotizaciones.configurar`; `?tabla=<id>`, `?panel=publicar-tabla|nueva-tabla|columnas-de-tabla|desactivar-tabla`): las tablas de referencia sin origen, con el
   aviso de a qué orígenes les cambia. Sin título de bloque ni segunda frase: «Nuevo …» arriba a la derecha y la lista. Ver «Logística: estados propios».
 - **Repuestos (config)** — `/configuracion/repuestos` (`repuestos.configurar`) abre `/flujo`. **Flujo de repuestos** (`/configuracion/repuestos/flujo`):
   el editor del flujo (el de la pestaña Flujo de un origen) sobre el flujo de los repuestos, sin selector. **Catálogos** (`/configuracion/repuestos/catalogos`):
@@ -576,8 +579,8 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   cotizaciones; la tarjeta entera abre sus Datos.
 - **La página del origen** — `/configuracion/origenes/<id>/<pestaña>`: arriba «‹ Orígenes»; el punto de color, el nombre como `h1`, «Activo» o
   «Inactivo» y, con `origenes.gestionar`, el «⋯» arriba a la derecha (activar, desactivar, eliminar: `?panel=eliminar-origen`). Debajo, **«Para cotizar y
-  mover»** (`h2`): cinco pasos —Datos, Campos, Flujo (con fases), Fórmula (publicada) y Tarjeta (publicada)— con ✓ «Listo», ⚠ o ✗ y una frase corta,
-  cada uno enlazado a su pestaña (la Tarjeta, a `formula/tarjeta`; Datos con aviso de apibara, a Integraciones); sin el permiso del paso, el motivo
+  mover»** (`h2`): cinco pasos —Datos, Campos, Flujo (con fases), Fórmula (una activa) y Tarjeta (la de la activa, publicada)— con ✓ «Listo», ⚠ o ✗ y una frase corta,
+  cada uno enlazado a su pestaña (la Fórmula, a la lista `/formulas`; la Tarjeta, a `formula/tarjeta`, la de la fórmula de trabajo; Datos con aviso de apibara, a Integraciones); sin el permiso del paso, el motivo
   debajo y sin enlace; en el celular, dos columnas. Un inactivo dice sólo «Inactivo: no recibe vehículos ni cotizaciones nuevos.». Después, las
   **pestañas** (en el celular la barra se desplaza dentro de su ancho y deja a la vista la abierta), cada una su sub-ruta; la que no se abre va
   apagada con su motivo:
@@ -592,28 +595,34 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
     (`?fase=<id>`); las reglas y los tipos de documento se abren en el mismo panel (`?seccion=reglas|documentos`). Las fases se crean desde la barra, se
     ordenan arrastrando o con «Mover antes/después» (y «Subir/Bajar» en la lista), se jubilan y reactivan; en el panel se editan y se agregan y quitan
     salidas y requisitos. Ver «Flujos: configuración (estados propios)» y siguientes.
-  - **Fórmula** (`/formula`, `cotizaciones.configurar` en el origen; apagada con «Lo configura quien tiene el permiso «Configurar el cotizador».»), con
-    sus sub-pestañas **Fórmula · Hoja · Tarjeta** (`/formula`, `/formula/hoja`, `/formula/tarjeta`) y «Empezar desde una plantilla» a la derecha
-    (`?panel=plantillas-de-v1`). «Fórmula» («Qué se calcula.», a todo el ancho): arriba la publicada, el borrador y las versiones, y abajo la planilla;
-    `?panel=publicar-formula`, `revertir-formula&version=<id>`, `descartar-borrador` y `editar-formula` (el Modo avanzado). «Hoja» («Cómo se ve y se
-    llena la cotización.»): `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe el cliente.»): `?panel=publicar-tarjeta|
-descartar-plantilla` y `?referencia=ejemplo`, a todo el ancho.
+  - **Fórmulas** (`/formulas`, `cotizaciones.configurar` en el origen; apagada con «Lo configura quien tiene el permiso «Configurar el cotizador».»): la
+    lista de las fórmulas del origen («Cotización: fórmulas del origen (estados propios)»). Cada una se edita en `/formulas/<fórmula>/<parte>`, con la
+    cabeza del editor (el nombre, su estado y el «⋯» de la lista) y sus pestañas **Planilla · Hoja · Tarjeta** (`/planilla`, `/hoja`, `/tarjeta`;
+    `/formulas/<fórmula>` sola abre la planilla) y «Empezar desde una plantilla» a la derecha (`?panel=plantillas-de-v1`, escribe en esa fórmula).
+    «Planilla» («Qué se calcula.», a todo el ancho): arriba la publicada, el borrador y las versiones, y abajo la planilla; `?panel=publicar-formula`,
+    `revertir-formula&version=<id>`, `descartar-borrador` y `editar-formula` (el Modo avanzado). «Hoja» («Cómo se ve y se llena la cotización.»):
+    `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe el cliente.»): `?panel=publicar-tarjeta|descartar-plantilla` y
+    `?referencia=ejemplo`, a todo el ancho. La ruta corta `/formula`, `/formula/hoja` y `/formula/tarjeta` responde 308 a esa parte de la fórmula de
+    trabajo (por persona, con su consulta) o, sin ninguna, a la lista.
   - **Tablas** (`/tablas`, `cotizaciones.configurar` en el origen): las del origen y las compartidas que usa (una compartida tapada por una propia va
-    «Tapada por la de <origen>»); `?tabla=<id>` (el editor) y `?panel=publicar-tabla`. Una compartida se edita ahí con el aviso de a quién le cambia.
+    «Tapada por la de <origen>»); `?tabla=<id>` (el editor) y `?panel=publicar-tabla|nueva-tabla|columnas-de-tabla|desactivar-tabla`. Una compartida se edita ahí con el aviso de a quién le cambia.
   - `/<id>` sola abre (308) la primera pestaña que la persona abre, y `/<id>?seccion=…` su parte, conservando `?campo=`, `?categoria=` y `?panel=`. Una
     pestaña que no abre, por URL: «No puedes abrir esta pestaña», su motivo e «Ir a <la primera que abre>»; un origen ajeno, «No puedes abrir este
     origen» (con «Ver los orígenes» si abre otros), sin decirle si existe; a quien sí podría abrirlo, uno que no existe es un 404.
   - **Las URLs de antes** redirigen con 308 y su consulta: `/configuracion/cotizacion/<origen>/formula|hoja|tarjeta|tablas` (y `/<origen>` solo) a la
-    pestaña del origen, `/configuracion/cotizacion/general/*` y `?seccion=tonos|colores|niveles|ajustes|vigencia` a Catálogos,
+    pestaña del origen (la fórmula, por su ruta corta), `?seccion=formula` del origen a `/formulas`, `/configuracion/cotizacion/general/*` y `?seccion=tonos|colores|niveles|ajustes|vigencia` a Catálogos,
     `/configuracion/flujos?origen=` a su Flujo (`?ambito=repuestos` al de repuestos; sin origen, el primero que la persona configura), `?seccion=documentos`
     sin `flujos.configurar` a Tipos de documento, y `/configuracion/logistica/*` a su catálogo. Lo que no se resuelve, a la lista de orígenes.
 - **Sitio web (config)** — `/configuracion/web` abre la primera sub-sección que la persona puede; cada una es una sub-ruta del menú de Configuración
   («Web › Sitio web»), con su título y una frase. «Ajustes» (`/ajustes`) y «Legales» (`/legales`) con `web.ajustes.gestionar`; «Guías» (`/guias`),
   «Preguntas frecuentes» (`/faqs`) y «Testimonios» (`/testimonios`) con `web.contenido.gestionar`. Lo que no puede abrir va apagado en el menú, con su
   motivo, y su URL abre la primera que sí. `?seccion=ajustes|legales|guias|faqs|testimonios` redirige a su sub-ruta y conserva el resto de la URL
-  (`?panel=`, `?q=`). «Ajustes»: la fila única del sitio (nombre, lema, WhatsApp de respaldo, horario, dirección, redes, SEO, moneda secundaria y orígenes
-  visibles, avisando qué vehículos dejan de verse), con versión, sin red y conflicto; «Ajustes» y «Legales» se guardan con la barra fija de abajo
-  («Tienes cambios sin guardar» · «Descartar» · «Guardar»; salir con cambios pregunta). «Guías» (con categorías) y su editor
+  (`?panel=`, `?q=`). «Ajustes»: la fila única del sitio en cinco tarjetas con lo guardado a la vista, sin acordeones ni barra de cambios (Identidad del sitio: nombre y lema ·
+  Contacto: WhatsApp de respaldo, horario y dirección · Redes · SEO · Vitrina: moneda secundaria y orígenes visibles, avisando en el modal qué vehículos dejan
+  de verse), cada una con «Editar» y «⋯» que abren su modal (`?panel=identidad|contacto|redes|seo|vitrina`) con su «Guardar»; con versión, sin red y conflicto
+  («Recargar» conserva lo tipeado); cerrar un modal con cambios pregunta. «Legales»: una tarjeta por documento (términos, privacidad) con su estado («Publicada»
+  o «Sin publicar»), un extracto, su última edición y «Editar», que abre su modal con el título y el editor (`?panel=terminos|privacidad`, con borrador); las
+  dos páginas entran enteras a 1440×900. «Guías» (con categorías) y su editor
   `/configuracion/web/guias/[id]` (documento con imágenes; publicar, programar o despublicar con `web.guias.publicar`; «Borrador», «Programada»,
   «Publicada»; «← Guías» vuelve a la lista). «Preguntas frecuentes»: panel por URL, reordenar, eliminar con confirmación. «Testimonios»: con su
   consentimiento (quién, cuándo, canal; ciudad, vehículo y foto por separado) y «Retirar». Las listas llevan su acción principal («Nueva …») sin repetir el
@@ -664,6 +673,10 @@ descartar-plantilla` y `?referencia=ejemplo`, a todo el ancho.
 
 ## Reglas transversales
 
+- **Recargar y copiar el enlace (marco, toda pantalla con sesión):** en la barra superior, a la izquierda del buscador, «Recargar la página» (ícono, recarga completa del
+  navegador; con cambios sin guardar pregunta el navegador, como con F5); en una barra de menos de 28 rem (el celular angosto) no entra y queda al pie del menú. Abajo a la derecha, a la izquierda del botón del chat, «Copiar el enlace de esta página»
+  (flotante, secundario: más chico, contorno y sin relleno de acento): copia la URL de ahora con su consulta y avisa «Enlace copiado.»; si el portapapeles falla, un modal
+  con el enlace seleccionado. Donde el chat no está (`/chat`, sin `chat.participar`) queda solo en ese lugar. Los dos son de 44 px en el celular y van por debajo de los modales.
 - **Estados obligatorios en toda pantalla:** cargando (esqueleto propio por patrón), vacío primera vez, vacío por filtro, error con
   reintentar, sin permiso — `.claude/rules/ui.md`. **Cargando**: toda página de `(app)` tiene su propio `loading.tsx` con la forma de lo
   que dibuja después; no vale el heredado (`scripts/guardas/estados-de-ruta.test.ts`).
@@ -916,8 +929,8 @@ se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «R
 - **En una línea:** `<section aria-label="Relacionados">` sin encabezado, con un chip por grupo con algo («Vinculado · n»; 44 px en el celular, 32 en escritorio) y, si hay acciones de grupos
   que no se dibujan, el «⋯» pegado al último chip. Cada chip abre un popover (su código se pide al primer clic) con el grupo: leyenda a la vista, filas, acciones y «Ver todos» (que cierra el
   popover antes de abrir su drawer). Al 200 % los chips y el «⋯» bajan de renglón; el popover no pasa del ancho de la pantalla.
-- **Compacta:** `<section aria-label="Relacionados">` con el `h2` «Relacionados» y su «⋯», y los grupos con algo en una grilla en rem (`auto-fill`, mínimo 16 rem: una columna en el celular o
-  en una lateral angosta, hasta tres a lo ancho; al 200 % caen columnas, no ensancha), sin borde por grupo. Cada grupo: una línea de título con el `h3` «<Tipo> · n», «Ver todos» y el «⋯» del
+- **Compacta:** `<section aria-label="Relacionados">` con el `h2` «Relacionados» y su «⋯», y los grupos con algo en una grilla en rem (`auto-fit`, mínimo 16 rem: una columna en el celular o
+  en una lateral angosta; en pantallas grandes los grupos con algo llenan el ancho, sin pistas vacías, y las filas de un grupo van en la misma grilla; al 200 % caen columnas, no ensancha), sin borde por grupo. Cada grupo: una línea de título con el `h3` «<Tipo> · n», «Ver todos» y el «⋯» del
   grupo («Más acciones de «<Tipo>»»), hasta 3 filas y lo que no se ve contado. **Sin leyendas a la vista:** la leyenda es el `title` del `h3` y la descripción del grupo para el lector
   (`aria-describedby` a un texto `sr-only`). Sin botones sueltos: las acciones del grupo, en su «⋯»; las de cada fila, en el de la fila.
 - **Filas:** desde un vehículo, el lead (nombre enlazado, números como siempre, «Fuera de tu cartera» si se ve enmascarado, nunca el teléfono); desde un lead, el vehículo (miniatura que abre
@@ -1305,15 +1318,48 @@ en la cabecera.
   conflicto: el texto de la base con «Recargar»; una acción que ya no corresponde avisa y se limpia. Si la lectura falla, la cabecera sigue
   sin nada de esto.
 
+### Cotización: fórmulas del origen (estados propios)
+
+Configuración › Orígenes › un origen › Fórmulas (`/configuracion/origenes/<id>/formulas`, `cotizaciones.configurar` en el origen): las fórmulas
+del origen; la activa es la que se cotiza.
+
+- **La lista:** la activa primero, con ★ y «Activa · vN»; las demás por nombre, con su estado en una insignia («vN publicada, no activa»,
+  «Borrador»; «Con borrador sin publicar» al lado si tiene las dos). Cada fila: el nombre como enlace a su planilla, «Editar» y el «⋯» arriba a la
+  derecha. Lee 51 y dibuja hasta 50; en el tope, «Este origen ya tiene 50 fórmulas: archiva o elimina alguna para crear otra.» y «Nueva fórmula»
+  apagada. Cargando, el esqueleto; un error, «Reintentar»; sin fórmulas, «Este origen todavía no tiene fórmulas: crea la primera en blanco o copia
+  una.» con «Nueva fórmula».
+- **El «⋯»** (el mismo en la cabeza del editor): Renombrar · Copiar · Activar… · Eliminar (si nunca estuvo activa) o Archivar (si lo estuvo).
+  La activa no ofrece «Activar…» (lo pendiente se publica desde su planilla o su tarjeta) y dice por qué no se archiva; sin planilla guardada o sin
+  tarjeta, «Activar…» va apagada con su motivo. Una archivada sólo se renombra o se copia.
+- **«Archivadas»**, plegada debajo: al abrirla lee de a 20 hasta 500 (con su aviso de tope), con esqueleto, «Reintentar» sin perder lo cargado y
+  «Ninguna archivada.».
+- **Nueva fórmula** (`?panel=nueva-formula`; Copiar abre el mismo con `&copia=<fórmula>`): «Cómo empieza» —En blanco, Copia de este origen,
+  Copia de otro origen (sólo si la persona configura otro; si no, «No configuras el cotizador de otro origen.»)—, la fórmula y la versión que se
+  copia (publicada o borrador; la que no hay va apagada con su motivo; de otro origen no se elige: su publicada y, si no tiene, su borrador, dicho bajo «Fórmula») y el nombre (una copia propone
+  «<nombre> (copia)»). Un nombre repetido se dice junto al campo; sin un tipo de cambio, «Abrir Monedas». Entró: abre su planilla.
+- **Los avisos de la copia** (de otro origen): arriba de la planilla, «Lo que cambió al copiar la fórmula», un renglón por tabla creada o usada del
+  destino (con «Abrir Tablas») y por dato del vehículo que el origen no tiene; esos datos quedan además marcados en su fila («El dato «x» no existe
+  en este origen: elige otro o créalo.»). Quedan hasta «Ocultar».
+- **Renombrar** (`?panel=renombrar-formula&formula=<id>`), **Archivar** y **Eliminar** (`<Confirmar>`; eliminar una que ya se usó ofrece
+  «Archivar» en el mismo lugar): un PT409 con el texto de la base y «Recargar», que conserva lo escrito.
+- **Activar…** (`?panel=activar-formula&formula=<id>`): qué se publica (la planilla y la tarjeta con su borrador, si tienen) y qué cambia (cuál deja
+  de cotizarse), y la nota obligatoria. Un PT409 (otra persona activó, publicó o guardó) con «Recargar»; un rechazo que nombra una fila
+  (`?fila=<nodo>` en la planilla), un lugar de la tarjeta (`?lugar=`) o una pestaña ofrece ir ahí, y la nota no se pierde. Por URL, una que ya
+  está activa, archivada o no está: avisa y limpia.
+- **El editor de una fórmula:** su cabeza dice el nombre, el estado y el «⋯»; Copiar y Activar llevan a la lista con su panel (preguntan antes si
+  hay cambios sin guardar), y archivar o eliminar vuelven a la lista. Una archivada dice «Esta fórmula está archivada: cópiala para seguir
+  editándola.» con «Copiar» y «Volver a Fórmulas», sin sus pestañas. Una fórmula que no existe o es de otro origen, 404.
+- **Modo Live:** la lista y los modales no muestran montos.
+
 ### Cotización: fórmula (estados propios)
 
-Configuración › Orígenes › un origen › Fórmula (`/configuracion/origenes/<id>/formula`): ver, publicar, revertir, descartar y
-editar la fórmula de un origen.
+Configuración › Orígenes › un origen › Fórmulas › una fórmula › Planilla (`/configuracion/origenes/<id>/formulas/<fórmula>/planilla`): ver,
+publicar, revertir, descartar y editar una fórmula del origen. `?fila=<nodo>` elige esa fila al abrir y se borra de la URL.
 
 - **Quién entra:** `cotizaciones.configurar` en ese origen, aunque no tenga los permisos de los niveles (entonces «Niveles» va apagada con su
   motivo). La base vuelve a decidir: la policy `formulas: leer` sólo deja ver los orígenes con la clave.
 - **Origen:** la página es la de ese origen (también inactivo); para cambiar de origen, el menú o la lista de orígenes. Sin la clave en el origen,
-  la pestaña Fórmula va apagada con su motivo; un origen ajeno, «No puedes abrir este origen».
+  la pestaña Fórmulas va apagada con su motivo; un origen ajeno, «No puedes abrir este origen».
 - **Arriba:** la publicada (versión, nota, quién y cuándo) o, sin ella, que no se puede cotizar en el origen; el borrador si hay (de quién,
   cuándo, nota, versión sobre la que empezó y, si se publicó otra después, que publicarlo dará conflicto). Ninguna lleva «Editar»: se edita en la
   planilla, debajo. Con cambios aplicados sin guardar, «Publicar…» espera: «Guarda el borrador antes de publicar: se publica lo guardado.»
@@ -1350,10 +1396,10 @@ editar la fórmula de un origen.
   su «⋯». Hasta 500 filas con aviso y «Buscar fila». **Al costado** (cuando la planilla mide 72 rem o más; si no, debajo): «Totales» (el total en dólares y
   en la moneda local con el modo elegido, la base imponible y lo aparte, cada uno con `<Monto>` y cómo sale; lo aparte apagado dice por qué) y
   «Tarjeta de la cotización» (la plantilla de trabajo del origen, el borrador si hay, con la unidad de ejemplo y el selector de modo «Tipo de
-  cambio» con dos o más modos; sin plantilla, «Este origen todavía no tiene tarjeta.» con «La imagen que recibe el cliente»; si no se leyó,
+  cambio» con dos o más modos; sin plantilla, «Esta fórmula todavía no tiene tarjeta.» con «La imagen que recibe el cliente»; si no se leyó,
   «Reintentar»). En el celular y con el texto al 200 % la tabla se desplaza de costado en su marco con «#» y A pegadas; la página no se ensancha.
 - **Modo avanzado** (`?panel=editar-formula`; los enlaces viejos lo abren): el editor en texto, sobre la misma
-  fórmula de trabajo que la planilla (lo aplicado en uno se ve en el otro), con «Volver a la planilla» («atrás» también, y el foco vuelve a «Modo
+  fórmula que la planilla (lo aplicado en uno se ve en el otro), con «Volver a la planilla» («atrás» también, y el foco vuelve a «Modo
   avanzado»). Sin fórmula, la URL avisa y se limpia. Cada fila: etiqueta, id y tipo; un cálculo o una constante, su texto vigente (tras un ⚙, el
   reescrito con su aviso) y «Editar», que abre su texto (una fila a la vez; «Aplicar» o `Ctrl/Cmd+Enter` compila, Esc cierra; el error queda bajo
   el texto; pisar un valor del ⚙ pide «Pisar el valor»; un rechazo de la fórmula entera va a la fila que nombra). Lo aplicado se repone al volver
@@ -1378,7 +1424,7 @@ editar la fórmula de un origen.
 
 ### Cotización: tarjeta (estados propios)
 
-Configuración › Orígenes › un origen › Fórmula › Tarjeta (`/configuracion/origenes/<id>/formula/tarjeta`, a todo el ancho): el editor de la tarjeta de la cotización como un
+Configuración › Orígenes › un origen › Fórmulas › una fórmula › Tarjeta (`/configuracion/origenes/<id>/formulas/<fórmula>/tarjeta`, a todo el ancho; `?lugar=` va a ese lugar al abrir y se borra): el editor de la tarjeta de la cotización como un
 Excel. Edita el **borrador** de la plantilla (sólo la forma 2, la cuadrícula), lo publica con nota y lo descarta.
 
 - **Quién entra y origen:** como «Fórmula»; la pestaña va después de «Hoja». **Sin fórmula publicada**, no hay editor: «Falta publicar la fórmula de
@@ -1429,14 +1475,34 @@ Excel. Edita el **borrador** de la plantilla (sólo la forma 2, la cuadrícula),
   - **Nada, «Resumen»:** «Columnas» (cada una con su ancho en número), «Σ ancho N / 1.600 px», «Sumar columna»; «Paleta» (los colores del catálogo, sólo para
     ver) con «Editar en General › Colores»; «Tamaño: n de 24 KiB».
   - **Una celda, un rango o columnas** (aplicado a todas): la ruta («Fila 4 › Columna «C · Monto»»); con columnas, su «Ancho»; «Contenido» (Texto | Dato |
-    Logo | Vacío; el texto con «n de 300»; «Dato» con «Buscar un dato», las variables «De la cotización» y los nodos de la fórmula del nivel «todos» por
-    grupo, a lo sumo 50 con «Escribe para acotar.», un restringido que la plantilla ya nombra marcado «Restringido», y «Qué mostrar» con lo que admite el
-    nodo); «Color» (fondo y texto: «Automático» y las muestras del catálogo; con un fondo en el que no se lee, el aviso suave «Con este color el texto de la
+    Logo | Vacío; el texto con «n de 300»; «Dato» con «Cuál dato» (Uno | El primero con valor | Según condiciones) y, con «Uno», «Buscar un dato», las
+    variables «De la cotización» y los nodos de la fórmula del nivel «todos» por grupo, a lo sumo 50 con «Escribe para acotar.», un restringido que la
+    plantilla ya nombra marcado «Restringido», y «Qué mostrar» con lo que admite el nodo); «Color» (fondo y texto: «Automático» y las muestras del catálogo; con un fondo en el que no se lee, el aviso suave «Con este color el texto de la
     tarjeta se lee con dificultad.», que nunca frena); «Formato» (negrita, cursiva, tamaño de los 8 pasos, alineación horizontal y vertical); «Bordes» (el
     lado o todos, y ninguno, fino o grueso); con celdas, «Seleccionar su fila» y «Seleccionar su columna».
-  - **Una fila:** «Fila N», su «Alto» (16 a 240 px) y «Ocultar si…» (Nunca | Si no aplica | Si no aplica o vale 0) con «El nodo que la decide».
+  - **Una fila:** «Fila N», su «Alto» (16 a 240 px) y «Ocultar la fila» (Nunca | Si no aplica | Si no aplica o vale 0 | Según condiciones) con «El nodo
+    que la decide» (no con «Nunca» ni «Según condiciones»).
+  - **«El primero con valor»** (la lista de respaldo): «La celda muestra el primero que tenga valor.» y los datos en orden («Dato 1», «Dato 2»…), cada uno con
+    su nombre y su «⋯» («Más acciones del dato N»: «Subir», «Bajar», «Cambiar el dato», «Quitar», apagados con su motivo: «Ya es el primero.», «Ya es el
+    último.», «La lista lleva al menos dos datos.»). Sin elegir, «Elegir el dato»; elegir abre el buscador de «Dato» en línea con «Listo» (uno abierto a la
+    vez). Debajo, «Agregar un dato» a lo ancho (apagado con «Hasta 5 datos.» al lado).
+  - **«Según condiciones»:** una sección por rama, «Si» y después «Si no, si», con su «⋯» arriba a la derecha («Más acciones de la rama N»: «Subir», «Bajar»,
+    «Quitar la condición N», «Quitar la rama», apagados con su motivo: «Ya es la primera.», «Queda al menos una condición.», «Queda al menos una rama.»). Cada
+    condición se arma como una frase: «Lo que mira» (las variables «De la cotización» y los nodos por grupo, un restringido marcado), «Qué pregunta» (sólo lo
+    que ese dato puede responder: «está vacío», «no está vacío», «es 0», «es mayor que», «es» una opción, «está encendido»…) y su «Número» u «Opción»; el grupo
+    se nombra con la frase entera cuando está completa («Remate es mayor que 1.000»). Entre condiciones, «Y»; debajo, «Y además…» (apagado con «Hasta 3
+    condiciones.»). «Mostrar»: Texto | Dato | Nada, con «Texto que muestra» o el dato. Después de las ramas, «Agregar «si no, si…»» (apagado con «Hasta 5
+    ramas con el «si no».») y la sección «Si no» con «Si no, mostrar». Sin separadores de tarjeta: un título por bloque y una línea entre ramas.
+  - **«Ocultar la fila» según condiciones:** «Se oculta si» con su «⋯» («Más acciones de las condiciones de la fila») y las condiciones como arriba, sin
+    «si no».
+  - **A medio armar** (una lista con un dato, una condición sin número u opción): el motivo va bajo su campo («Elige al menos dos datos.», «Elige el dato.»,
+    «Falta el número.», «Elige la opción.», con `aria-invalid` y `aria-describedby`) y arriba «Sin terminar: la celda no cambia hasta completarla.» (o «la
+    fila»); la celda, el lienzo y «Guardar borrador» siguen con lo de antes hasta completarla. Deshacer afuera trae lo de la plantilla si lo armado estaba
+    entero. Un dato que la fórmula ya no tiene: «Este dato ya no está en la fórmula: se salta.» (el lienzo lo dibuja saltado; publicar da
+    `nodo_inexistente`). Mientras llega su código, el aviso de `diferido()` en su lugar.
 - **Ocultas con esta referencia (N)** (debajo del lienzo): cada fila que no se dibuja con la referencia elegida, con su rótulo, por qué («No aplica en esta
-  cotización: la variante es …», «Vale 0», «Su nodo no está en la versión de la referencia») y «Seleccionar la fila» (para cambiar su «Ocultar si…»); y
+  cotización: la variante es …», «Vale 0», «Su nodo no está en la versión de la referencia», «Se cumplen sus condiciones») y «Seleccionar la fila» (para
+  cambiar su «Ocultar si…»); y
   «Cambia a «Cifras de ejemplo» para verla en el lienzo.». Sin ocultas, nada. Con las cifras de ejemplo no se oculta ninguna.
 - **La referencia:** sin cotizaciones del origen que veas, sólo «Cifras de ejemplo», apagado, con «Todavía no hay cotizaciones de <Origen> que veas: se
   usan cifras de ejemplo.»; si no se pudo leer, «No se pudo leer la cotización de referencia.» y cifras de ejemplo. Elegirla no va al servidor.
@@ -1520,13 +1586,29 @@ El modo «Retocar la tarjeta» de «Vista previa» en una guardada (`/cotizacion
 
 ### Cotización: tablas (estados propios)
 
-Configuración › Orígenes › un origen › Tablas (`/configuracion/origenes/<id>/tablas`; las compartidas, también en Catálogos › Tablas compartidas, `/configuracion/catalogos/tablas`): editar y publicar las filas de las tablas de referencia
-(`tabla_referencia_publicar()`).
+Configuración › Orígenes › un origen › Tablas (`/configuracion/origenes/<id>/tablas`; las compartidas, también en Catálogos › Tablas compartidas, `/configuracion/catalogos/tablas`): crear tablas de referencia, cambiar sus columnas, desactivarlas y editar y publicar sus filas
+(`tabla_referencia_crear|columnas|desactivar|publicar()`).
 
 - **Quién entra y origen:** como «Fórmula»; cambiar de origen con los chips suelta `?tabla=`.
 - **Lista:** las tablas activas del origen y las compartidas, por clave: nombre como enlace a `?tabla=<id>`, clave, «Compartida» y
-  «Tapada por la de <Origen>» (`<Badge>`) y «Versión N · <persona> · <cuándo>». Vacía: «<Origen> no tiene tablas de referencia.» y «Las
-  tablas nuevas y sus columnas todavía no se crean desde aquí.». Tope 100 con aviso. Esqueleto y error de la ruta.
+  «Tapada por la de <Origen>» (`<Badge>`) y «Versión N · <persona> · <cuándo>», y su «⋯» («Editar filas», «Columnas», «Desactivar»: lleva a la
+  tabla con ese panel). «Nueva tabla» arriba a la derecha; vacía: «<Origen> no tiene tablas de referencia.» con «Nueva tabla» en el mismo bloque. Tope
+  100 con aviso y «Nueva tabla» apagado con su motivo. Esqueleto y error de la ruta.
+- **Nueva tabla** (`?panel=nueva-tabla`, un `<Drawer>`): «Nombre» (debajo, «Clave: `x` · no cambia después»), para quién (sólo con origen: «Sólo
+  <Origen>» o «Compartida: la usan los orígenes sin una propia»; en Catálogos siempre compartida) y las columnas (nombre, tipo número, año o texto y
+  clave, que sigue al nombre hasta tocarla; «Subir», «Bajar», «Quitar»; «Sumar una columna» hasta 20, apagado en el tope con su motivo). «Crear tabla» /
+  «Creando…»; un rechazo de la base va junto a su campo con el foco (la clave tomada, junto al nombre) y uno sin campo, arriba. Sin conexión, el aviso
+  arriba y lo escrito queda (repetir devuelve la misma tabla). Entró: «Creaste «X». Suma sus filas y publícala.» y abre la tabla. Cerrar con algo escrito
+  pregunta.
+- **Columnas** (`?tabla=<id>&panel=columnas-de-tabla`, `<Drawer>` amplio; «Columnas» del «⋯» del encabezado del editor, apagado con cambios sin publicar
+  en las filas): renombrar, ordenar, sumar y quitar. La clave y el tipo de una existente se ven y no se cambian; quitar la marca «Se quita» con «No
+  quitar» y avisa que su valor se borra de cada fila. Al pie, el resumen («Se renombra 1 · se quita 1») o «Sin cambios en las columnas.»; «Guardar
+  columnas» apagado sin cambios. Una columna que usa una fórmula (publicada o borrador): el texto de la base arriba, con quién la usa. Conflicto: el
+  texto de la base con «Recargar» (lo cambiado no vuelve). Entró: «Guardaste las columnas de «X».» y el editor se vuelve a montar con la versión nueva.
+  Si es compartida, a qué orígenes les cambia.
+- **Desactivar** (`?tabla=<id>&panel=desactivar-tabla`, `<Confirmar>` «Desactivar «X»»; apagado con cambios sin publicar): no se deshace y la clave
+  queda tomada. En uso: el texto de la base con las fórmulas que la usan. Sin conexión, el aviso dentro y queda abierto; conflicto, «Recargar» dentro.
+  Entró: «Desactivaste «X».» y vuelve a la lista.
 - **Abrir una:** sólo si está en la lista del origen elegido; si no, o si ya no está o pasa de 2.000 filas, su motivo con «Volver a las
   tablas». El editor (con `diferido()`) ocupa el lugar de la lista: «Volver a las tablas» (no pregunta: el borrador conserva lo hecho),
   versión y, si es compartida o tapada, a quién le cambia publicarla.
@@ -1564,7 +1646,7 @@ Configuración › Catálogos › Vigencia (`/configuracion/catalogos/vigencia`)
 
 ### Cotización: hoja (estados propios)
 
-Configuración › Orígenes › un origen › Fórmula › Hoja (`/configuracion/origenes/<id>/formula/hoja`, el diseño de la hoja): secciones, celdas, ítems, cabecera y tarjeta del total de la hoja, su orden, su
+Configuración › Orígenes › un origen › Fórmulas › una fórmula › Hoja (`/configuracion/origenes/<id>/formulas/<fórmula>/hoja`, el diseño de la hoja): secciones, celdas, ítems, cabecera y tarjeta del total de la hoja, su orden, su
 aspecto en la rejilla de 12 y su vista previa.
 
 - **Quién entra y origen:** como «Fórmula».
@@ -1621,7 +1703,7 @@ aspecto en la rejilla de 12 y su vista previa.
 
 ### Cotización: empezar desde una plantilla (estados propios)
 
-Configuración › Orígenes › un origen › Fórmula › «Empezar desde una plantilla» (`?panel=plantillas-de-v1`, en sus tres sub-pestañas): un modal grande que
+Configuración › Orígenes › un origen › Fórmulas › una fórmula › «Empezar desde una plantilla» (`?panel=plantillas-de-v1`, en sus tres pestañas; escribe en esa fórmula): un modal grande que
 crea con un clic los **borradores** de la fórmula (con su diseño) y de la tarjeta del origen desde una plantilla de V1 (`docs/COTIZADOR.md` › «Plantillas de
 V1»). No publica.
 
@@ -1636,7 +1718,7 @@ V1»). No publica.
   sumarlo en Orígenes › Campos.»). Botones «Reemplazar» (con borradores) o «Usar esta plantilla» (sólo avisos), primario, y «Volver», que regresa a la
   lista sin escribir nada.
 - **Al aplicar:** cierra el modal, avisa «Se crearon los borradores de la fórmula y de la tarjeta desde «USA (subasta)». Revísalos y publícalos.» y va a la
-  pestaña Fórmula del origen, con los dos borradores y su nota «Empezado desde la plantilla de V1 «USA (subasta)».».
+  planilla de esa fórmula, con los dos borradores y su nota «Empezado desde la plantilla de V1 «USA (subasta)».».
 - **Cargando:** cuatro tarjetas `Esqueleto` con el título y los botones apagados. **Error al leer:** «No se pudieron leer las plantillas.» con «Reintentar».
   **Sin red** (al leer o al aplicar): «No hay conexión.» con «Reintentar»; reintentar no duplica nada (todo o nada: si el primero entró, el segundo da el PT409 con «Recargar»).
 - **Colores que no caben:** en la tarjeta del paquete elegido y en el pie, «No hay lugar para N colores más en el catálogo (máximo 48): elimina alguno que
@@ -1751,14 +1833,18 @@ guarda al instante** (cada color es una escritura propia; no entra en el borrado
   «Relacionados (estados propios)») con «Vincular o marcar» en el título (cartera y `leads.editar`: abre `?panel=agregar-vehiculo`, que busca por título, VIN,
   lote o #número, con «Vincular» y nota de interés ≤ 500); vinculados, interesados (con nota) y cotizados con sus acciones en el «⋯» de cada fila
   («Desvincular»: con la cartera, en el lugar con «Deshacer»; sin ella, confirma en `?panel=desvincular&vinculado=`; «Quitar interés»). Al pie, «Vínculos
-  anteriores» plegados: un botón (`aria-expanded`) que los despliega en el lugar, hasta 50 con su tope. **Oportunidades** (con la cartera): las abiertas
-  (una por embudo) en filas de una línea (título, el embudo si quien mira tiene más de uno, la etapa con su color y el monto con `<Monto>`), hasta 3, con
-  «Mover a», «Editar» y «Eliminar» en el «⋯» de cada fila (una que se cierra sale de la vista); «Nueva» en el título (su nombre accesible, «Nueva
-  oportunidad»; `?panel=nueva-oportunidad`); «Ver todas» al embudo filtrado por el lead (`/leads?vista=embudo&embudo=<id>&lead=<id>`), en el de la primera
-  que se ve o, sin abiertas, en el por defecto de quien mira; las cerradas están ahí.
+  anteriores» plegados: un botón (`aria-expanded`) que los despliega en el lugar, hasta 50 con su tope. **Oportunidades** (con la cartera): el **embudo del lead**.
+  Un selector de embudo (sólo si quien mira tiene más de uno; lo elegido se recuerda por persona) y una columna por etapa del embudo elegido, con el nombre sobre su color y
+  las oportunidades de este lead en ella (abiertas, ganadas y perdidas), hasta 3 por columna. Cada tarjeta: título (hasta dos líneas), vehículo si lo tiene, monto con `<Monto>`,
+  motivo si es perdida y su «⋯» arriba a la derecha con «Mover a», «Editar» y «Eliminar». **Arrastrar** una tarjeta a otra columna la mueve (mouse; con el teclado, Tab a la
+  tarjeta, Espacio la toma, las flechas la llevan a la etapa de al lado y Espacio la suelta; Esc cancela; cada paso se anuncia en español); soltar en una perdida pide el motivo
+  como «Mover a» (`?panel=mover-oportunidad`). Desde 36 rem de bloque, columnas de 11 rem en una fila que se desplaza de costado; debajo (el celular, el texto al 200 %), las etapas una
+  bajo otra, una vacía es sólo su encabezado, y se mueve con «Mover a» (no se arrastra). «Nueva» en el título (su nombre accesible, «Nueva oportunidad»; `?panel=nueva-oportunidad`,
+  empieza en el embudo que se ve) y, a su lado, el «⋯» del bloque con «Ver en el embudo» (`/leads?vista=embudo&embudo=<id>&lead=<id>`, el embudo que se ve); si algo no se dibuja (más por leer o
+  más de 3 en una etapa), «Ver en el embudo» también al pie, como enlace de texto sin número.
 - **Estados de los bloques:** cada uno tras su `<Suspense>` con su esqueleto del alto de lo que viene (el índice sale enseguida: son los permisos); uno que
   falla al leer o al dibujar muestra su título, «No pudimos cargar «<título>».» y «Reintentar», y los demás siguen; vacíos de una línea («Sin
-  seguimientos todavía.», «Sin cotizaciones que puedas ver.», «Sin vehículos.», «Sin oportunidades abiertas.»); sin recordatorio pendiente no se dibuja su
+  seguimientos todavía.», «Sin cotizaciones que puedas ver.», «Sin vehículos.», «Sin oportunidades en «<embudo>».»); sin recordatorio pendiente no se dibuja su
   fila; fuera de la cartera se ve y no se edita (teléfonos enmascarados con «Completo solo para su cartera.», privados «Solo la cartera», sin «+», sin «⋯»
   en las filas de seguimiento, sin «Vincular o marcar» y sin «Oportunidades»); sin `cotizaciones.crear`, «Cotizaciones» sin «Cotizar»; sin red el índice sigue (son anclas) y lo diferido dice «Sin
   conexión. No se pudo abrir esto.»; al 200 %, una sola columna sin ensanchar la página.
@@ -1818,8 +1904,8 @@ Toda lista que crece dibuja a lo sumo un tope y lo dice, con un camino a lo anti
 - **Relacionados:** cada grupo muestra «n» o «100+» en su chip o en su título (una ventana de 101 por grupo, lo que no se ve incluido, nunca un total exacto), hasta 3 filas y «Ver todos» de a 20 por cursor hasta 500 con `<AvisoDeTope>`.
 - **Vehículos y ficha:** «Vínculos anteriores» (hasta 50) y «Agregar vehículo» dicen su tope al pie con `<AvisoDeTope>`; vinculados e interesados son
   los grupos de Relacionados («100+», «Ver todos» hasta 500); el bloque «Seguimiento» muestra 3 seguimientos y tu recordatorio más próximo, y «Ver
-  todos» lee de a 20 hasta 500; «Cotizaciones» muestra las 3 más recientes y «Ver todas» es el listado; «Oportunidades» muestra hasta 3 abiertas y lo
-  demás está en «Ver todas», el embudo filtrado por el lead.
+  todos» lee de a 20 hasta 500; «Cotizaciones» muestra las 3 más recientes y «Ver todas» es el listado; «Oportunidades» dibuja hasta 3 por etapa y lo
+  demás está en «Ver en el embudo», el embudo filtrado por el lead.
 - **Papeleras:** de a 5 lotes por página (`?cursor=`); un lote trae hasta 200 y muestra 20 con «Mostrar los 200». Sin «Ítems por página»:
   su unidad es el lote.
 - **Sin red:** abrir un modal, panel o pestaña nunca pedidos dice «Sin conexión. No se pudo abrir esto.» con «Reintentar»; paginar sin red

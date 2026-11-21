@@ -18,10 +18,13 @@ las trampas, en `docs/LECCIONES.md`.
 - **Una regla que vive en SQL y en TS se prueba como espejo.** Los mismos casos corren en Vitest y en `db:probar` (fórmula del cotizador y de repuestos, `shared/lib/campos/rango.ts`, `portal-mensaje.ts`, `normalizar_telefono`); decide la base. Cambiar un lado exige cambiar el otro.
 - **Las funciones edge (Deno) no importan de `src/`: llevan una copia exacta.** `importar-csv` con `leer.ts` y `plantillas.ts`; una guarda exige copias idénticas y la misma versión de `papaparse`.
 - **Stack local por variables de entorno.** La CLI lee `SUPABASE_PROJECT_ID` y los puertos del entorno (`.env.carril`); no se genera un `config.toml` por worktree.
-- **`main` no exige la rama al día.** Con varias tareas en paralelo, cada integración obligaría a las demás a otra vuelta entera del CI.
-  Un PR en verde entra aunque `main` haya avanzado; el PR con migraciones nuevas entra al día
-  (sin auto-merge, lo integran `publicar.sh` o el orquestador) y `main` en rojo frena lo nuevo hasta la urgente que lo arregla
-  (`scripts/orquestador/main-en-tanda.sh`). La cola de GitHub (merge queue) lo haría mejor, pero pide un repo de una organización.
+- **Los PR entran por la cola de integración de GitHub.** Un PR en verde entra a la cola con su auto-merge y GitHub lo prueba una vez,
+  combinado con `main` y los PR de delante (`merge_group`), en lugar de una vuelta entera del CI por cada PR que se integraba antes y lo
+  dejaba atrás. Nadie trae `main` a la rama: el orden de migraciones lo valida el CI del grupo contra `HEAD^1` (también entre dos PR de
+  la misma cola), y el grupo corre lo mismo que pidió el PR (los dirigidos de `HEAD^1...HEAD`, o el completo). Un grupo que cae con el
+  PR en verde lo rompe la combinación con lo de delante: cuenta como choque (`MAX_CHOQUES`), no como arreglo. La cola pide squash (por
+  eso `HEAD^1` es la base) y un repo de una organización; sin ella el auto-merge integra sin probar combinado, y `main` en rojo frena lo
+  nuevo hasta la urgente que lo arregla (`scripts/orquestador/main-en-tanda.sh`), que queda de red de seguridad.
 - **Un e2e que cae en `main` y no es de la rama se espera, no se arregla ni se traba.** La sesión de arreglo termina en `RESULTADO: AJENO — <spec>:<línea> [<proyecto>] — <evidencia>`:
   el orquestador crea una sola urgente por `<spec>:<línea>` (`plantillas/e2e-roto-en-main.md`), la tarea que lo encontró la suma a su `depende` y sigue
   `esperando_ci` (sin estado nuevo, sin retener sus llaves de área, sin gastar `MAX_ARREGLOS`), y al integrarse la urgente se pone al día con main sin
@@ -85,7 +88,7 @@ las trampas, en `docs/LECCIONES.md`.
   («Campos de los leads», no «Campos»). La sub-ruta de un catálogo de logística sale de la `clave` del catálogo que llena cada área
   (`CATALOGOS_DE_LOGISTICA`), así un catálogo nuevo no toca el registro.
 - **La barra de cambios sin guardar de un formulario que no es lo último de la página va como hermana con `order-last`.** `sticky` sólo se pega dentro de su padre: dentro del bloque se quedaría junto al campo. Como hermana en la grilla de la página queda pegada al final de toda ella y, en el DOM, después de su formulario (el Tab llega a «Descartar» y «Guardar» desde el último campo). Descartado: una barra dentro de cada bloque.
-- **El origen como centro de la configuración.** Todo lo que depende de un origen vive en su página, `/configuracion/origenes/<id>/datos|campos|categorias|flujo|formula|tablas` (la Fórmula con sus sub-pestañas `formula`, `formula/hoja`, `formula/tarjeta`), con «Para cotizar y mover» arriba: la persona (2026-11-19) navegaba entre Orígenes, Cotización, Flujos y Logística para dejar un origen listo. Cotización, Flujos y Logística dejan de ser secciones: lo de toda la empresa va a Catálogos y el flujo de repuestos a Repuestos. Las pestañas son sub-rutas de un layout en `[id]` (el marco con la tira y el «⋯» se lee una vez y queda al cambiar de pestaña), cada página comprueba sola su permiso en ese origen y la que no abre va apagada con su motivo (una URL vieja nunca parece rota). La lista, el menú y la página muestran sólo los orígenes que la persona abre (`origenes_resumen()` pide el permiso en algún origen: el filtro por origen es de la app). El menú nombra cada origen como sub-ítem de Orígenes, inyectado al pedir la página (el registro sigue estático), con una `marca` que lo marca en cualquiera de sus pestañas; hasta 20 y «Ver todos los orígenes». Las actions de la fórmula, la hoja, la tarjeta, las tablas y el flujo revalidan `/configuracion/origenes` con `'layout'` (todas las páginas de origen: una tabla compartida o un tipo de documento cambian lo de varios); las de colores, niveles y tipos de documento, además, `/configuracion/catalogos`. Descartados: una columna de pasos al costado (alternativa B: quita ancho a la planilla y la tarjeta, que van a todo el ancho) y los íconos ✓/⚠/✗ dentro de cada pestaña sin tira (alternativa C: lo que falta no se ve de un vistazo y la pestaña apagada ya lleva su motivo). El marco suma ≈ 40 KB fijos al primer HTML de cada pestaña (el tope de la Tarjeta con volumen pasa a 267.400 B, `docs/RENDIMIENTO.md`): no crece con los datos, y achicarlo sería quitar lo que la persona pidió ver.
+- **El origen como centro de la configuración.** Todo lo que depende de un origen vive en su página, `/configuracion/origenes/<id>/datos|campos|categorias|flujo|formulas|tablas` (las Fórmulas: su lista y cada una en `formulas/<fórmula>/planilla|hoja|tarjeta`), con «Para cotizar y mover» arriba: la persona (2026-11-19) navegaba entre Orígenes, Cotización, Flujos y Logística para dejar un origen listo. Cotización, Flujos y Logística dejan de ser secciones: lo de toda la empresa va a Catálogos y el flujo de repuestos a Repuestos. Las pestañas son sub-rutas de un layout en `[id]` (el marco con la tira y el «⋯» se lee una vez y queda al cambiar de pestaña), cada página comprueba sola su permiso en ese origen y la que no abre va apagada con su motivo (una URL vieja nunca parece rota). La lista, el menú y la página muestran sólo los orígenes que la persona abre (`origenes_resumen()` pide el permiso en algún origen: el filtro por origen es de la app). El menú nombra cada origen como sub-ítem de Orígenes, inyectado al pedir la página (el registro sigue estático), con una `marca` que lo marca en cualquiera de sus pestañas; hasta 20 y «Ver todos los orígenes». Las actions de la fórmula, la hoja, la tarjeta, las tablas y el flujo revalidan `/configuracion/origenes` con `'layout'` (todas las páginas de origen: una tabla compartida o un tipo de documento cambian lo de varios); las de colores, niveles y tipos de documento, además, `/configuracion/catalogos`. Descartados: una columna de pasos al costado (alternativa B: quita ancho a la planilla y la tarjeta, que van a todo el ancho) y los íconos ✓/⚠/✗ dentro de cada pestaña sin tira (alternativa C: lo que falta no se ve de un vistazo y la pestaña apagada ya lleva su motivo). El marco suma ≈ 40 KB fijos al primer HTML de cada pestaña (el tope de la Tarjeta con volumen pasa a 267.400 B, `docs/RENDIMIENTO.md`): no crece con los datos, y achicarlo sería quitar lo que la persona pidió ver.
 - **La vista previa de la hoja va al costado desde `xl` sólo abierta.** Cerrada, el botón queda en su lugar; no se abre sola en `xl` (dibujarla cuesta y el e2e de escritorio corre a 1280 px, que ya es `xl`).
 - **«Publicar cambios» de la fórmula de repuestos no usa la barra de cambios sin guardar.** Publicar agrega una versión al historial (no «guarda» sobre la anterior) y su botón sigue junto a los campos, apagado mientras nada cambie. Los catálogos y los tramos y cajas se editan en modales, que ya preguntan antes de descartar.
 - **El menú de Configuración va en toda página, el inicio incluido; el inicio vive en `/configuracion/inicio`.** La persona (2026-11-19) quiere navegar sin perder el menú y encontrar un ajuste escribiendo: `/configuracion` redirige en el servidor (`next.config.ts`, 308, con su consulta) y `RUTAS.inicioDeConfiguracion` es la única ruta que se enlaza. El layout dibuja siempre el menú; sólo la vuelta «‹ Configuración» y el buscador del celular dependen de la ruta (`usePathname()`, porque un layout no se vuelve a dibujar al pasar a una página hermana). El menú y la cabecera se arman en el servidor y sólo cruzan títulos, rutas y palabras (`paraElNavegador()`); el ícono de cada sección se dibuja en el servidor (`ICONO_DE_SECCION`) y cruza ya hecho, para que el navegador no cargue el catálogo de íconos. Tres niveles distintos: grupo (rótulo en mayúscula chica, no enlace), sección (ícono + nombre) y sub-sección (sangrada bajo una línea guía, sólo la de la sección abierta). El menú pasa de 8 a 10 rem: el ícono y la sangría quitaban ancho a los títulos; a 1280 px `equipo-200` sigue dejando el correo de 38 letras entero. Descartados: pestañas horizontales de secciones (once desbordan y quedan dos barras de pestañas apiladas con las de cada página), sólo una miga de pan (no deja saltar de sección) y un menú sin buscador (once secciones con hasta siete sub-secciones no se recorren con la vista).
@@ -95,8 +98,8 @@ las trampas, en `docs/LECCIONES.md`.
 - **La barra de cambios sin guardar no frena el «atrás» del navegador.** Frena los enlaces (en la fase de captura), las salidas por `salirSinPerder()` y, con la pregunta del navegador, recargar y cerrar. El App Router no ofrece cómo frenar el «atrás» sin parchear el historial, y parchearlo rompe la vuelta del foco.
 - **PWA.** `id: '/'` igual que `start_url` (cambiarlo reinstala la app a todos); sin aviso que invite a instalar; los atajos del manifest no se filtran por permiso (se pide sin sesión). Íconos, tarjeta y PDF salen del logo normal; el oscuro lo elige el CSS.
 - **El menú lateral se pliega a sólo íconos, por persona y sin animar.** El botón «Plegar menú» va abajo de la barra (no junto a la marca: ahí compite con el logo y, plegada, el logo es lo único que cabe) y `Ctrl/Cmd+B` hace lo mismo; la tecla no responde mientras se escribe (en un editor es la negrita) ni en el celular. El tooltip es el `title` nativo: un tooltip propio se recortaría contra el desplazamiento de la barra y suma JS a toda pantalla. Plegar mueve el ancho de la columna (15,5 → 3,5 rem) de golpe: animarlo reacomoda la página de al lado en cada cuadro y el lienzo de la tarjeta recalcula su escala. La preferencia `menu.plegado` (booleano, con su `check`) la lee el servidor, así que la barra llega dibujada como quedó; una cookie `menu-plegado` es sólo su copia para la cáscara estática de carga, que no ve la sesión. Los avisos no se mueven con la barra: siguen abajo a la izquierda con su ancho de siempre. El menú plegable suma ≈ 1,5 KB al documento de toda pantalla (el árbol de la barra se repite en el escritorio y en el menú del celular): el tope del documento de `/perfil` sube de 119 a 121 KB (+1,7 %, regla del 5 %). Descartadas: plegar al pasar el puntero (se abre sola y tapa), un ancho que se arrastra (otra preferencia y otro control para algo que son dos estados) y plegar también el menú del celular (ya está plegado detrás de su botón).
-- **Las páginas de ajustes son tarjetas resumen que se editan en un modal.** Empresa, Integraciones y Comprobantes (y después Sitio web, el perfil y
-  Monedas) muestran lo guardado como texto en `<TarjetaDeAjustes>` y editan en un `ModalDeFormulario` por tarjeta (`?panel=<tarjeta>`), sin acordeones ni
+- **Las páginas de ajustes son tarjetas resumen que se editan en un modal.** Empresa, Integraciones, Comprobantes, Monedas y Sitio web (Ajustes y Legales; después, el perfil)
+  muestran lo guardado como texto en `<TarjetaDeAjustes>` y editan en un `ModalDeFormulario` por tarjeta (`?panel=<tarjeta>`), sin acordeones ni
   barra de cambios sin guardar: de un vistazo se ve qué está configurado y la página entra sin desplazar. Mampostería con columnas CSS (`columns-1
 @2xl:columns-2 @5xl:columns-3`, `break-inside-avoid`) sobre un contenedor con nombre: sin JavaScript, sin huecos, y manda el ancho de la página, no el de la
   pantalla (el menú de Configuración se lo quita). **Una escritura por modal** (la clave de una integración no va con su dirección: las dos usan la
@@ -159,6 +162,12 @@ las trampas, en `docs/LECCIONES.md`.
 - **La barra la elige la empresa.** «En la barra» es una columna de `tipos_cambio` escrita por `tipo_cambio_guardar(p_en_la_barra)` (un solo «Guardar» y una versión por fila, no una RPC gemela que daría PT409 contra el panel), con tope de 3 activos tras un candado consultivo tomado antes que la fila. Desactivar no desmarca y la barra filtra activos: reactivar uno marcado con 3 ya a la vista no se rechaza ni lo desmarca; la barra corta en 3 por el orden de `vigentes()` (el por defecto, `orden`, `nombre`) y el panel del que queda afuera lo dice. Sin ninguno, el por defecto. El último cambio de cada tipo (del historial, no de `actualizado_*`) lo ve toda persona activa por `tipos_cambio_vigentes()` (definer); el historial entero sigue siendo de quien gestiona. El conflicto del popover se arma en el cliente con lo releído, porque el monto va por `<Monto>`; el PT409 de la RPC no cambia. Con el Modo Live el popover no ofrece cambiar el valor.
 - **Compartir los tipos de cambio sale del servidor.** El texto y la imagen (`ImageResponse` de `next/og`, Geist en `infra/compartir/fuentes/`, sin `html-to-image` ni JS en el marco) los arman `/tipos-de-cambio/texto` e `/imagen` con la sesión de quien pide, de la misma lectura (`tipos_cambio_vigentes()` y la fila de `ajustes_empresa`): la zona, el locale, el logo y la leyenda son los de la empresa, no los del navegador, y las dos salidas dicen lo mismo. Las pide el panel diferido al elegir los tipos (con 250 ms de espera) y guarda el resultado: copiar, descargar y el menú del sistema son síncronos con el gesto (Safari no deja escribir el portapapeles tras un `await`). No hay permiso de «ver»: lo comparte toda persona activa, como ve el popover. Con el Modo Live no se ofrece (llevan cifras). El logo se baja en el servidor (hasta `PESO_MAXIMO_LOGO`, PNG, JPEG, GIF o SVG); uno que no se puede traer deja sólo el nombre. La leyenda comparte la versión de la fila de `ajustes_empresa` con el formulario de Empresa (como la vigencia): guardar una deja con `PT409` a la otra.
 - **Ajustes de cotización aparte.** La vigencia la cambia sólo `cotizaciones.configurar` concedida sin origen, por `empresa_guardar_ajustes_de_cotizacion` (dos permisos no se mezclan en una RPC; el vehículo y el lead obligatorios no son ajuste de empresa sino por rol y origen: Cotizaciones › La hoja); comparte versión con Empresa y revalida las dos pantallas.
+- **Sitio web: cinco tarjetas en Ajustes y una por documento en Legales.** Ajustes: Identidad del sitio, Contacto, Redes, SEO y Vitrina, cada una con su modal.
+  La RPC `web_ajustes_guardar` reemplaza `redes` y `seo` enteras, así que cada tarjeta manda todas las claves del sitio (lo guardado más lo suyo, `entradaDeAjustes()`) con la
+  versión de la fila: el esquema y la action no cambian. Las redes sin dirección no se listan en la tarjeta. Legales: cada modal manda sólo su documento (la base
+  conserva el otro y su fecha) y guarda borrador en `sessionStorage`; el editor de las guías se pide recién al abrir el modal (`ancho="grande"`). **El estado de un legal es
+  «Publicada» o «Sin publicar»**: guardar publica (la web lee `legales` tal cual) y no hay modelo de borrador ni de programación (sólo las guías lo tienen); inventarlo
+  pide una migración y una regla de publicación que nadie decidió.
 - **Datos de la empresa: un modal por tarjeta, sólo lo que cambió.** Cada tarjeta guarda con `empresa_guardar_ajustes()` mandando únicamente las claves distintas de lo guardado (la RPC no toca lo ausente), así que dos modales sucesivos no se pisan salvo por la versión de la fila, que viaja por props al abrir. Sin cambios, guardar cierra. La moneda base con datos cargados no viaja. Los logos se suben al guardar y los íconos se dibujan desde el logo guardado en su propio modal.
 
 ## Orígenes
@@ -291,10 +300,16 @@ las trampas, en `docs/LECCIONES.md`.
   llega por los enlaces cortos de la cabecera. Los enlaces viejos redirigen reemplazando la entrada (`secciones-viejas.ts`): `?seccion=ficha` a
   `?ver=ficha`, `fotos` al visor, `documentos` y `fase` a la unidad (con `logistica.ver` del origen), `repuestos` al proyecto (con `repuestos.ver` y si
   tiene); sin el permiso o sin proyecto, la ficha se queda arriba (no hay destino que mostrar). «Crear proyecto de repuestos» no se ofrece en la ficha:
-  vive en `/repuestos?panel=nuevo-proyecto&vehiculo=<id>`. Las cotizaciones son «De este vehículo» (de a 10 hasta 100), no el historial de 500: la misma
-  isla de la guardada, con «Aprobar esta» y las casillas. Descartados: la vista previa de la vitrina siempre abierta (la tarjeta con foto mide más que la
+  vive en `/repuestos?panel=nuevo-proyecto&vehiculo=<id>`. Las cotizaciones son la fila de tarjetas (ver «Las cotizaciones de las fichas, en una fila de tarjetas»), no el historial de 500. Descartados: la vista previa de la vitrina siempre abierta (la tarjeta con foto mide más que la
   columna y repite el precio), «Comparar» junto a «Cotizar» en el título (dos acciones en un título; va en su fila, con su ayuda) y mantener el historial
   de 500 (otra lista para lo mismo).
+- **Las cotizaciones de las fichas, en una fila de tarjetas.** La ficha del lead y la del vehículo muestran las últimas 10 que quien mira ve como
+  `TarjetaEnLaLista` (la del listado) en una fila con desplazamiento horizontal, y una última tarjeta «Ver más» a `/cotizaciones?lead=` o `?vehiculo=`: la
+  imagen y el total dicen más que una fila de texto, y el listado ya sabe filtrar. Una sola lectura con tope (`TARJETAS_EN_LA_FICHA`, 10 + 1 para saber si
+  hay más), sin cursor ni «cargar más»: lo que sigue es el listado. Sin «⋯» en la tarjeta (el resumen que abre el clic lo trae) y el total sin moneda
+  aparte (`<Monto>` con su modo). El lead lee `cotizaciones_listado(p_lead)` y el vehículo `cotizaciones_de_este_vehiculo()`, que devuelve `vence_el` para la
+  vigencia. Descartados: seguir con las filas de «De este vehículo» (sin imagen ni «Compartir» a la vista), paginar dentro de la fila (otra lista infinita) y una
+  cuadrícula (alarga la columna).
 - **Aprobar desde la ficha del vehículo refresca la página.** El «Costo estimado» de la izquierda se lee en el servidor y no escucha a las islas: tras
   aprobar o deshacer, «Cotizaciones de este vehículo» hace `router.refresh()` en una transición. En la ficha no hay nada tipeado y la isla no se vuelve a
   montar (no cambian ni su posición ni su `key`); la isla ya apaga sus filas mientras relee.
@@ -377,6 +392,15 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### Listas, embudos y plantillas
 
+- **El embudo del lead en la ficha se arrastra con el mouse y el teclado, no con el dedo.** `MouseSensor` (a partir de 5 px, así un clic en el «⋯» no arranca nada) y
+  `KeyboardSensor` con flechas que pasan a la columna vecina (`crearTecladoDelArrastre()`); no hay sensor táctil: en una pantalla que se desplaza con el dedo arrastrar
+  pelearía con el desplazamiento, y «Mover a» del «⋯» ya existe. La tarjeta sigue siendo un `article` con su nombre (no un botón), enfocable para el teclado; soltar en una
+  perdida abre el modal del motivo de siempre (`?panel=mover-oportunidad`) y la tarjeta se queda en su columna hasta confirmar. El selector de embudo sólo con más de uno; si
+  se crea una oportunidad en otro embudo que el que se ve, el bloque pasa a ése y lo recuerda como si lo hubiera elegido con el selector (se ve entrar lo que se creó, y la próxima vez se abre ahí). Descartadas: arrastrar sólo desde un asa (un blanco más para un bloque angosto), «Mover a» como única
+  forma (no es lo pedido), conteos por columna (serían totales: la ficha lee 10).
+- **Los grupos de «Vehículos» llenan el ancho con `auto-fit`.** La grilla compacta de Relacionados usaba `auto-fill`: con un solo grupo en una pantalla grande quedaban pistas
+  vacías a la derecha. `auto-fit` las colapsa, y las filas de cada grupo van en la misma grilla, así una fila sola o un grupo solo ocupan todo el bloque.
+
 - **La ficha del lead en dos columnas: la izquierda, lo clave; la derecha, cuatro bloques compactos en orden de uso.** A la izquierda (`minmax(0, 24rem)`, se desplaza
   sola si no cabe), lo que identifica, como la ficha del vehículo: el nombre con el «⋯» arriba a la derecha (sin «Cotizar» ni «Editar» sueltos: están en
   el «⋯»), quién lo tiene en una línea bajo el nombre, los datos clave del lead (tipo, origen, país, teléfono principal y «Notas» a lo ancho) con «Ver más»
@@ -398,9 +422,11 @@ las trampas, en `docs/LECCIONES.md`.
   montar el bloque (el foco no se pierde tras guardar). **Cotizaciones**: «Cotizar» en el título (lo dibuja el servidor) y las 3 más recientes, leídas
   desde el navegador al acercarse a la vista (200 px), sin clic. **Vehículos** es el compacto de Relacionados (vinculados e interesados con sus acciones
   en el «⋯» de cada fila, «Ver todos» hasta 500) con «Vincular o marcar» en el título, y al pie sólo lo que no repite (los anteriores plegados tras su
-  botón, el panel y la confirmación). **Oportunidades**: sólo las abiertas, en filas de una línea (título, embudo si hay más de uno, etapa y monto);
-  las cerradas están en «Ver todas», el embudo filtrado por el lead; la lectura sigue trayendo 10 (cubre todas las abiertas posibles, una por embudo),
-  así una que se cierra al moverla deja entrar la siguiente sin leer otra vez. Los menús del «+» y de los «⋯» no van con `diferido()`: usan
+  botón, el panel y la confirmación). **Oportunidades**: el embudo de este lead, no una lista: una columna por etapa del embudo elegido (el último
+  que la persona dejó, recordado por persona en `leads.embudo_de_la_ficha`, o el por defecto) con las oportunidades de este lead en cada una, también ganadas y perdidas; arrastrar una a otra
+  columna la mueve (`@dnd-kit`, mouse y teclado, detrás de `diferido()`) y «Mover a» del «⋯» queda para el teclado y el celular, que no arrastra. La lectura sigue trayendo 10 (abiertas primero:
+  cubre todas las abiertas posibles, una por embudo); cada columna dibuja hasta 3 y lo que no se ve está en «Ver en el embudo», el embudo filtrado por el lead (en el «⋯» del bloque y al pie
+  si algo no se dibuja), sin número. Los menús del «+» y de los «⋯» no van con `diferido()`: usan
   `DropdownMenu` y `MasAcciones`, que ya viajan en frío con el «⋯» de la cabecera; diferirlos sumaría una espera de red al primer toque sin bajar KB.
   `?seccion=` sigue valiendo: lleva al bloque y le da el foco a su título; si los bloques de arriba crecen mientras llegan, la vuelve a llevar (hasta 4 s)
   salvo que la persona ya se haya movido. Descartadas: pestañas con un resumen arriba (sigue la navegación), pestañas dentro de la derecha (se queda el
@@ -408,7 +434,7 @@ las trampas, en `docs/LECCIONES.md`.
   todas las acciones (vuelve el ruido de botones), un mini kanban de oportunidades (crece sin tope y repite el embudo), acordeones (esconden y suman toques), tres columnas
   (no entran a 1280 px con la lateral de la app), el índice a la izquierda (compite con la columna de datos), el portal al final de la derecha (alarga la
   tarea de oro: había que pasar por el índice o bajar) y un bloque «Vehículos» aparte de Relacionados (dibujaba lo mismo dos veces).
-- **La ficha en dos columnas: la página quieta, cada columna por dentro.** Desde 56 rem de contenedor (`@container/ficha`) la ficha mide el alto de la ventana bajo la barra superior y el relleno de `<main>` (`calc(100dvh - var(--topbar) - 3rem)`, `ALTO_DE_LA_FICHA`, con un mínimo de 28 rem: una ventana muy baja vuelve a desplazar la página antes que aplastar las columnas); lo que va arriba (volver, avisos) ocupa su alto natural y las dos columnas, el resto. La izquierda se desplaza sola si no cabe; la derecha lleva el índice quieto arriba y sus bloques se desplazan debajo. Cada columna con desborde recibe `tabindex="0"`, `role="region"`, su nombre y su pista de degradado (la derecha con el fondo de la página, la izquierda con el de la tarjeta). «Ir al bloque» (`irAlBloque()`, `?seccion=`) desplaza la columna que lleva el bloque (un bloque queda 1 rem bajo su borde: el índice ya no tapa nada) y el bloque a la vista se mide sobre esa columna. Cada columna recuerda su posición por ruta mientras dure la pestaña (se guarda al desplazar y se repone al montar o al volver a mostrarse la pantalla, insistiendo mientras llega el contenido, salvo que otro ya la moviera o la persona hiciera algo). Por debajo de 56 rem (el celular y el texto al 200 %) una sola columna con el desplazamiento de la página y el índice pegajoso, como antes. Reemplaza lo de «pegajosa»: la izquierda ya no se pega, porque la página no se mueve. Con el banner de «ver como» (que ocupa 2,25 rem en el flujo) la página se desplaza ese poco: es un aviso de quien se hace pasar por otra persona, no el uso normal. Descartado: columnas `sticky` con la página desplazándose (lo que había: la persona perdía la izquierda al bajar y el índice dependía de la ventana); un alto fijo en `src/app` como el de la unidad de logística (la ficha es un marco compartido: sabe su alto sin que cada pantalla lo repita).
+- **La ficha en dos columnas: la página quieta, cada columna por dentro.** Desde 56 rem de contenedor (`@container/ficha`) la ficha mide el alto de la ventana bajo la barra superior y el relleno de `<main>` (`calc(100dvh - var(--topbar) - 5rem)`, `ALTO_DE_LA_FICHA`, con un mínimo de 28 rem: una ventana muy baja vuelve a desplazar la página antes que aplastar las columnas); lo que va arriba (volver, avisos) ocupa su alto natural y las dos columnas, el resto. La izquierda se desplaza sola si no cabe; la derecha lleva el índice quieto arriba y sus bloques se desplazan debajo. Cada columna con desborde recibe `tabindex="0"`, `role="region"`, su nombre y su pista de degradado (la derecha con el fondo de la página, la izquierda con el de la tarjeta). «Ir al bloque» (`irAlBloque()`, `?seccion=`) desplaza la columna que lleva el bloque (un bloque queda 1 rem bajo su borde: el índice ya no tapa nada) y el bloque a la vista se mide sobre esa columna. Cada columna recuerda su posición por ruta mientras dure la pestaña (se guarda al desplazar y se repone al montar o al volver a mostrarse la pantalla, insistiendo mientras llega el contenido, salvo que otro ya la moviera o la persona hiciera algo). Por debajo de 56 rem (el celular y el texto al 200 %) una sola columna con el desplazamiento de la página y el índice pegajoso, como antes. Reemplaza lo de «pegajosa»: la izquierda ya no se pega, porque la página no se mueve. Con el banner de «ver como» (que ocupa 2,25 rem en el flujo) la página se desplaza ese poco: es un aviso de quien se hace pasar por otra persona, no el uso normal. Descartado: columnas `sticky` con la página desplazándose (lo que había: la persona perdía la izquierda al bajar y el índice dependía de la ventana); un alto fijo en `src/app` como el de la unidad de logística (la ficha es un marco compartido: sabe su alto sin que cada pantalla lo repita).
 - **Los teléfonos de la ficha son de sólo lectura; se editan en el panel de edición.** Así no hay dos lugares para lo mismo y no se pierde ningún permiso:
   «Cambiar el principal» pasa al bloque de teléfonos del panel (sólo en la ficha; con algo escrito en el formulario se apaga: cambiar el número mueve la
   versión y dejaría la edición con la vieja) y quien sólo tiene `leads.telefonos_extra.editar` abre el mismo panel en «modo teléfonos». Un
@@ -419,7 +445,7 @@ las trampas, en `docs/LECCIONES.md`.
   fila o en la ficha, a un toque. Un `?lead=` viejo redirige en el servidor (`destinoDelEnlaceViejo()`) a la ficha **sin leer el lead**: con los permisos de
   la sesión (supuesta la cartera) se quitan los paneles que no podría abrir, y la cartera la decide la ficha, que no abre un panel de un lead ajeno (como con un
   `?panel=` directo). Un `lead` que no es un id también redirige: la ficha dice lo mismo para todo. «Un arrastre no navega» se cumple como «elegir texto no
-  navega»: el kanban no se arrastra («Mover a…» es un menú). Descartados: un `<a>` que envuelve la fila (no puede envolver un `<tr>` y anidaría el «⋯» y
+  navega»: el kanban de `/leads` no se arrastra («Mover a…» es un menú); el embudo del lead en la ficha sí, con el mouse y el teclado, en una fila de columnas de un solo lead (pocas tarjetas). Descartados: un `<a>` que envuelve la fila (no puede envolver un `<tr>` y anidaría el «⋯» y
   los enlaces de la fila), un «stretched link» (encerrado por la celda pegajosa) y conservar el resumen junto al enlace.
 - **El «⋯» del lead lleva a otros módulos sin conocerlos y sin un pedido por fila.** «Cotizar lead» y «Ver actividad» apuntan a `cotizaciones` y `actividad`,
   que `leads` no importa: `src/app` arma cada ruta una vez por página (permisos y `getOrigenes()` de esa request) con `MARCADOR_DE_LEAD`, un uuid que no es de
@@ -542,7 +568,7 @@ las trampas, en `docs/LECCIONES.md`.
 
 ### La fórmula
 
-- **Grafo versionado validado en SQL.** Lista de nodos con operaciones cerradas; `validar_formula()` y `evaluar_formula()` son espejo exacto de `validar.ts`/`evaluar()` con corpus de paridad; un borrador y una publicada por origen; snapshot por cotización. Se escribe como texto compilado al grafo.
+- **Grafo versionado validado en SQL.** Lista de nodos con operaciones cerradas; `validar_formula()` y `evaluar_formula()` son espejo exacto de `validar.ts`/`evaluar()` con corpus de paridad; un borrador y una publicada por fórmula del origen y una fórmula activa por origen; snapshot por cotización. Se escribe como texto compilado al grafo.
 - **`HOY()` no se admite** (lo decidió la persona): el compilador da `hoy_no_soportado`. Si una fórmula real lo pide, compila a un nodo `fecha_cotizacion` congelado con la cotización, con paridad TS/SQL.
 - **El SI con condición es otra operación, `elegir`; el `si` de una bandera no cambia.** `si` depende de su `condicion`, que es una bandera y además el
   interruptor del nodo: ampliarlo a una condición cualquiera y a una rama «si no» lo volvía de dos formas, con chequeos cruzados en Zod y en SQL y otro
@@ -561,9 +587,54 @@ las trampas, en `docs/LECCIONES.md`.
 - **El ejemplo de un mensaje del compilador usa el nombre que la persona escribió** (`SI necesita una condición, por ejemplo remate>1000.`), nunca una
   referencia A1: en la fórmula no hay celdas.
 - **Sin «Sugerido: X» junto a un valor modificado.** La celda muestra el override con anillo y ↺, que lo quita. Si se reabre, `evaluar()` y `evaluar_formula()` devuelven `sugeridos[id]` sólo de nodos con override.
-- **Publicar sin pisar el borrador.** El ⚙ y revertir publican la N+1 desde la publicada (`_publicar_version()`, candado por origen); publicar un borrador atrasado da PT409 con quién publicó; revertir a un nivel retirado se rechaza.
+- **Publicar sin pisar el borrador.** El ⚙ y revertir publican la N+1 desde la publicada (`_publicar_version()`, candado por origen, compartido por todas sus fórmulas); publicar un borrador atrasado da PT409 con quién publicó; revertir a un nivel retirado se rechaza.
 - **Versión esperada del borrador.** `formula_guardar_borrador`, `_descartar_` y `_publicar` la llevan al final con `default null`, sin sobrecargas; en guardar, nula = crear. Guardar devuelve `{id, actualizado_en}` y el editor sigue sin releer.
 - **Orden en las RPC del borrador.** Permiso, validación (fuera del candado, es lo caro), candado del origen, borrador `for update`, esperadas y escritura. Descartar lo puede cualquiera con `configurar` del origen (limpia el olvidado de quien se fue).
+- **Varias fórmulas por origen, una activa.** Cada fórmula del origen tiene su borrador, sus versiones (numeradas desde 1) y su tarjeta; la activa es la
+  única que se cotiza (`_publicada_de_la_activa()`). Los candados siguen siendo los del origen (`formulas:` y después `plantillas:`), compartidos por todas: no
+  hay orden nuevo y las carreras de antes siguen valiendo.
+- **La primera publicada de un origen sin activa la activa** (sin preguntar): sin esto un origen nuevo no se cotizaría hasta tener el botón «Activar». Una
+  activa siempre tiene publicada.
+- **Una copia de otro origen queda marcada hasta que sus datos del vehículo existan en el destino** (sin preguntar): publicar y activar lo exigen sólo a
+  esas (`copiada_de_otro_origen`, también la copia de una copia); las demás publican como siempre, sin romper fórmulas ni semillas.
+- **Copiar no toca los colores:** el catálogo es de la empresa y hay una por despliegue, así que toda clave que la copia nombra ya existe, y un color en uso
+  no se elimina.
+- **Un trigger de compatibilidad cuelga de la fórmula de trabajo lo insertado sin fórmula del origen** (sin preguntar): la semilla, las pruebas, las carreras
+  y el e2e insertan directo en `formulas` y `plantillas_tarjeta`; reescribirlos era riesgo sin valor. Las RPC siempre pasan el id.
+- **«Guardar con la N» deja de valer con lo primero que pase:** una versión posterior de su fórmula o que su fórmula deje de ser la activa
+  (`desactivada_en`), con la misma ventana de 24 h.
+- **Activar pide la activa que se vio** (sin preguntar): dos personas activando a la vez, la segunda recibe un PT409 con quién y cuándo en vez de pisar.
+- **Activar sin ninguna tarjeta se rechaza** (sin preguntar; 22023, hint `tarjeta`): cada fórmula lleva su tarjeta, y activar re-valida la publicada contra
+  la versión que se va a cotizar.
+- **El nombre es único en el origen sin distinguir mayúsculas, también entre las archivadas; el tope de 50 cuenta las no archivadas** (sin preguntar). No hay
+  desarchivar.
+- **Publicar una tabla de referencia publica la N+1 de cada fórmula no archivada del origen con publicada que la use**, no sólo la de la activa.
+- **«Para cotizar y mover» mira la activa** (sin preguntar): `origenes_resumen().formula_publicada` dice si hay activa y `tarjeta_publicada`, si la
+  activa tiene su plantilla publicada. Sin activa, la Tarjeta está pendiente aunque otra fórmula del origen tenga la suya: no es la que se cotiza.
+- **Crear y activar entran al inventario de visibilidad como `no_devuelve`:** leen la fórmula pero crear devuelve `{id, actualizado_en, avisos}` y
+  activar, ids y números.
+- **Planilla, Hoja y Tarjeta escriben en la fórmula de su URL** (`…/formulas/<fórmula>/<parte>`, `p_formula_del_origen`), nunca en la de trabajo de
+  cuando guardan: activar otra con el editor abierto no hace saltar lo escrito de fórmula. El ⚙ de la hoja no la manda: cambia la activa, la que se cotiza.
+- **Las fórmulas del origen son una pestaña con su lista y cada una se edita en su ruta** (`docs/UX.md` › «Cotización: fórmulas del origen»): una fila
+  por fórmula, la activa primero, con un solo «⋯» (el mismo en la fila y en la cabeza del editor). Descartadas: una grilla de tarjetas (cada una ocupa
+  el alto de una tarjeta para decir nombre, estado y versión, y con 50 no se recorre) y una tabla (sus columnas no dicen más que la línea de estado y
+  en el celular se parte), y un selector de fórmula dentro de la pestaña de antes (la URL no diría qué fórmula se edita y un enlace a una fila o a un
+  lugar de la tarjeta caería en otra).
+- **Las rutas cortas (`…/formula`, `…/formula/hoja`, `…/formula/tarjeta`) van a la fórmula de trabajo** (sin preguntar): con activa es la activa; sin
+  activa, la más nueva sin archivar, así un enlace viejo o el paso Tarjeta siempre llegan a algo editable. Sin ninguna, a la lista (sin la consulta: nombraba
+  una fila de otra fórmula).
+- **Copiar de otro origen copia su publicada; si no tiene, su borrador** (sin preguntar): lo publicado es lo probado. El modal lo dice al elegir la fórmula.
+- **La activa no ofrece «Activar…»** (sin preguntar): lo pendiente en ella se publica desde su planilla o su tarjeta; activar de nuevo no cambiaría qué se
+  cotiza.
+- **«Empezar desde una plantilla» va en la cabeza del editor y escribe en esa fórmula** (sin preguntar; `cotizacion_paquete_aplicar(…, p_formula_del_origen)`):
+  la plantilla reemplaza el borrador y la tarjeta de una fórmula, y la que se ve es la que cambia.
+- **Una archivada no se edita** (sin preguntar): su «⋯» ofrece sólo Renombrar y Copiar, y abierta por URL muestra la cabeza con el aviso y «Copiar», sin
+  Planilla, Hoja ni Tarjeta. Para seguir con ella se copia.
+- **Archivar pide confirmar** (sin preguntar): no hay desarchivar. Eliminar también, y sólo se ofrece a la que nunca estuvo activa.
+- **Las acciones de las fórmulas del origen no revalidan** (sin preguntar): revalidar desde el editor pisa lo que está a medio tipear. Devuelven el dato:
+  la lista hace `router.refresh()`, la cabeza aplica el nombre nuevo y archivar o eliminar desde el editor vuelven a la lista por `salirSinPerder()`.
+- **Los avisos de la copia quedan hasta «Ocultar»** (sin preguntar; `sessionStorage`, por fórmula): dicen qué tablas se crearon y qué datos del vehículo
+  faltan, y se leen al llegar a la planilla, no en un toast que se va. Los datos que faltan siguen marcados en sus filas mientras falten, sin el aviso.
 - **La fórmula se ve como planilla** (A · concepto, B · %, C · valor, D · de dónde sale) **y el editor en texto es el «Modo avanzado».** Los dos editan
   la misma fórmula de trabajo, que tiene la sesión; las tarjetas de la publicada y del borrador no llevan «Editar». La sesión se vuelve a montar
   con «Recargar» o si la versión cambia por algo que no hizo ella (publicar, descartar, revertir), nunca al guardar.
@@ -574,7 +645,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **La planilla en el celular y con el texto al 200 %** se desplaza de costado en su marco con «#» y A pegadas (D se parte en líneas): las dos cosas
   pasan con el mismo ancho angosto y se eligió la del celular en vez de bajar B–D bajo A. «Totales» y la tarjeta van al costado cuando la planilla mide
   72 rem o más (una consulta de contenedor, no `xl`): a 1.280 px la columna de Configuración deja ≈ 52 rem y la tabla quedaría apretada.
-- **La tarjeta en vivo** dibuja la plantilla de trabajo leída con la fórmula publicada (sus etiquetas) y los valores de la fórmula de trabajo; «Ver total»
+- **La tarjeta en vivo** dibuja la plantilla de la fórmula de trabajo leída con su fórmula publicada (sus etiquetas) y los valores de la fórmula de trabajo; «Ver total»
   sale del diseño (`ver_total_bs_por_defecto`, apagado sin él) y no se cambia en la planilla.
 - **Qué edita el editor en texto.** Sólo cálculos y constantes; el id de una fila no cambia; un negativo no se escribe en el texto; tope 2.000 por fila en UTF-16. La vista previa usa «Cifras de prueba» que no se guardan. `key` = `<origen>:<vuelta>:<sesión>`.
 - **Grupos en el editor.** No se suman ni se quitan (la plantilla nombra exactamente los de la fórmula); `buckets` y `total_en` no se editan; una auxiliar nunca suma a un grupo.
@@ -701,7 +772,7 @@ las trampas, en `docs/LECCIONES.md`.
 - **El texto de la tarjeta.** `texto: auto` es la tinta oscura de la interfaz (#1b2130, «negro») o el blanco, el de más contraste sobre el hex del
   fondo (o sobre el blanco si el fondo es `auto`): `textoAutomatico()`, en el núcleo. Los bordes de las celdas son de ese «negro». `fondo: auto` es
   blanco: no hay banda gris del vehículo (no hay hex fuera del catálogo). `auto` nunca es una clave del catálogo (`_tono_clave()` la salta).
-- **La tarjeta lee la moneda de SU versión y la plantilla publicada de hoy.** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` no tienen uso y se quitan juntas (`docs/PENDIENTES.md`): no volver a darles uso.
+- **La tarjeta lee la moneda de SU versión y la plantilla publicada hoy de la fórmula del origen de esa versión.** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` no tienen uso y se quitan juntas (`docs/PENDIENTES.md`): no volver a darles uso.
 - **El título de la cotización va en la página de la tarjeta, no en `cotizacion_tarjeta`.** Esa RPC es la plantilla de la fórmula (nada por cotización): el título resuelto (`tituloAparteDelNumero()`: sin el de respaldo «Cotización n.º N») llega como `PaginaDeLaTarjeta.titulo` y es la variable `titulo` de la cuadrícula, aparte del título de la opción (`titulo_opcion`). La forma 1 convertida lo pone en la fila de la fecha, a su lado (como iba en el PDF, y sin sumar una fila que no se puede ocultar); los metadatos del PDF no lo llevan, porque puede nombrar el vehículo.
 - **PDF e imagen en servidor.** `@react-pdf/renderer` y `ImageResponse` de `next/og`, cargados con `import()` desde la composición del área: nunca llegan
   al navegador. Sin imágenes de cotización generadas en el cliente. Las fuentes son Geist del release `vercel/geist-font` v1.9.2 (zip sha256
@@ -753,6 +824,27 @@ las trampas, en `docs/LECCIONES.md`.
 - **El campo de una celda va encima de ella sólo si se escribe cómodo.** Con la tarjeta casi a su tamaño (escala ≥ 0,75), la celda escalada de ≥ 160 px y la
   letra sin agrandar; si no (el celular, el texto al 200 %), a lo ancho del modal bajo la tarjeta. Las filas se ocultan desde un canal de 44 px a la derecha
   (un botón por banda, siempre a la vista) y, para las bandas de menos de 24 px, desde «Ocultar fila» a 44 px bajo la tarjeta.
+- **La lista de respaldo y las condiciones de la tarjeta se resuelven antes de dibujar.** `resolverElContenido()` deja en cada celda un contenido simple
+  (texto, dato o nada) y la geometría sigue igual: el HTML, el PDF, la imagen y «Copiar texto» no saben de condiciones. Son datos cerrados (un `es` de una
+  lista, un nodo por id, un número), no expresiones: la tarjeta sigue sin motor propio. Un cambio en lo que se dibuja sube `VERSION_DEL_DIBUJO` (4).
+- **Hasta 5 ramas contando el «si no», que va siempre; una fila no tiene «si no».** Con el «si no» obligatorio una celda siempre sabe qué mostrar (si
+  ninguna rama se cumple, no queda indefinida). Una fila sólo decide si se oculta: su «si no» sería «se dibuja», que es lo que pasa si no se cumplen.
+- **Una lista de respaldo sin ningún dato con valor deja la celda vacía.** Ni el último dato ni «—»: tiene valor un texto que no queda vacío sin los
+  espacios de los bordes o un número (también el 0); un nulo no, y un nodo que no aplica tampoco.
+- **Nulo, 0 y «no aplica» en una condición.** Un nodo que no aplica vale 0 (lo que no aplica no suma: «es 0» se cumple con un nodo apagado por su interruptor); uno sin
+  valor es nulo y una comparación con nulo no se cumple (ni «mayor», ni «menor», ni «igual», ni «es 0»). Así «Remate es menor que 1.000» no oculta una fila
+  de una cotización con el remate sin valor, y sí la de una donde el remate no aplica (vale 0); quien quiera verla también en ese caso suma la
+  condición «Remate no es 0». `encendido` es «distinto de 0» y `opcion` compara la clave elegida.
+- **Una condición sobre un nodo que no está en la versión de la cotización no tiene respuesta y su rama se salta.** La plantilla publicada hoy dibuja
+  cotizaciones de versiones viejas: sin respuesta, la rama no gana por accidente y la fila no se oculta; si ninguna gana, el «si no». El editor lo dice junto
+  al dato («Este dato ya no está en la fórmula: se salta.»).
+- **`condicion_invalida` va última entre las reglas de la plantilla.** Antes van las que dicen que el nodo no existe o es restringido: una condición sólo se
+  juzga sobre un nodo que la tarjeta puede nombrar, y el mensaje que llega primero es el que se arregla primero.
+- **Lo que se arma a medias no sale del panel.** Una lista con un dato o una condición sin número quedan en un borrador del panel con su motivo junto al
+  campo («Sin terminar: la celda no cambia hasta completarla.»); la plantilla sólo recibe reglas enteras. Así «Guardar borrador», el historial de deshacer y
+  el lienzo nunca ven una forma que la base rechazaría.
+- **Una celda con lista de respaldo o condiciones no se retoca.** Lo que muestra cambia con cada cotización: retocar su texto pisaría la regla. La fila que
+  se oculta según condiciones sí se oculta a mano.
 - **El aspecto de la hoja es declarativo, cerrado y plano.** Claves opcionales junto a las de siempre (`ancho`, `alto`, `relleno`, `separacion`, `densidad`, `letra`, `enfasis`, `tono`), de escalas
   cerradas y validadas igual en TS y en SQL: nada de px, CSS ni hex. No se llaman `estilo`, `clase` ni `color` (el juego las rechaza). Sin la clave, lo de siempre, así un diseño viejo se ve igual;
   el editor quita la clave en vez de escribir el valor por defecto. La cabecera no lleva ancho ni alto (va sola en su fila) y la tarjeta del resumen no lleva aspecto (es fija).
@@ -803,7 +895,7 @@ las trampas, en `docs/LECCIONES.md`.
   otra celda por línea; con montos enteros la diferencia con V1 es de centavos). La
   tarjeta no lleva «TOTAL BOLIVIANOS»: la forma 2 no tiene un monto en moneda local (con «Ver total Bs», el total lleva la segunda línea). La columna del
   monto mide 140 px (la de V1, 110): el monto de V2 lleva «USD» y centavos y en 110 px se partía en dos renglones; la descripción cede esos 30 px.
-- **«Empezar desde una plantilla» es una acción del origen, no de una pestaña.** Va a la derecha de las sub-pestañas de la Fórmula del origen, secundaria (cada pestaña ya tiene su
+- **«Empezar desde una plantilla» es una acción de la fórmula, no de una pestaña.** Va en la cabeza del editor de una fórmula del origen, secundaria (cada pestaña ya tiene su
   primaria) y en `?panel=plantillas-de-v1` de las tres. Un modal, no una página: es un clic y no se pierde la pestaña. La tarjeta de cada plantilla la
   dibuja el lienzo de la pestaña Tarjeta con cifras de ejemplo (no una imagen del servidor: sus colores todavía no están en el catálogo).
 
@@ -812,6 +904,16 @@ las trampas, en `docs/LECCIONES.md`.
 - **Qué orígenes afecta publicar una tabla.** Los que la usan en un nodo o en la copia de `params.tablas`, aunque estén inactivos; una compartida pide `configurar` en cada uno. Editar una tabla publica la N+1; las filas inactivas se borran.
 - **Publicar una fórmula no congela las tablas.** Una versión anterior que leía la viva recalcula con las filas nuevas; lo guardado de una cotización no cambia.
 - **Una celda sin tocar no se reaplica.** Sólo si el texto difiere del mostrado, para no redondear al pasar con Tab; nunca se publica un número distinto del escrito.
+- **La clave de una tabla y la de una columna no cambian.** La de la tabla la calcula la base desde el nombre (`_tabla_referencia_clave()`, con su espejo para mostrarla al tipear); la de una columna la manda la pantalla, sale de la etiqueta hasta que la persona la toca y se corrige sólo mientras la columna es nueva. Los nodos, las celdas guardadas y los `desde`/`hasta` de un tramo la nombran literal: renombrar es cambiar la etiqueta, y el tipo de una columna existente tampoco cambia (se quita y se suma de nuevo).
+- **Cambiar las columnas sube la versión de la tabla y no publica la N+1 de ninguna fórmula.** Nada que una fórmula use se quita (eso se rechaza) y sumar o renombrar no cambia filas: la copia congelada sigue valiendo. Subir la versión deja en PT409 el borrador de filas que era de antes, y por eso «Columnas» y «Desactivar» se apagan con cambios de filas sin publicar. Quitar una columna borra su clave de las filas vivas; si no, el próximo publicar fallaría. La RPC recibe la lista entera (como publicar recibe todas las filas) y la base calcula qué cambió; una columna que ya estaba conserva sus otras llaves.
+- **«En uso» es la publicada o el borrador** de cada origen que recibe la tabla (`_tabla_referencia_usos()`): un nodo que la nombra, su copia en `params.tablas` o una ayuda del diseño; una columna, si la nombra un `match`, una `columna`, un `desde` o un `hasta`. Sumar el borrador es lo conservador: si no, se rompería al publicarse. Por eso columnas y desactivar piden `cotizaciones.configurar` también del origen cuyo borrador la usa, y el 42501 nombra ese origen (los nombres de los orígenes los lee cualquiera); el mensaje nombra hasta tres usos y después «y otras fórmulas», nunca un total.
+- **Una propia no toma la clave de una compartida activa** (23505): taparla dejaría sin filas a la fórmula del origen que la lee viva. Una compartida con la clave de una propia sí se crea, y ese origen la ve «Tapada».
+- **Un origen recibe hasta 100 tablas activas, propias y compartidas.** Es el tope de la lista y del catálogo de BUSCARV: una más quedaría fuera de los dos. La pantalla apaga «Nueva tabla» con el tope de la lista combinada; la base lo exige por destino con el candado `tablas_referencia:crear`.
+- **Desactivar no se deshace desde la app y la clave queda tomada** (la restricción única cuenta las inactivas); reactivar espera en `docs/PENDIENTES.md`.
+- **La versión esperada es un entero** (`tablas_referencia.version`), como publicar. El PT409 de columnas y desactivar es el de publicar («<persona> publicó la versión N…») aunque lo último haya sido un cambio de columnas: cambiar columnas también firma `publicado_por` y `publicado_en`.
+- **Una etiqueta nacida por SQL con espacios en los bordes cuenta como renombrada** al guardar las columnas: la base guarda la etiqueta recortada. En la pantalla, tipear espacios en los bordes no es un cambio.
+- **La actividad de crear guarda `cuantas_columnas`, nunca las columnas**: `cotizaciones-visibilidad.sql` trata `tablas_referencia.columnas` como contenido oculto.
+- **«Nueva tabla» y «Columnas» son `<Drawer>` y preguntan al cerrar con cambios** (`<CambiosSinGuardar preguntaAlCerrar>`: no tienen borrador que conserve lo escrito); «Desactivar» es un `<Confirmar>`. «Columnas» y «Desactivar» se montan sólo en el editor de la tabla (el «⋯» de la lista lleva a la tabla con el panel): ahí se ve la tabla y se sabe si tiene cambios de filas.
 
 ### Final, comprobantes y comentarios
 
@@ -855,7 +957,7 @@ las trampas, en `docs/LECCIONES.md`.
   marcaron: así la aprobada, si está elegida, es la referencia de lo distinto. El `returnTo` desde el resumen del listado es `/cotizaciones?cotizacion=<id>`,
   sin los filtros (leerlos pediría `useSearchParams()` fuera de un `<Suspense>`).
 - **El bloque es del área `aprobada`.** Usa «Aprobar» y la insignia del área; una pantalla sin prefijo sería núcleo, que no importa áreas. Sale por
-  `pantallas/aprobada-de-este-vehiculo.ts` para la ficha del vehículo y por `pantallas/aprobada-resumen.ts` para el resumen.
+  `pantallas/aprobada-resumen.ts` para el resumen (la ficha del vehículo dibuja su fila de tarjetas con las piezas del área).
 - **La aprobada al día entre islas, sin refrescar.** Aprobar desde el bloque no puede refrescar la guardada (perdería lo tipeado): `avisarAprobada()` y
   `useAlCambiarLaAprobada()` (un `Set` de oyentes por módulo) ponen al día «Aprobar» de la cabecera y el bloque relee su primera página. En el resumen sí se
   refresca el listado (no tiene nada tipeado), como «Aprobar» del «⋯».
@@ -1064,7 +1166,8 @@ las trampas, en `docs/LECCIONES.md`.
 - **Mensaje con tarea o evento: primero la RPC de agenda y luego la del chat, en una transacción**; id del mensaje del navegador, el de la tarea del servidor, candado consultivo por id.
 - **Envío optimista, de a uno y en orden.** Reintentar reusa id y cuerpo; la cita se lee en otra consulta por pk (el embed `mensajes→mensajes` da 400).
 - **«Purgado» y «no lo veo» no se distinguen en una mención**: distinguirlo filtraría existencia.
-- **El widget guarda su estado en local, no en la URL** (abrirlo no cambia la pantalla de atrás). En el celular la burbuja es un enlace a `/chat`; va `fixed` sobre el marco, con `z-40`.
+- **El widget guarda su estado en local, no en la URL** (abrirlo no cambia la pantalla de atrás). En el celular la burbuja es un enlace a `/chat`; va abajo a la derecha del marco, con `z-40`, dentro de `<Flotantes>` (`src/app/(app)/_shell/flotantes.tsx`: una fila `fixed` con «Copiar el enlace de esta página» a su izquierda, que queda sola donde el chat no está).
+- **Recargar y copiar el enlace: sin librería y sin tocar el aviso de cambios sin guardar.** Recargar es `location.reload()` (el `beforeunload` de `useSalidaConCambios()` ya pregunta). Copiar usa `copiarTexto()`; si falla, un modal diferido con el enlace seleccionado en vez de un aviso de error: la persona igual puede copiarlo. En una barra de menos de 28 rem (el celular de 412 px) «Recargar la página» pasa al pie del menú: con el ícono en la barra desbordaba (440 px de 413) o dejaba el buscador en 22 px, y el tipo de cambio y el buscador ya tienen su lugar fijado por pruebas.
 - **`/chat?con=` se resuelve en el render con `chat_directa`**, no con una action: un enlace plano sirve con «atrás» y sin JS extra.
 
 ## Notificaciones
@@ -1152,3 +1255,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **Volver atrás nunca deshace una migración en la nube**: se escribe una migración que la revierta, con el respaldo como último recurso (no guarda Storage). `restaurar.sh` y `resetear.sh` son sólo de la demo.
 - **La base remota del proyecto la cambia también la IA** (sesión, orquestador o bucle): push, semilla, reset y reparar el historial, con el ref mirado y respaldo antes de borrar datos. La persona prefiere avance sin esperarla; secretos, configuración, funciones y Vercel siguen siendo suyos, y b_ip (otra app, datos reales) no se toca (`docs/DESPLIEGUE.md` › «La base remota»).
 - **Un cliente se instala desde un clon aparte** con `SUPABASE_PROJECT_REF` obligatoria (`--linked` actúa sobre `supabase/.temp/project-ref`); Auth por el panel; el dueño es la primera cuenta por `/registro`, antes de compartir la URL.
+- **Los e2e afectados se eligen con evidencia y con tope de 40** (`scripts/e2e-afectados.mjs`). Un texto que se fue y un localizador no
+  exacto que el texto nuevo cumple desde su comienzo pesan más que un dirigido de un módulo grande; un texto cuenta entero sólo en las
+  pantallas que lo dibujan (las rutas a las que llega su archivo por imports, o toda pantalla si llega al marco o a más de 6 rutas). Se
+  ignora un texto que nombran más de 12 specs («Guardar», «Cancelar», «Cerrar») y un localizador que tienen más de 40: el choque de un
+  localizador no exacto (strict mode) se cuenta aparte del texto que se nombra porque es una rotura cierta en toda pantalla que lo dibuja.
+  Lee también `src/**/*.ts` (los avisos de las acciones), no sólo `.tsx`. No cambia lo que corre el CI (`scripts/e2e-dirigidos.mjs`).

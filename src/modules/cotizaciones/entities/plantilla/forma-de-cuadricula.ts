@@ -20,6 +20,7 @@ import {
   esId,
   formaRota,
 } from './campos-de-cuadricula'
+import { revisarSi } from './condiciones-de-cuadricula'
 import { revisarLaGrilla } from './reglas-de-la-grilla'
 
 export type ResultadoDeCuadricula =
@@ -27,7 +28,7 @@ export type ResultadoDeCuadricula =
 
 const CLAVES_DE_LA_RAIZ = new Set(['forma', 'columnas', 'filas', 'celdas'])
 const CLAVES_DE_UNA_COLUMNA = new Set(['id', 'ancho'])
-const CLAVES_DE_UNA_FILA = new Set(['id', 'alto', 'ocultar_si', 'nodo'])
+const CLAVES_DE_UNA_FILA = new Set(['id', 'alto', 'ocultar_si', 'nodo', 'si'])
 
 function revisarColumnas(columnas: unknown): RechazoDePlantilla | null {
   if (!Array.isArray(columnas) || columnas.length === 0) return formaRota('columnas')
@@ -41,7 +42,18 @@ function revisarColumnas(columnas: unknown): RechazoDePlantilla | null {
   return null
 }
 
-// El `nodo` va con `no_aplica` y `no_aplica_o_cero` y no va con `nunca` (aunque sea `null`: la base mira `?`, no el valor).
+// El `nodo` va con `no_aplica` y `no_aplica_o_cero` y no va con `nunca` ni con `condiciones` (aunque sea `null`: la base mira `?`, no el valor); el `si` (de 1 a 3
+// condiciones) va sólo con `condiciones`.
+function revisarOcultar(f: Readonly<Record<string, unknown>>, donde: string) {
+  const ocultar = campo(f, 'ocultar_si')
+  if (!enLista(ocultar, OCULTAR_SI)) return formaRota(`${donde}.ocultar_si`)
+  const conNodo = Object.hasOwn(f, 'nodo')
+  if (ocultar === 'condiciones')
+    return conNodo ? formaRota(`${donde}.nodo`) : revisarSi(campo(f, 'si'), `${donde}.si`)
+  if (ocultar === 'nunca' ? conNodo : !esId(campo(f, 'nodo'))) return formaRota(`${donde}.nodo`)
+  return Object.hasOwn(f, 'si') ? formaRota(`${donde}.si`) : null
+}
+
 function revisarFilas(filas: unknown): RechazoDePlantilla | null {
   if (!Array.isArray(filas) || filas.length === 0) return formaRota('filas')
   for (const [i, f] of filas.entries()) {
@@ -50,10 +62,8 @@ function revisarFilas(filas: unknown): RechazoDePlantilla | null {
     if (!esId(campo(f, 'id'))) return formaRota(`${donde}.id`)
     if (!entreEnteros(campo(f, 'alto'), ALTO_DE_FILA.minimo, ALTO_DE_FILA.maximo))
       return formaRota(`${donde}.alto`)
-    const ocultar = campo(f, 'ocultar_si')
-    if (!enLista(ocultar, OCULTAR_SI)) return formaRota(`${donde}.ocultar_si`)
-    const conNodo = Object.hasOwn(f, 'nodo')
-    if (ocultar === 'nunca' ? conNodo : !esId(campo(f, 'nodo'))) return formaRota(`${donde}.nodo`)
+    const ocultar = revisarOcultar(f, donde)
+    if (ocultar !== null) return ocultar
   }
   return null
 }

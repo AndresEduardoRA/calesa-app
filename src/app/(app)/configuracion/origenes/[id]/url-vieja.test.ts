@@ -6,9 +6,15 @@ const BASE = `/configuracion/origenes/${ID}`
 
 describe('destinoDeLaUrlVieja', () => {
   it('cada ?seccion= lleva a su pestaña', () => {
-    for (const parte of ['datos', 'campos', 'categorias', 'flujo', 'formula', 'tablas']) {
+    for (const parte of ['datos', 'campos', 'categorias', 'flujo', 'formulas', 'tablas']) {
       expect(destinoDeLaUrlVieja(ID, { seccion: parte })).toBe(`${BASE}/${parte}`)
     }
+  })
+
+  it('?seccion=formula, la de antes, lleva a la lista de las fórmulas', () => {
+    expect(destinoDeLaUrlVieja(ID, { seccion: 'formula', panel: 'nueva-formula' })).toBe(
+      `${BASE}/formulas?panel=nueva-formula`,
+    )
   })
 
   it('sin pestaña abre Datos; una sección desconocida, también', () => {

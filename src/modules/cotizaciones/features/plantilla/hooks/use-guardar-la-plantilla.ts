@@ -12,6 +12,8 @@ import { guardarBorrador } from '../actions/guardar-borrador'
 
 type Args = {
   origenId: string
+  // La fórmula del origen de lo leído: la base guarda en ella.
+  formulaDelOrigenId: string
   // El `actualizadoEn` del borrador leído, tal cual (texto, nunca `Date`); nulo sin borrador.
   esperada: string | null
   plantilla: PlantillaEnCuadricula
@@ -25,11 +27,23 @@ type Args = {
 
 type Pendiente = { desde: number }
 
+// Entró: los campos se apagan hasta que llega la versión nueva (la propia, que no remonta el editor), y con ella se encienden otra vez.
+function useEntroHastaLaVersion(esperada: string | null) {
+  const [entro, setEntro] = useState(false)
+  const [deLaVersion, setDeLaVersion] = useState(esperada)
+  if (esperada !== deLaVersion) {
+    setDeLaVersion(esperada)
+    setEntro(false)
+  }
+  return [entro, setEntro] as const
+}
+
 // El envío de la plantilla de la tarjeta (4.19-3b): un envío a la vez; el PT409 como conflicto, que se va **al llegar** la versión nueva y no al pulsar «Recargar»; sin
 // conexión, lo escrito queda y sale solo al volver (guardar con la misma esperada es seguro: si ya había entrado dirá PT409). Los campos se apagan al entrar, hasta que
 // llega la versión nueva.
 export function useGuardarLaPlantilla({
   origenId,
+  formulaDelOrigenId,
   esperada,
   plantilla,
   puedeGuardar,
@@ -41,13 +55,7 @@ export function useGuardarLaPlantilla({
   const [porCampo, setPorCampo] = useState<Record<string, string>>({})
   const [conflicto, setConflicto] = useConflictoHastaLaVersion(esperada)
   const [pendiente, setPendiente] = useState<Pendiente | null>(null)
-  const [entro, setEntro] = useState(false)
-  // Con la versión nueva (la propia, que no remonta el editor), los campos se encienden otra vez.
-  const [deLaVersion, setDeLaVersion] = useState(esperada)
-  if (esperada !== deLaVersion) {
-    setDeLaVersion(esperada)
-    setEntro(false)
-  }
+  const [entro, setEntro] = useEntroHastaLaVersion(esperada)
   const [refrescando, refrescar] = useTransition()
   const { mandar, enCurso } = useUnEnvioALaVez()
 
@@ -57,7 +65,7 @@ export function useGuardarLaPlantilla({
     setPorCampo({})
     const envio = await mandar(() =>
       enviarAccion(
-        guardarBorrador({ origenId, esperada, definicion: plantilla }),
+        guardarBorrador({ origenId, formulaDelOrigenId, esperada, definicion: plantilla }),
         'No pudimos guardar la tarjeta. Revisa lo escrito.',
       ),
     )
@@ -98,6 +106,8 @@ export function useGuardarLaPlantilla({
     enLinea,
     esperandoConexion: pendiente !== null,
     recargando: refrescando,
+    // Guardando, recién entrado (hasta la versión nueva) o releyendo la pestaña: el lienzo y el panel no se editan.
+    ocupado: enCurso || entro || refrescando,
     // El motivo de un campo se va al editarlo.
     olvidarCampo: (donde: string) => {
       setPorCampo((antes) => Object.fromEntries(Object.entries(antes).filter(([k]) => k !== donde)))

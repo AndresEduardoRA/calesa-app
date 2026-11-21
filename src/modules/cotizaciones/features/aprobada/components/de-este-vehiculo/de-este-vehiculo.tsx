@@ -72,7 +72,7 @@ export function DeEsteVehiculo({
   const [marcadas, setMarcadas] = useState<readonly string[]>([])
   const ranura = useRanura(ranuraDeComparar)
   const elegidas = elegidasEnLaLista(marcadas, lista.aLaVista)
-  const leerAlMontar = useEffectEvent(lista.leerLaPrimera)
+  const leerAlMontar = useEffectEvent(lista.leerAlMontar)
   useEffect(() => {
     leerAlMontar()
   }, [])

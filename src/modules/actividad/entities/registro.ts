@@ -46,6 +46,11 @@ const ENTIDADES: Readonly<Record<string, Entidad>> = {
     enFrase: 'una fórmula',
     configuracion: RUTAS.origenes,
   },
+  formulas_del_origen: {
+    icono: 'formula',
+    enFrase: 'una fórmula del origen',
+    configuracion: RUTAS.origenes,
+  },
   ajustes_empresa: {
     icono: 'configuracion',
     enFrase: 'los datos de la empresa',

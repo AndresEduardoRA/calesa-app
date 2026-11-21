@@ -1,5 +1,6 @@
 -- `origenes_resumen()` dice si cada origen tiene la tarjeta de la cotización publicada (`tarjeta_publicada`): verdadero con una plantilla
--- `publicada`, falso sin plantilla o con sólo un borrador. Lo ve quien entra con cualquiera de los tres permisos (también con sólo
+-- `publicada` en su fórmula activa (la que se cotiza), falso sin plantilla, con sólo un borrador, con la publicada en otra fórmula del origen o
+-- sin fórmula activa (aunque la de trabajo tenga su tarjeta publicada). Lo ve quien entra con cualquiera de los tres permisos (también con sólo
 -- `flujos.configurar`, a quien la RLS de `plantillas_tarjeta` le esconde la fila); sin ninguno, 42501. Cada bloque arma su terreno y lo revierte.
 
 -- @test resumen con la tarjeta: los ayudantes
@@ -35,18 +36,28 @@ exception when others then
   return sqlstate;
 end $f$;
 
--- Tres orígenes (uno con plantilla publicada, uno con sólo un borrador y uno sin plantilla) y tres personas con rol propio (la primera
+-- Cinco orígenes (uno con la activa con su plantilla publicada, uno con sólo un borrador, uno sin plantilla, uno cuya activa no tiene tarjeta
+-- publicada pero otra fórmula más nueva sí, y uno sin activa cuya fórmula de trabajo tiene la tarjeta publicada) y tres personas con rol propio (la primera
 -- cuenta nace dueña: se le quita): Pía configura el cotizador, Flor sólo el flujo y Ana no tiene claves. Las plantillas entran sin sus
--- triggers: lo que se prueba es el resumen, no la validación de la definición.
+-- triggers (tampoco el que les pone la fórmula del origen: van con la suya): lo que se prueba es el resumen, no la validación de la definición.
 create or replace function pg_temp.rtp_preparar() returns void language plpgsql as $f$
-declare p uuid; v_rol uuid; i int := 0; con uuid; bor uuid;
+declare p uuid; v_rol uuid; i int := 0; con uuid; bor uuid; dos uuid; tra uuid; fdo uuid;
 begin
   insert into public.origenes (clave, nombre) values ('prueba_rtp_con', 'Prueba rtp con') returning id into con;
   insert into public.origenes (clave, nombre) values ('prueba_rtp_bor', 'Prueba rtp borrador') returning id into bor;
   insert into public.origenes (clave, nombre) values ('prueba_rtp_sin', 'Prueba rtp sin');
+  insert into public.origenes (clave, nombre) values ('prueba_rtp_dos', 'Prueba rtp dos') returning id into dos;
+  insert into public.origenes (clave, nombre) values ('prueba_rtp_tra', 'Prueba rtp de trabajo') returning id into tra;
   set local session_replication_role = replica;
-  insert into public.plantillas_tarjeta (origen_id, version, estado, definicion, publicado_en) values (con, 1, 'publicada', '{}'::jsonb, now());
-  insert into public.plantillas_tarjeta (origen_id, version, estado, definicion) values (bor, null, 'borrador', '{}'::jsonb);
+  insert into public.formulas_del_origen (origen_id, nombre, activa, activada_en) values (con, 'Fórmula', true, now()) returning id into fdo;
+  insert into public.plantillas_tarjeta (origen_id, formula_del_origen_id, version, estado, definicion, publicado_en) values (con, fdo, 1, 'publicada', '{}'::jsonb, now());
+  insert into public.formulas_del_origen (origen_id, nombre) values (bor, 'Fórmula') returning id into fdo;
+  insert into public.plantillas_tarjeta (origen_id, formula_del_origen_id, version, estado, definicion) values (bor, fdo, null, 'borrador', '{}'::jsonb);
+  insert into public.formulas_del_origen (origen_id, nombre, activa, activada_en, creado_en) values (dos, 'Activa', true, now(), now() - interval '1 day');
+  insert into public.formulas_del_origen (origen_id, nombre) values (dos, 'Otra') returning id into fdo;
+  insert into public.plantillas_tarjeta (origen_id, formula_del_origen_id, version, estado, definicion, publicado_en) values (dos, fdo, 1, 'publicada', '{}'::jsonb, now());
+  insert into public.formulas_del_origen (origen_id, nombre) values (tra, 'De trabajo') returning id into fdo;
+  insert into public.plantillas_tarjeta (origen_id, formula_del_origen_id, version, estado, definicion, publicado_en) values (tra, fdo, 1, 'publicada', '{}'::jsonb, now());
   set local session_replication_role = origin;
   foreach p in array array['00000000-0000-4000-8000-00000007e00f', '00000000-0000-4000-8000-00000007e00b', '00000000-0000-4000-8000-00000007e00a']::uuid[] loop
     i := i + 1;
@@ -67,7 +78,7 @@ create or replace function pg_temp.rtp_origen(p_clave text) returns uuid languag
   select id from public.origenes where clave = p_clave
 $f$;
 
--- @test resumen con la tarjeta: verdadero con una plantilla publicada; falso sin plantilla o con sólo un borrador
+-- @test resumen con la tarjeta: verdadero con la de la activa publicada; falso sin plantilla, con sólo un borrador, con la publicada en otra fórmula o sin activa
 begin;
 select pg_temp.rtp_preparar();
 do $$
@@ -81,6 +92,12 @@ begin
   end if;
   if pg_temp.rtp_publicada(pia, pg_temp.rtp_origen('prueba_rtp_sin')) is distinct from false then
     raise exception 'sin plantilla, el resumen la da por publicada';
+  end if;
+  if pg_temp.rtp_publicada(pia, pg_temp.rtp_origen('prueba_rtp_dos')) is distinct from false then
+    raise exception 'con la publicada en una fórmula que no es la activa, el resumen la da por publicada';
+  end if;
+  if pg_temp.rtp_publicada(pia, pg_temp.rtp_origen('prueba_rtp_tra')) is distinct from false then
+    raise exception 'sin fórmula activa, el resumen da por publicada la tarjeta de la fórmula de trabajo';
   end if;
 end $$;
 rollback;

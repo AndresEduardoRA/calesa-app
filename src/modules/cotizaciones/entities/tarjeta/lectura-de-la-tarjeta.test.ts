@@ -43,6 +43,52 @@ describe('tarjetaDesde', () => {
   })
 })
 
+describe('tarjetaDesde con la lista de respaldo y las condiciones', () => {
+  it('lee una lista de respaldo, unas condiciones y una fila que se oculta por las suyas; una condición incompleta, nulo', () => {
+    const definicion = crudaDeLaTarjeta().definicion
+    const [primera] = definicion.celdas
+    const si = [{ es: 'mayor', nodo: 'total', a: 0.5 }]
+    const con = (contenido: unknown, filas: readonly unknown[] = definicion.filas) =>
+      tarjetaDesde(
+        crudaDeLaTarjeta({
+          definicion: { ...definicion, filas, celdas: [{ ...primera, contenido }] },
+        }),
+      )
+    const respaldo = {
+      tipo: 'respaldo',
+      datos: [
+        { tipo: 'dato', variable: 'titulo' },
+        { tipo: 'dato', nodo: 'remate', mostrar: 'etiqueta' },
+      ],
+    }
+    const leida = con(respaldo, [
+      ...definicion.filas,
+      { id: 'otra', alto: 20, ocultar_si: 'condiciones', si },
+    ])
+    if (leida?.estado !== 'lista') throw new Error('no se lee')
+    expect(leida.definicion.celdas[0]?.contenido).toEqual(respaldo)
+    expect(leida.definicion.filas.at(-1)).toEqual({
+      id: 'otra',
+      alto: 20,
+      ocultar_si: 'condiciones',
+      si,
+    })
+    const condiciones = {
+      tipo: 'condiciones',
+      ramas: [{ si, contenido: { tipo: 'texto', texto: 'Sí' } }],
+      si_no: { tipo: 'vacio' },
+    }
+    expect(con(condiciones)).not.toBeNull()
+    expect(
+      con({
+        ...condiciones,
+        ramas: [{ si: [{ es: 'mayor', nodo: 'total' }], contenido: { tipo: 'vacio' } }],
+      }),
+    ).toBeNull()
+    expect(con({ ...condiciones, si_no: { tipo: 'logo' } })).toBeNull()
+  })
+})
+
 describe('lecturaDesdeLaPlana', () => {
   it('arma los mismos `Map` desde la lectura plana de la vista previa', () => {
     const t = lecturaDesdeLaPlana({

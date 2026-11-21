@@ -99,7 +99,7 @@ test('E2E si otra persona cargó el transporte, el aviso conserva lo escrito', a
   await hueco.getByLabel('Notas').fill('mi nota')
   await hueco.getByRole('button', { name: 'Guardar' }).click()
   await expect(hueco.getByText('No se guardó nada.', { exact: false })).toBeVisible()
-  await hueco.getByRole('button', { name: 'Recargar' }).click()
+  await hueco.getByRole('button', { name: 'Recargar', exact: true }).click()
   // La versión nueva llega y lo escrito sigue ahí; guardar de nuevo ya es posible.
   await expect(hueco.getByText('No se guardó nada.', { exact: false })).toHaveCount(0)
   await expect(hueco.getByLabel('Notas')).toHaveValue('mi nota')

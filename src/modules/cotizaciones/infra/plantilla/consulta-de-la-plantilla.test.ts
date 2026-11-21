@@ -27,16 +27,16 @@ function clienteFalso() {
   return { cliente: cliente as unknown as SupabaseClient<Database>, llamadas }
 }
 
-const ORIGEN = '11111111-1111-4111-8111-111111111111'
+const FDO = '11111111-1111-4111-8111-111111111111'
 
 describe('consultaDeLasPlantillas', () => {
-  it('el borrador y la publicada del origen, con sus columnas y a lo sumo dos filas', () => {
+  it('el borrador y la publicada de la fórmula del origen, con sus columnas y a lo sumo dos filas', () => {
     const { cliente, llamadas } = clienteFalso()
-    void consultaDeLasPlantillas(cliente, ORIGEN)
+    void consultaDeLasPlantillas(cliente, FDO)
     expect(llamadas).toEqual([
       ['from', 'plantillas_tarjeta'],
       ['select', 'id, estado, version, definicion, nota, actualizado_en, publicado_en'],
-      ['eq', 'origen_id', ORIGEN],
+      ['eq', 'formula_del_origen_id', FDO],
       ['in', 'estado', ['borrador', 'publicada']],
       ['limit', 2],
     ])
@@ -44,13 +44,13 @@ describe('consultaDeLasPlantillas', () => {
 })
 
 describe('consultaDeLaFormulaPublicada', () => {
-  it('la publicada del origen: una fila, con la definición, el diseño y la visibilidad', () => {
+  it('la publicada de la fórmula del origen: una fila, con la definición, el diseño y la visibilidad', () => {
     const { cliente, llamadas } = clienteFalso()
-    void consultaDeLaFormulaPublicada(cliente, ORIGEN)
+    void consultaDeLaFormulaPublicada(cliente, FDO)
     expect(llamadas).toEqual([
       ['from', 'formulas'],
       ['select', 'id, version, definicion, diseno, visibilidad'],
-      ['eq', 'origen_id', ORIGEN],
+      ['eq', 'formula_del_origen_id', FDO],
       ['eq', 'estado', 'publicada'],
       ['limit', 1],
     ])

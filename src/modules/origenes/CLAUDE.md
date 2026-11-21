@@ -5,15 +5,16 @@ Orígenes de vehículos configurables (subasta/apibara o manual), su layout de c
 ## Entra y sale
 
 - Entra: `/configuracion/origenes` (la lista: sólo los orígenes que quien mira abre, tope 100 con aviso) y **la página del origen**,
-  `/configuracion/origenes/[id]/datos|campos|categorias|flujo|formula|tablas` (`src/app` arma el layout de `[id]` con el encabezado, «Para cotizar y
-  mover» y las pestañas; las pestañas Flujo, Fórmula y Tablas dibujan pantallas de `flujos` y `cotizaciones`, que este módulo no conoce). `/[id]` sin
+  `/configuracion/origenes/[id]/datos|campos|categorias|flujo|formulas|tablas` (`src/app` arma el layout de `[id]` con el encabezado, «Para cotizar y
+  mover» y las pestañas; las pestañas Flujo, Fórmulas (con el editor de cada fórmula en `formulas/[formula]/planilla|hoja|tarjeta`) y Tablas dibujan pantallas de `flujos` y `cotizaciones`, que este módulo no conoce). `/[id]` sin
   pestaña y los enlaces de antes (`?seccion=`, con `?campo=`, `?categoria=` y `?panel=`) redirigen con 308 (`[id]/route.ts`, `[id]/url-vieja.ts`). Las
   pantallas van partidas por pestaña: `pantallas/origen.ts` (el marco: `ParaCotizarYMover` y `MenuDelOrigen`, el «⋯» con activar, desactivar y
   eliminar), `origen-datos.ts`, `origen-campos.ts` y `origen-categorias.ts`.
 - `index.ts`: `getOrigenes(incluirInactivos?)`, `leerLayout(origenId, { conUso })` (también los campos desactivados: quien consume filtra `activo`),
   `leerCampoPrincipal(origenId)` (o `null`; para quien nombra un vehículo fuera del listado), `leerDatosNuevosDeApibara`, `leerOrigenes`,
   `pasosParaCotizarYMover(origen, { apibaraActiva })` y `pasosQueFaltan()` (los cinco pasos de «Para cotizar y mover», glosario: Datos, Campos, Flujo,
-  Fórmula y Tarjeta, con `estado` listo|aviso|bloquea; un inactivo, `{ inactivo: true }`; la tarjeta publicada sale de `origenes_resumen().tarjeta_publicada`),
+  Fórmula y Tarjeta, con `estado` listo|aviso|bloquea; un inactivo, `{ inactivo: true }`; los dos últimos miran la fórmula **activa**: Fórmula, que haya una
+  (`origenes_resumen().formula_publicada`), y Tarjeta, que la activa tenga la suya publicada (`tarjeta_publicada`); Fórmula lleva a la lista, `…/formulas`),
   `DATOS_COMUNES` y `leerDatosClave(origenId)` (para la ficha del vehículo: la lista resuelta, `{ de: 'comun', clave,
 etiqueta }` o `{ de: 'campo', clave, etiqueta, campoId }`, con los de fábrica si está vacía; las claves comunes son nombres de columna de
   `vehiculos` en snake_case: `anio`, `categoria_id`, `url_origen`).

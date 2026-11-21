@@ -2198,6 +2198,7 @@ export type Database = {
           definicion: NonNullable<Json>
           diseno: Json | null
           estado: Database['public']['Enums']['estado_version']
+          formula_del_origen_id: string
           id: string
           nota: string | null
           origen_id: string
@@ -2216,6 +2217,7 @@ export type Database = {
           definicion: NonNullable<Json>
           diseno?: Json | null
           estado?: Database['public']['Enums']['estado_version']
+          formula_del_origen_id: string
           id?: string
           nota?: string | null
           origen_id: string
@@ -2233,6 +2235,7 @@ export type Database = {
           definicion?: NonNullable<Json>
           diseno?: Json | null
           estado?: Database['public']['Enums']['estado_version']
+          formula_del_origen_id?: string
           id?: string
           nota?: string | null
           origen_id?: string
@@ -2250,6 +2253,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'perfiles'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'formulas_formula_del_origen_fkey'
+            columns: ['origen_id', 'formula_del_origen_id']
+            isOneToOne: false
+            referencedRelation: 'formulas_del_origen'
+            referencedColumns: ['origen_id', 'id']
           },
           {
             foreignKeyName: 'formulas_origen_id_fkey'
@@ -2270,6 +2280,84 @@ export type Database = {
             columns: ['version_origen_id']
             isOneToOne: false
             referencedRelation: 'formulas'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      formulas_del_origen: {
+        Row: {
+          activa: boolean
+          activada_en: string | null
+          activada_por: string | null
+          actualizado_en: string
+          archivada_en: string | null
+          archivada_por: string | null
+          copiada_de_otro_origen: boolean
+          creado_en: string
+          creado_por: string | null
+          desactivada_en: string | null
+          id: string
+          nombre: string
+          origen_id: string
+        }
+        ComputedFields: never
+        Insert: {
+          activa?: boolean
+          activada_en?: string | null
+          activada_por?: string | null
+          actualizado_en?: string
+          archivada_en?: string | null
+          archivada_por?: string | null
+          copiada_de_otro_origen?: boolean
+          creado_en?: string
+          creado_por?: string | null
+          desactivada_en?: string | null
+          id?: string
+          nombre: string
+          origen_id: string
+        }
+        Update: {
+          activa?: boolean
+          activada_en?: string | null
+          activada_por?: string | null
+          actualizado_en?: string
+          archivada_en?: string | null
+          archivada_por?: string | null
+          copiada_de_otro_origen?: boolean
+          creado_en?: string
+          creado_por?: string | null
+          desactivada_en?: string | null
+          id?: string
+          nombre?: string
+          origen_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'formulas_del_origen_activada_por_fkey'
+            columns: ['activada_por']
+            isOneToOne: false
+            referencedRelation: 'perfiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'formulas_del_origen_archivada_por_fkey'
+            columns: ['archivada_por']
+            isOneToOne: false
+            referencedRelation: 'perfiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'formulas_del_origen_creado_por_fkey'
+            columns: ['creado_por']
+            isOneToOne: false
+            referencedRelation: 'perfiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'formulas_del_origen_origen_id_fkey'
+            columns: ['origen_id']
+            isOneToOne: false
+            referencedRelation: 'origenes'
             referencedColumns: ['id']
           },
         ]
@@ -4381,6 +4469,7 @@ export type Database = {
           creado_por: string | null
           definicion: NonNullable<Json>
           estado: Database['public']['Enums']['estado_version']
+          formula_del_origen_id: string
           id: string
           nota: string | null
           origen_id: string
@@ -4394,6 +4483,7 @@ export type Database = {
           creado_por?: string | null
           definicion: NonNullable<Json>
           estado?: Database['public']['Enums']['estado_version']
+          formula_del_origen_id: string
           id?: string
           nota?: string | null
           origen_id: string
@@ -4406,6 +4496,7 @@ export type Database = {
           creado_por?: string | null
           definicion?: NonNullable<Json>
           estado?: Database['public']['Enums']['estado_version']
+          formula_del_origen_id?: string
           id?: string
           nota?: string | null
           origen_id?: string
@@ -4419,6 +4510,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: 'perfiles'
             referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'plantillas_tarjeta_formula_del_origen_fkey'
+            columns: ['origen_id', 'formula_del_origen_id']
+            isOneToOne: false
+            referencedRelation: 'formulas_del_origen'
+            referencedColumns: ['origen_id', 'id']
           },
           {
             foreignKeyName: 'plantillas_tarjeta_origen_id_fkey'
@@ -8201,6 +8299,63 @@ export type Database = {
         }
         Returns: undefined
       }
+      _fdo_activada_por: { Args: { p_fdo: string }; Returns: string }
+      _fdo_campos_que_faltan: { Args: { p_def: Json; p_origen: string }; Returns: Json }
+      _fdo_de_trabajo: { Args: { p_crear: boolean; p_origen: string }; Returns: string }
+      _fdo_de_trabajo_leida: { Args: { p_origen: string }; Returns: string }
+      _fdo_exigir_campos: { Args: { p_def: Json; p_origen: string }; Returns: undefined }
+      _fdo_formula_en_blanco: { Args: Record<PropertyKey, never>; Returns: Json }
+      _fdo_nombre: { Args: { p_nombre: string }; Returns: string }
+      _fdo_origen_con_permiso: { Args: { p_id: string }; Returns: string }
+      _fdo_resolver: {
+        Args: { p_crear: boolean; p_formula_del_origen: string; p_origen: string }
+        Returns: {
+          activa: boolean
+          activada_en: string | null
+          activada_por: string | null
+          actualizado_en: string
+          archivada_en: string | null
+          archivada_por: string | null
+          copiada_de_otro_origen: boolean
+          creado_en: string
+          creado_por: string | null
+          desactivada_en: string | null
+          id: string
+          nombre: string
+          origen_id: string
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'formulas_del_origen'
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      _fdo_tarjeta_en_blanco: { Args: Record<PropertyKey, never>; Returns: Json }
+      _fdo_tomar: {
+        Args: { p_esperada: string; p_id: string; p_origen: string }
+        Returns: {
+          activa: boolean
+          activada_en: string | null
+          activada_por: string | null
+          actualizado_en: string
+          archivada_en: string | null
+          archivada_por: string | null
+          copiada_de_otro_origen: boolean
+          creado_en: string
+          creado_por: string | null
+          desactivada_en: string | null
+          id: string
+          nombre: string
+          origen_id: string
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'formulas_del_origen'
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       _final_aplicar: {
         Args: {
           c: Omit<
@@ -8936,7 +9091,7 @@ export type Database = {
         Returns: number
       }
       _plantilla_borrador_ausente: {
-        Args: { p_esperada: string; p_origen: string }
+        Args: { p_esperada: string; p_formula_del_origen: string }
         Returns: undefined
       }
       _plantilla_conversion_fila: {
@@ -8952,6 +9107,24 @@ export type Database = {
           p_visibilidad: Json
         }
         Returns: Json
+      }
+      _plantilla_cuadricula_condiciones: {
+        Args: { p_donde: string; p_si: Json }
+        Returns: undefined
+      }
+      _plantilla_cuadricula_dato: { Args: { p_donde: string; p_x: Json }; Returns: undefined }
+      _plantilla_cuadricula_datos: {
+        Args: { p_plantilla: Json }
+        Returns: {
+          es: string
+          id: string
+          lugar: string
+          mostrar: string
+          nodo: string
+          o: number
+          opcion: string
+          variable: string
+        }[]
       }
       _plantilla_cuadricula_forma: {
         Args: { p_con_tope: boolean; p_plantilla: Json }
@@ -8971,6 +9144,7 @@ export type Database = {
         Args: { p_donde: string; p_regla: string }
         Returns: undefined
       }
+      _plantilla_cuadricula_simple: { Args: { p_donde: string; p_x: Json }; Returns: undefined }
       _plantilla_entero_entre: {
         Args: { p: Json; p_maximo: number; p_minimo: number }
         Returns: boolean
@@ -8993,6 +9167,10 @@ export type Database = {
           p_renglones: number
         }
         Returns: Json
+      }
+      _plantilla_publicar_en: {
+        Args: { p_esperada: string; p_formula_del_origen: string; p_nota: string }
+        Returns: string
       }
       _portal_clave_validar: { Args: { p_clave: string }; Returns: undefined }
       _portal_codigo_normal: { Args: { p_codigo: string }; Returns: string }
@@ -9027,9 +9205,11 @@ export type Database = {
         Returns: Json
       }
       _proyecto_fase_que_pide_pago: { Args: { p_proyecto: string }; Returns: string }
+      _publicada_de_la_activa: { Args: { p_origen: string }; Returns: string }
       _publicar_formula: {
         Args: {
           p_actualizado_en_esperado: string
+          p_formula_del_origen: string
           p_ignorar_retirados: boolean
           p_nota: string
           p_origen: string
@@ -9043,6 +9223,7 @@ export type Database = {
           p_detalle: Json
           p_diseno: Json
           p_esperada: string
+          p_formula_del_origen: string
           p_ignorar_retirados: boolean
           p_nota: string
           p_origen: string
@@ -9432,15 +9613,62 @@ export type Database = {
       _sin_tildes: { Args: { p_texto: string }; Returns: string }
       _subasta_conflicto: { Args: { p_vehiculo: string }; Returns: undefined }
       _subasta_puede_resolver: { Args: { p_vehiculo: string }; Returns: string }
+      _tabla_referencia_clave: { Args: { p_nombre: string }; Returns: string }
+      _tabla_referencia_columnas_validas: {
+        Args: { p_anteriores?: Json; p_columnas: Json }
+        Returns: Json
+      }
       _tabla_referencia_filas_validas: {
         Args: { p_columnas: Json; p_filas: Json }
         Returns: undefined
       }
+      _tabla_referencia_frase_de_usos: {
+        Args: { p_columnas?: string[]; p_tabla: string }
+        Returns: string
+      }
+      _tabla_referencia_permiso_de_quienes_la_usan: {
+        Args: { p_tabla: string }
+        Returns: undefined
+      }
       _tabla_referencia_publicada_por: { Args: { p_tabla: string }; Returns: string }
+      _tabla_referencia_tomar: {
+        Args: { p_tabla: string; p_version_esperada: number }
+        Returns: {
+          activa: boolean
+          actualizado_en: string
+          clave: string
+          columnas: NonNullable<Json>
+          creado_en: string
+          descripcion: string | null
+          id: string
+          nombre: string
+          nota: string | null
+          origen_id: string | null
+          publicado_en: string | null
+          publicado_por: string | null
+          version: number
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'tablas_referencia'
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       _tabla_referencia_usada_en: {
         Args: { p_origen?: string; p_tabla: string }
         Returns: {
+          formula_del_origen_id: string
           formula_id: string
+          origen_id: string
+        }[]
+      }
+      _tabla_referencia_usos: {
+        Args: { p_tabla: string }
+        Returns: {
+          columnas: string[]
+          estado: string
+          origen: string
           origen_id: string
         }[]
       }
@@ -10174,6 +10402,7 @@ export type Database = {
       }
       cotizacion_paquete_aplicar: {
         Args: {
+          p_formula_del_origen?: string
           p_formula_esperada: string
           p_origen: string
           p_paquete: Json
@@ -10256,6 +10485,7 @@ export type Database = {
           origen_id: string
           titulo: string
           total: number
+          vence_el: string
           vencida: boolean
         }[]
       }
@@ -10618,6 +10848,7 @@ export type Database = {
       flujo_regla_impacto: { Args: { p_flujo: string; p_regla: string }; Returns: Json }
       formula_cambiar_cabecera: {
         Args: {
+          p_formula_del_origen?: string
           p_modo_por_defecto: string
           p_modos_visibles: string[]
           p_origen: string
@@ -10627,11 +10858,56 @@ export type Database = {
         Returns: string
       }
       formula_cambiar_constante: {
-        Args: { p_nodo: string; p_origen: string; p_publicada_esperada?: string; p_valor: number }
+        Args: {
+          p_formula_del_origen?: string
+          p_nodo: string
+          p_origen: string
+          p_publicada_esperada?: string
+          p_valor: number
+        }
+        Returns: string
+      }
+      formula_del_origen_activar: {
+        Args: {
+          p_activa_esperada: string
+          p_actualizado_en_esperado: string
+          p_borrador_esperado: string
+          p_id: string
+          p_nota: string
+          p_plantilla_borrador_esperado: string
+          p_plantilla_publicada_esperada: string
+          p_publicada_esperada: string
+        }
+        Returns: Json
+      }
+      formula_del_origen_archivar: {
+        Args: { p_actualizado_en_esperado: string; p_id: string }
+        Returns: string
+      }
+      formula_del_origen_crear: {
+        Args: {
+          p_copia_de?: string
+          p_id: string
+          p_nombre: string
+          p_origen: string
+          p_pieza?: string
+        }
+        Returns: Json
+      }
+      formula_del_origen_eliminar: {
+        Args: { p_actualizado_en_esperado: string; p_id: string }
+        Returns: undefined
+      }
+      formula_del_origen_renombrar: {
+        Args: { p_actualizado_en_esperado: string; p_id: string; p_nombre: string }
         Returns: string
       }
       formula_descartar_borrador: {
-        Args: { p_actualizado_en_esperado?: string; p_origen: string }
+        Args: {
+          p_actualizado_en_esperado?: string
+          p_formula_del_origen?: string
+          p_origen: string
+        }
         Returns: undefined
       }
       formula_guardar_borrador: {
@@ -10639,6 +10915,7 @@ export type Database = {
           p_actualizado_en_esperado?: string
           p_def: Json
           p_diseno: Json
+          p_formula_del_origen?: string
           p_nota?: string
           p_origen: string
           p_params: Json
@@ -10650,6 +10927,7 @@ export type Database = {
       formula_publicar: {
         Args: {
           p_actualizado_en_esperado?: string
+          p_formula_del_origen?: string
           p_nota: string
           p_origen: string
           p_publicada_esperada?: string
@@ -10657,7 +10935,13 @@ export type Database = {
         Returns: string
       }
       formula_revertir: {
-        Args: { p_nota: string; p_origen: string; p_publicada_esperada: string; p_version: string }
+        Args: {
+          p_formula_del_origen?: string
+          p_nota: string
+          p_origen: string
+          p_publicada_esperada: string
+          p_version: string
+        }
         Returns: string
       }
       formula_tipo_cambio_del_nodo: { Args: { p_formula: string; p_nodo: string }; Returns: Json }
@@ -11290,15 +11574,26 @@ export type Database = {
       persona_dominada: { Args: { p_usuario: string }; Returns: boolean }
       personas_dominadas: { Args: { p_ids: string[] }; Returns: string[] }
       plantilla_descartar_borrador: {
-        Args: { p_actualizado_en_esperado: string; p_origen: string }
+        Args: { p_actualizado_en_esperado: string; p_formula_del_origen?: string; p_origen: string }
         Returns: undefined
       }
       plantilla_guardar_borrador: {
-        Args: { p_actualizado_en_esperado: string; p_def: Json; p_nota?: string; p_origen: string }
+        Args: {
+          p_actualizado_en_esperado: string
+          p_def: Json
+          p_formula_del_origen?: string
+          p_nota?: string
+          p_origen: string
+        }
         Returns: string
       }
       plantilla_publicar: {
-        Args: { p_actualizado_en_esperado: string; p_nota: string; p_origen: string }
+        Args: {
+          p_actualizado_en_esperado: string
+          p_formula_del_origen?: string
+          p_nota: string
+          p_origen: string
+        }
         Returns: string
       }
       portal_desbloquear: { Args: { p_lead: string }; Returns: undefined }
@@ -11606,6 +11901,18 @@ export type Database = {
       }
       storage_gc_rescatar: { Args: { p_bucket: string; p_ruta: string }; Returns: undefined }
       storage_refcount: { Args: { p_bucket: string; p_ruta: string }; Returns: number }
+      tabla_referencia_columnas: {
+        Args: { p_columnas: Json; p_tabla: string; p_version_esperada: number }
+        Returns: Json
+      }
+      tabla_referencia_crear: {
+        Args: { p_columnas: Json; p_id: string; p_nombre: string; p_origen: string }
+        Returns: Json
+      }
+      tabla_referencia_desactivar: {
+        Args: { p_tabla: string; p_version_esperada: number }
+        Returns: Json
+      }
       tabla_referencia_publicar: {
         Args: { p_filas: Json; p_nota: string; p_tabla: string; p_version_esperada: number }
         Returns: Json

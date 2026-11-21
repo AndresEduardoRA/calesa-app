@@ -1,9 +1,10 @@
-// Las versiones de la fórmula de un origen, como las lee la Fórmula de la página del origen (4.20-2a): la publicada, el borrador y la lista de las publicadas y
-// archivadas, de la más nueva a la más vieja, por cursor sobre `formulas_origen_id_version_key (origen_id, version)`. Lo oculto (`definicion`, `params`, `diseno`,
-// `visibilidad`) nunca viaja: los esquemas son estrictos y una fila con una columna de más es un error de lectura, no una fila.
+// Las versiones de la fórmula de trabajo de un origen, como las lee la pestaña Fórmula de la página del origen (4.20-2a): la publicada, el borrador y la lista de
+// las publicadas y archivadas, de la más nueva a la más vieja, por cursor sobre `formulas_formula_del_origen_id_version_key (formula_del_origen_id, version)`. Lo
+// oculto (`definicion`, `params`, `diseno`, `visibilidad`) nunca viaja: los esquemas son estrictos y una fila con una columna de más es un error de lectura, no una fila.
 import { z } from 'zod'
 import { fallo, ok, type Resultado } from '@/shared/lib/errores'
 import { TAMANO_DE_VER_MAS } from '@/shared/lib/paginacion'
+import type { FormulaDelOrigen } from '../formula-del-origen'
 
 // Las columnas de una fila de la lista y las del estado (la publicada y el borrador).
 export const COLUMNAS_DE_VERSION = 'id, version, estado, nota, publicado_por, publicado_en'
@@ -80,8 +81,10 @@ export type PaginaConAutores = {
   siguiente: number | null
 }
 
-// Lo que la pestaña «Fórmula» lee de un origen en el servidor.
-export type FormulaDelOrigen = {
+// Lo que la pestaña «Fórmula» lee de un origen en el servidor: su fórmula de trabajo (nula si el origen todavía no tiene: la crea el primer guardado) y de ella la
+// publicada, el borrador y la primera página de versiones.
+export type LecturaDeLaFormula = {
+  formulaDelOrigen: FormulaDelOrigen | null
   publicada: ConAutor<PublicadaDelOrigen> | null
   borrador: ConAutor<BorradorDelOrigen> | null
   versiones: PaginaConAutores
@@ -102,7 +105,7 @@ export function versionesDesde(filas: unknown): VersionDeLaFormula[] | null {
   }))
 }
 
-// La publicada y el borrador de un origen (a lo sumo una de cada una: `formulas_publicada_unica` y `formulas_borrador_unico`).
+// La publicada y el borrador de una fórmula del origen (a lo sumo una de cada una: `formulas_publicada_unica` y `formulas_borrador_unico`).
 export function estadoDesde(filas: unknown): EstadoDeLaFormula | null {
   const leidas = z.array(esquemaDelEstado).max(2).safeParse(filas)
   if (!leidas.success) {

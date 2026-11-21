@@ -13,6 +13,8 @@ type Props = {
   abierto: boolean
   alCerrar: () => void
   origenId: string
+  // La fórmula del origen que la pestaña leyó: la base revierte en ella.
+  formulaDelOrigenId: string | null
   // A cuál se revierte: se fija al abrir.
   version: VersionParaRevertir
   // La publicada que la pestaña leyó: tras «Recargar» llega la nueva y se puede volver a enviar.
@@ -23,7 +25,14 @@ const MENSAJE_DE_VALIDACION = 'Revisa la nota.'
 
 // «Revertir a la versión N» (`?panel=revertir-formula&version=<id>`): la nota viene escrita y «Revertir» publica la N+1 como copia de esa versión, con su diseño. El
 // conflicto (otra persona publicó) es el mensaje de la base, tal cual; «Recargar» trae la publicada nueva y conserva la nota. Quien lo monta le da una `key` por apertura.
-export function ModalDeRevertir({ abierto, alCerrar, origenId, version, publicadaId }: Props) {
+export function ModalDeRevertir({
+  abierto,
+  alCerrar,
+  origenId,
+  formulaDelOrigenId,
+  version,
+  publicadaId,
+}: Props) {
   const revertir = useAction(revertirVersion)
   const formulario = useFormularioDePublicacion({
     abierto,
@@ -33,6 +42,7 @@ export function ModalDeRevertir({ abierto, alCerrar, origenId, version, publicad
       enviarAccion(
         revertir.executeAsync({
           origenId,
+          formulaDelOrigenId,
           versionId: version.id,
           nota,
           publicadaEsperada: publicadaId,

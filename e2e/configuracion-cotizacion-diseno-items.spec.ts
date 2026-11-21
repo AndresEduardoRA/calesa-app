@@ -14,6 +14,7 @@ import {
   leerElBorradorDelDiseno,
   publicarFormulaConModos,
 } from './soporte/diseno-editor'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // La pestaña «Diseño», ítems, cabecera y tarjeta (4.22-3, `docs/UX.md` › «Cotización: hoja (estados propios)»): el camino feliz en escritorio. Se enciende «Ver total en moneda local»,
 // se suma el modo «Paralelo» y se le cambian sus tipos de cambio, el interruptor pasa de «Habilita» a «Muestra», una celda gana su ayuda con un texto y la tarjeta muestra la garantía
@@ -55,7 +56,7 @@ const garantia = (page: Page) =>
   tarjeta(page).getByRole('checkbox', { name: 'Mostrar «Garantía» junto al total' })
 
 async function abrirElDiseno(page: Page) {
-  await page.goto(`/configuracion/origenes/${origen.id}/formula/hoja`)
+  await abrirLaFormula(page, origen.id, 'hoja')
   await enLaPestana(page, 'Hoja')
   await expect(cabecera(page)).toBeVisible()
 }

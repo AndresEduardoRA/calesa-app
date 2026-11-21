@@ -72,6 +72,24 @@ begin
   reset role;
   return r;
 end $f$;
+-- Aplicar sobre una fórmula del origen elegida, y el sqlstate de hacerlo (o «sin error»).
+create or replace function pg_temp.pv1_aplicar_en(p_quien uuid, p_origen uuid, p_paquete jsonb, p_fdo uuid) returns jsonb language plpgsql as $f$
+declare r jsonb;
+begin
+  perform pg_temp.pv1_como(p_quien);
+  set local role authenticated;
+  r := public.cotizacion_paquete_aplicar(p_origen, p_paquete, null, null, p_fdo);
+  reset role;
+  return r;
+end $f$;
+create or replace function pg_temp.pv1_codigo_en(p_quien uuid, p_origen uuid, p_paquete jsonb, p_fdo uuid) returns text language plpgsql as $f$
+begin
+  perform pg_temp.pv1_aplicar_en(p_quien, p_origen, p_paquete, p_fdo);
+  return 'sin error';
+exception when others then
+  reset role;
+  return sqlstate;
+end $f$;
 create or replace function pg_temp.pv1_error(p_quien uuid, p_origen uuid, p_paquete jsonb, p_formula timestamptz, p_plantilla timestamptz) returns text
 language plpgsql as $f$
 declare v_m text; v_h text;
@@ -377,7 +395,7 @@ reset role;
 do $$
 declare v_p regprocedure;
 begin
-  v_p := to_regprocedure('public.cotizacion_paquete_aplicar(uuid,jsonb,timestamptz,timestamptz)');
+  v_p := to_regprocedure('public.cotizacion_paquete_aplicar(uuid,jsonb,timestamptz,timestamptz,uuid)');
   if v_p is null then raise exception 'no existe cotizacion_paquete_aplicar'; end if;
   if (select prosecdef from pg_proc where oid = v_p) then raise exception 'cotizacion_paquete_aplicar tiene que ser invocadora'; end if;
   if not (select prosecdef from pg_proc where oid = 'public._paquete_colores_preparar(jsonb,integer)'::regprocedure) then
@@ -385,3 +403,43 @@ begin
   end if;
   if not (select coalesce(proconfig, '{}') @> array['search_path=""'] from pg_proc where oid = v_p) then raise exception 'sin search_path vacío'; end if;
 end $$;
+
+-- @test plantillas de V1: P12 sobre una fórmula del origen que no es la de trabajo, escribe sus borradores y la de trabajo no cambia
+begin;
+select pg_temp.pv1_preparar();
+do $$
+declare o uuid := (select id from public.origenes where clave = 'prueba_pv1'); vieja uuid; nueva uuid;
+begin
+  -- La de trabajo es la más nueva sin archivar: «Nueva». Se aplica a «Vieja».
+  insert into public.formulas_del_origen (origen_id, nombre, creado_en) values (o, 'Vieja', now() - interval '1 day') returning id into vieja;
+  insert into public.formulas_del_origen (origen_id, nombre) values (o, 'Nueva') returning id into nueva;
+  perform pg_temp.pv1_aplicar_en(pg_temp.pv1_ana(), o, pg_temp.pv1_paquete(pg_temp.pv1_doc('usa')), vieja);
+  if not exists (select 1 from public.formulas f where f.formula_del_origen_id = vieja and f.estado = 'borrador') then
+    raise exception 'no escribió el borrador de la fórmula elegida';
+  end if;
+  if not exists (select 1 from public.plantillas_tarjeta p where p.formula_del_origen_id = vieja and p.estado = 'borrador') then
+    raise exception 'no escribió el borrador de la tarjeta de la fórmula elegida';
+  end if;
+  if exists (select 1 from public.formulas f where f.formula_del_origen_id = nueva)
+     or exists (select 1 from public.plantillas_tarjeta p where p.formula_del_origen_id = nueva) then
+    raise exception 'escribió en la fórmula de trabajo';
+  end if;
+end $$;
+rollback;
+
+-- @test plantillas de V1: P13 sobre una fórmula archivada, 22023; sobre una de otro origen, 42501; nada escrito
+begin;
+select pg_temp.pv1_preparar();
+do $$
+declare o uuid := (select id from public.origenes where clave = 'prueba_pv1'); archivada uuid; ajena uuid;
+begin
+  insert into public.formulas_del_origen (origen_id, nombre, archivada_en) values (o, 'Archivada', now()) returning id into archivada;
+  insert into public.formulas_del_origen (origen_id, nombre) values (pg_temp.pv1_otro(), 'Ajena') returning id into ajena;
+  perform pg_temp.pv1_igual(pg_temp.pv1_codigo_en(pg_temp.pv1_ana(), o, pg_temp.pv1_paquete(pg_temp.pv1_doc('usa')), archivada), '22023');
+  perform pg_temp.pv1_igual(pg_temp.pv1_codigo_en(pg_temp.pv1_ana(), o, pg_temp.pv1_paquete(pg_temp.pv1_doc('usa')), ajena), '42501');
+  if exists (select 1 from public.formulas f where f.formula_del_origen_id in (archivada, ajena))
+     or exists (select 1 from public.plantillas_tarjeta p where p.formula_del_origen_id in (archivada, ajena)) then
+    raise exception 'escribió en una archivada o de otro origen';
+  end if;
+end $$;
+rollback;

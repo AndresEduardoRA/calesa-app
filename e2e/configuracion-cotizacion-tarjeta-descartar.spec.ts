@@ -16,6 +16,7 @@ import {
   sembrarBorradorDePlantilla,
   type TerrenoDePlantilla,
 } from './soporte/plantilla'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
 
@@ -50,7 +51,7 @@ test.beforeEach(() => {
 
 async function abrirTarjeta(page: Page, extra = '') {
   await entrar(page, configuradora, { fresco: true })
-  await page.goto(`/configuracion/origenes/${origenId()}/formula/tarjeta${extra}`)
+  await abrirLaFormula(page, origenId(), 'tarjeta', extra)
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
 }
 
@@ -103,6 +104,8 @@ test('E8: un PT409 porque otra persona guardó no borra y «Recargar» lo quita 
   if (!terreno) throw new Error('No hay terreno.')
   const otra = await plantillaSobre(terreno.duena).guardar({
     origenId: origenId(),
+    // La otra persona escribe en la fórmula de trabajo, la única del origen.
+    formulaDelOrigenId: null,
     esperada,
     definicion: cuadriculaValida('de la otra persona'),
   })
@@ -113,7 +116,7 @@ test('E8: un PT409 porque otra persona guardó no borra y «Recargar» lo quita 
   await expect(confirmar(page)).toBeDisabled()
   expect(borradorGuardado(origenId())).not.toBeNull()
   await dialogo(page)
-    .getByRole('button', { name: /Recargar/ })
+    .getByRole('button', { name: /^Recargar$/ })
     .click()
   await expect(dialogo(page).getByText(/El borrador de esta plantilla cambió/)).toHaveCount(0)
   await expect(confirmar(page)).toBeEnabled()
@@ -122,13 +125,15 @@ test('E8: un PT409 porque otra persona guardó no borra y «Recargar» lo quita 
   if (!nueva) throw new Error('No hay borrador.')
   const borrada = await plantillaSobre(terreno.duena).descartar({
     origenId: origenId(),
+    // La otra persona escribe en la fórmula de trabajo, la única del origen.
+    formulaDelOrigenId: null,
     esperada: nueva,
   })
   if (!borrada.ok) throw new Error(borrada.error.mensaje)
   await confirmar(page).click()
   await expect(dialogo(page).getByText(/El borrador ya no está: se descartó/)).toBeVisible()
   await dialogo(page)
-    .getByRole('button', { name: /Recargar/ })
+    .getByRole('button', { name: /^Recargar$/ })
     .click()
   await expect(
     dialogo(page).getByText('El borrador ya no está: otra persona lo publicó o lo descartó.'),

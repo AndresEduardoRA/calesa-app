@@ -11,6 +11,7 @@ import {
   tarjetaDibujada,
   type TerrenoDePlantilla,
 } from './soporte/plantilla'
+import { abrirLaFormula, enElEditor } from './soporte/rutas-de-la-formula'
 
 // @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
 
@@ -76,7 +77,7 @@ test.afterAll(async ({}, info) => {
 })
 
 async function abrirTarjeta(page: Page, id = origenId()) {
-  await page.goto(`/configuracion/origenes/${id}/formula/tarjeta`)
+  await abrirLaFormula(page, id, 'tarjeta')
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
 }
 
@@ -89,22 +90,22 @@ test('E1: sin borrador ni publicada el editor nace de la de por omisión, guarda
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  await page.goto(`/configuracion/origenes/${origenId()}/formula`)
-  // Las pestañas del origen (Flujo apagada: no configura el flujo) y, debajo, las sub-pestañas de Fórmula.
+  await abrirLaFormula(page, origenId(), 'planilla')
+  // Las pestañas del origen (Flujo apagada: no configura el flujo) y, debajo, las de la fórmula.
   await expect(page.getByRole('tab')).toHaveText([
     'Datos',
     'Campos',
     'Categorías',
     'Flujo',
-    'Fórmula',
+    'Fórmulas',
     'Tablas',
-    'Fórmula',
+    'Planilla',
     'Hoja',
     'Tarjeta',
   ])
   await expect(page.getByRole('tab', { name: 'Flujo', exact: true })).toBeDisabled()
   await page.getByRole('tab', { name: 'Tarjeta', exact: true }).click()
-  await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${origenId()}/formula/tarjeta$`))
+  await expect(page).toHaveURL(enElEditor(origenId(), 'tarjeta'))
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(
     page.getByText('Sin borrador ni publicada: parte de la de por omisión.'),
@@ -134,7 +135,7 @@ test('E2: sin la clave ni un origen ajeno se abren por la URL; sin fórmula, el 
   page,
 }) => {
   await entrar(page, sinClave, { fresco: true })
-  await page.goto(`/configuracion/origenes/${origenId()}/formula/tarjeta`)
+  await abrirLaFormula(page, origenId(), 'tarjeta')
   // Se espera a que llegue antes de cambiar de cuenta (si no, la carga en curso aborta la ida al ingreso).
   await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
   await expect(page.getByRole('tab', { name: 'Tarjeta' })).toHaveCount(0)
@@ -142,16 +143,16 @@ test('E2: sin la clave ni un origen ajeno se abren por la URL; sin fórmula, el 
 
   await page.context().clearCookies()
   await entrar(page, configuradora, { fresco: true })
-  await page.goto(`/configuracion/origenes/${ajeno.id}/formula/tarjeta`)
+  await abrirLaFormula(page, ajeno.id, 'tarjeta')
   await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toHaveCount(0)
-  await page.goto(`/configuracion/origenes/${sinFormula.id}/formula/tarjeta`)
+  await abrirLaFormula(page, sinFormula.id, 'tarjeta')
   await expect(
-    page.getByText(/^Falta publicar la fórmula de .*: la tarjeta se arma con sus nodos\.$/),
+    page.getByText(/^Falta publicar la planilla de «.*»: la tarjeta se arma con sus filas\.$/),
   ).toBeVisible()
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toHaveCount(0)
-  await page.getByRole('link', { name: 'Ir a la fórmula' }).click()
-  await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${sinFormula.id}/formula$`))
+  await page.getByRole('link', { name: 'Ir a la planilla' }).click()
+  await expect(page).toHaveURL(enElEditor(sinFormula.id, 'planilla'))
 })
 
 test('E4: lo escrito en una celda y sin guardar vuelve tras recargar con «Descartar», y «Descartar» lo quita', async ({

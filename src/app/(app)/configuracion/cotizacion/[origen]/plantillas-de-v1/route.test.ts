@@ -11,6 +11,7 @@ const h = vi.hoisted(() => ({
   permisos: [] as { clave: string; origenId: string | null; alcance: 'propios' | 'todos' }[],
   estado: null as unknown,
   layout: null as unknown,
+  pedida: null as string | null,
 }))
 
 vi.mock('@/modules/equipo', () => ({
@@ -33,7 +34,13 @@ vi.mock('@/modules/origenes', () => ({
 }))
 // El área de verdad, con su lectura de la base falsa: lo que viaja es lo que arma `datosDePlantillasDeV1()` con los cuatro paquetes.
 vi.mock('@/modules/cotizaciones/infra/plantilla/plantillas-de-v1-de-la-sesion', () => ({
-  plantillasDeV1Supabase: { leerEstado: () => Promise.resolve(h.estado), aplicar: vi.fn() },
+  plantillasDeV1Supabase: {
+    leerEstado: (formulaDelOrigenId: string) => {
+      h.pedida = formulaDelOrigenId
+      return Promise.resolve(h.estado)
+    },
+    aplicar: vi.fn(),
+  },
 }))
 
 const { leerPlantillasDeV1 } = await import('@/modules/cotizaciones/areas/plantilla/composicion')
@@ -41,8 +48,10 @@ vi.mock('@/modules/cotizaciones', () => ({ leerPlantillasDeV1 }))
 
 const { GET } = await import('./route')
 
-const pedir = (id = ORIGEN) =>
-  GET(new Request(`http://localhost/configuracion/cotizacion/${id}/plantillas-de-v1`), {
+const FORMULA = '66666666-6666-4666-8666-666666666666'
+
+const pedir = (id = ORIGEN, consulta = `?formula=${FORMULA}`) =>
+  GET(new Request(`http://localhost/configuracion/cotizacion/${id}/plantillas-de-v1${consulta}`), {
     params: Promise.resolve({ origen: id }),
   })
 
@@ -76,8 +85,17 @@ describe('GET /configuracion/cotizacion/<origen>/plantillas-de-v1', () => {
     expect((await pedir('no-es-un-id')).status).toBe(404)
   })
 
+  it('sin `?formula=` o con uno que no es un uuid: 400 en texto', async () => {
+    const sin = await pedir(ORIGEN, '')
+    expect(sin.status).toBe(400)
+    expect(sin.headers.get('content-type')).toMatch(/^text\/plain/)
+    expect(await sin.text()).toBe('Falta la fórmula del origen.')
+    expect((await pedir(ORIGEN, '?formula=otra')).status).toBe(400)
+  })
+
   it('las cuatro plantillas con su lectura y los borradores, sin caché', async () => {
     const r = await pedir()
+    expect(h.pedida).toBe(FORMULA)
     expect(r.status).toBe(200)
     expect(r.headers.get('cache-control')).toBe('private, no-store')
     const cuerpo = (await r.json()) as {

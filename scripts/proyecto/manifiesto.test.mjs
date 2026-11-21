@@ -64,7 +64,7 @@ test('el manifiesto real de calesa se lee: repo propio por nombre, cuenta, puert
   assert.equal(m.proyecto, 'calesa')
   const app = repoPropio(m, 'calesa-app')
   const web = repoPropio(m, 'calesa-web')
-  assert.equal(cuentaDelRepo(app), 'AndresEduardoRA')
+  assert.equal(cuentaDelRepo(app), 'imandresalpiri')
   assert.deepEqual(puertosDelRepo(app), { heredado: { api: 54621, base: 54622, app: 3000 } })
   assert.deepEqual(puertosDelRepo(web), { bloque: 5 })
   assert.deepEqual(contratosDelRepo(m, web), { provee: [], consume: [], contratos: [] })
@@ -76,7 +76,7 @@ test('el manifiesto real de calesa se lee: repo propio por nombre, cuenta, puert
   assert.equal(repoPropio(m, 'web'), web)
   assert.equal(repoPropio(m, 'app'), app)
   // Un repo que en GitHub se llama distinto se reconoce por el nombre de su remoto.
-  const ajeno = leerManifiesto(CALESA.replace('AndresEduardoRA/calesa-app', 'Otra/calesa.app'))
+  const ajeno = leerManifiesto(CALESA.replace('imandresalpiri/calesa-app', 'Otra/calesa.app'))
   assert.equal(repoPropio(ajeno, 'calesa.app').nombre, 'calesa-app')
 })
 
@@ -197,7 +197,7 @@ test('un manifiesto inválido dice qué campo y con qué comando validarlo', () 
 
 test('el nombre del repo sale del remoto, o de la carpeta si no hay', () => {
   assert.equal(
-    nombreDelRepo('https://github.com/AndresEduardoRA/calesa-app.git', '/x/app'),
+    nombreDelRepo('https://github.com/imandresalpiri/calesa-app.git', '/x/app'),
     'calesa-app',
   )
   assert.equal(
@@ -221,7 +221,7 @@ test('la CLI da el nombre, la cuenta, el bloque y la etapa del repo propio (por 
     'remote',
     'add',
     'origin',
-    'https://github.com/AndresEduardoRA/calesa-web.git',
+    'https://github.com/imandresalpiri/calesa-web.git',
   ])
   mkdirSync(join(raiz, '.proyecto'))
   writeFileSync(join(raiz, '.proyecto/proyecto.yaml'), CALESA)
@@ -229,7 +229,7 @@ test('la CLI da el nombre, la cuenta, el bloque y la etapa del repo propio (por 
     execFileSync('node', [join(AQUI, 'manifiesto.mjs'), campo, raiz], { encoding: 'utf8' }).trim()
   assert.equal(cli('proyecto'), 'calesa')
   assert.equal(cli('nombre'), 'calesa-web')
-  assert.equal(cli('cuenta'), 'AndresEduardoRA')
+  assert.equal(cli('cuenta'), 'imandresalpiri')
   assert.equal(cli('bloque'), '5')
   assert.equal(cli('etapa'), leerManifiesto(CALESA).repos.find((r) => r.rol === 'web').etapa)
   assert.match(cli('etapa'), /^(construccion|mantenimiento)$/)
@@ -240,7 +240,7 @@ test('la CLI da el nombre, la cuenta, el bloque y la etapa del repo propio (por 
     'remote',
     'set-url',
     'origin',
-    'https://github.com/AndresEduardoRA/calesa-app.git',
+    'https://github.com/imandresalpiri/calesa-app.git',
   ])
   assert.equal(cli('nombre'), 'calesa-app')
   assert.equal(cli('bloque'), '')
@@ -250,7 +250,7 @@ test('la CLI da el nombre, la cuenta, el bloque y la etapa del repo propio (por 
       encoding: 'utf8',
     }).trim()
   assert.equal(github('calesa-web'), githubDeRepo(leerManifiesto(CALESA), 'calesa-web'))
-  assert.match(github('calesa-web'), /^AndresEduardoRA\/calesa-web$/)
+  assert.match(github('calesa-web'), /^imandresalpiri\/calesa-web$/)
   assert.equal(github('calesa-crm'), '')
   // Inválido: sale con 1 y dice el campo.
   writeFileSync(

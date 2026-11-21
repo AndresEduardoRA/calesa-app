@@ -15,6 +15,7 @@ import {
 import { publicarFormulaDePrueba } from './soporte/cotizar-formula'
 import { PREFIJO_CLAVE_E2E, crearOrigenDePrueba, tarjetaDelOrigen } from './soporte/origenes'
 import { enLaPestana } from './soporte/pestanas-del-origen'
+import { formulaDeTrabajoDe } from './soporte/rutas-de-la-formula'
 
 // El origen como centro: cada origen tiene su página (`/configuracion/origenes/<id>/<pestaña>`) con «Para cotizar y mover» y seis pestañas,
 // cada una con su permiso en ese origen; lo de toda la empresa vive en Catálogos. Las URL de cuando Cotización, Flujos y Logística eran
@@ -37,6 +38,9 @@ let a: Origen = { id: '', nombre: '' }
 let b: Origen = { id: '', nombre: '' }
 let t: Origen = { id: '', nombre: '' }
 let c: Origen = { id: '', nombre: '' }
+// F: uno con una fórmula del origen (la de trabajo), para las URL viejas de la fórmula.
+let f: Origen = { id: '', nombre: '' }
+let formulaDeF = ''
 
 const claveBase = () => `centro_${proyecto}_`
 
@@ -69,6 +73,8 @@ test.beforeAll(async ({}, info) => {
   b = await nuevo('Centro B', 'b')
   t = await nuevo('Centro Tira', 'tira')
   c = await nuevo('Centro Inactivo', 'inactivo')
+  f = await nuevo('Centro Con Fórmula', 'formula')
+  formulaDeF = formulaDeTrabajoDe(f.id)
   const { error } = await admin().from('origenes').update({ activo: false }).eq('id', c.id)
   if (error) throw new Error(`No se pudo desactivar el origen: ${error.message}`)
   duena = correoDePrueba(`duena-centro-${proyecto}`)
@@ -113,10 +119,10 @@ test('E2E pestañas con permisos: quien sólo configura el cotizador de un orige
   await expect(paso(page, 'Flujo').getByRole('link')).toHaveCount(0)
   await expect(paso(page, 'Flujo')).toContainText('«Configurar el flujo»')
 
-  // Fórmula sí abre.
-  await page.getByRole('tab', { name: 'Fórmula', exact: true }).first().click()
-  await expect(page).toHaveURL(`/configuracion/origenes/${a.id}/formula`)
-  await enLaPestana(page, 'Fórmula')
+  // Fórmulas sí abre.
+  await page.getByRole('tab', { name: 'Fórmulas', exact: true }).click()
+  await expect(page).toHaveURL(`/configuracion/origenes/${a.id}/formulas`)
+  await enLaPestana(page, 'Fórmulas')
 
   // Flujo escrita a mano en la URL: dice por qué y ofrece la primera que abre.
   await page.goto(`/configuracion/origenes/${a.id}/flujo`)
@@ -149,7 +155,7 @@ test('E2E la tira: lo que falta enlaza a su pestaña, publicar la fórmula la po
   await page.goto(`/configuracion/origenes/${t.id}/datos`)
   await expect(tira(page).getByRole('listitem')).toHaveCount(5)
 
-  // Sin fases ni fórmula: ✗ Flujo y ✗ Fórmula, cada uno a su pestaña; la tarjeta, ⚠.
+  // Sin fases ni fórmula: ✗ Flujo y ✗ Fórmula, cada uno a su pestaña (la fórmula, a la lista); la tarjeta, ⚠.
   await expect(paso(page, 'Flujo')).toContainText('Bloquea')
   await expect(paso(page, 'Flujo').getByRole('link')).toHaveAttribute(
     'href',
@@ -158,7 +164,7 @@ test('E2E la tira: lo que falta enlaza a su pestaña, publicar la fórmula la po
   await expect(paso(page, 'Fórmula')).toContainText('Bloquea')
   await expect(paso(page, 'Fórmula').getByRole('link')).toHaveAttribute(
     'href',
-    `/configuracion/origenes/${t.id}/formula`,
+    `/configuracion/origenes/${t.id}/formulas`,
   )
   await expect(paso(page, 'Tarjeta')).toContainText('Aviso')
   await expect(paso(page, 'Tarjeta').getByRole('link')).toHaveAttribute(
@@ -278,6 +284,34 @@ const REDIRECCIONES: Record<string, Redireccion> = {
   'origenes/<id> ?categoria': {
     de: () => `/configuracion/origenes/${a.id}?categoria=${UNA_CATEGORIA}`,
     a: () => `/configuracion/origenes/${a.id}/categorias?categoria=${UNA_CATEGORIA}`,
+  },
+  // La ruta corta de la fórmula (route.ts, por persona): la fórmula de trabajo, con su consulta; sin ninguna, la lista.
+  'origenes/<id>/formula': {
+    de: () => `/configuracion/origenes/${f.id}/formula`,
+    a: () => `/configuracion/origenes/${f.id}/formulas/${formulaDeF}/planilla`,
+  },
+  'origenes/<id>/formula/hoja ?vista': {
+    de: () => `/configuracion/origenes/${f.id}/formula/hoja?vista=412`,
+    a: () => `/configuracion/origenes/${f.id}/formulas/${formulaDeF}/hoja?vista=412`,
+  },
+  'origenes/<id>/formula/tarjeta ?panel': {
+    de: () => `/configuracion/origenes/${f.id}/formula/tarjeta?panel=publicar-tarjeta`,
+    a: () =>
+      `/configuracion/origenes/${f.id}/formulas/${formulaDeF}/tarjeta?panel=publicar-tarjeta`,
+  },
+  'origenes/<id>/formula, sin fórmulas': {
+    de: () => `/configuracion/origenes/${a.id}/formula?version=2`,
+    a: () => `/configuracion/origenes/${a.id}/formulas`,
+  },
+  // Una fórmula sin parte (next.config.ts).
+  'origenes/<id>/formulas/<fórmula>': {
+    de: () => `/configuracion/origenes/${f.id}/formulas/${formulaDeF}?panel=renombrar-formula`,
+    a: () =>
+      `/configuracion/origenes/${f.id}/formulas/${formulaDeF}/planilla?panel=renombrar-formula`,
+  },
+  'origenes/<id> ?seccion=formula': {
+    de: () => `/configuracion/origenes/${a.id}?seccion=formula`,
+    a: () => `/configuracion/origenes/${a.id}/formulas`,
   },
   'origenes/<id> sin nada': {
     de: () => `/configuracion/origenes/${a.id}`,

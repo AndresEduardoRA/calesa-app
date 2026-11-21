@@ -8,6 +8,7 @@ import {
 } from './soporte/base'
 import {
   afirmarColumnasEnLaPagina,
+  bloquesLlegaron,
   columnaLateral,
   columnaPrincipal,
   desplazamientoDeLaVentana,
@@ -126,6 +127,7 @@ test('`?seccion=` desplaza la columna derecha y, al volver a la ficha, cada colu
   await expect(tituloDe(page, 'Vitrina')).toBeFocused()
   await expect(tituloDe(page, 'Vitrina')).toBeInViewport()
   expect(await desplazamientoDeLaVentana(page)).toBeLessThanOrEqual(1)
+  await bloquesLlegaron(page)
   const principal = (await medidaDe(columnaPrincipal(page))).arriba
   expect(principal).toBeGreaterThan(0)
   await columnaLateral(page).evaluate((e) => {

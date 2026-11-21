@@ -13,6 +13,8 @@ export type PropsDeLaPlanilla = {
   // El diseño de la versión leída: los modos de tipo de cambio y «Ver total» por defecto.
   diseno: Diseno | null
   origen: { id: string; nombre: string }
+  // La fórmula del origen que se edita: «La imagen que recibe el cliente» lleva a su tarjeta.
+  formulaDelOrigenId: string
   // «Sobre el borrador de <persona>.» o «Sobre la versión N publicada.»
   sobre: string
   // La unidad de ejemplo y el modo elegido viven en la sesión: sobreviven al ir y volver del Modo avanzado y se pierden al recargar.

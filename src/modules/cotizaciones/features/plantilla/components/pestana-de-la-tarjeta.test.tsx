@@ -60,6 +60,7 @@ const CUADRICULA: PlantillaEnCuadricula = {
 }
 const editor = (esperada: string): PropsDelEditor => ({
   origen: { id: 'o', nombre: 'Mini' },
+  formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
   esperada,
   inicial: CUADRICULA,
   de: 'borrador',

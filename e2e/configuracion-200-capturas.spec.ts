@@ -17,6 +17,7 @@ import {
   textoGrandeAlCargar,
   type TerrenoDelRecorrido,
 } from './soporte/recorrido'
+import { urlDeLaFormula } from './soporte/rutas-de-la-formula'
 
 // Las capturas de la sesión de defectos al 200 % (`E2E_CAPTURAS=e2e-capturas/defectos-200/{antes,despues}`): cada pantalla de Configuración,
 // el menú de cada persona del equipo, la matriz de Roles, el interruptor, el selector de iconos desplazado y la ficha de un lead con el
@@ -30,10 +31,17 @@ const PERSONA_LARGA = 'Maria de los Angeles Fernandez de Cordoba y Sanchez de la
 
 let r: TerrenoDelRecorrido
 let origen = { id: '', nombre: '' }
+let tabla = ''
 
 test.beforeAll(async ({}, info) => {
   r = await prepararRecorrido(info.project.name, 'D200')
   origen = await crearOrigenDePrueba(LARGO, `largo_capturas_${info.project.name}`)
+  // Una tabla de referencia del origen, para su panel «Columnas».
+  tabla = sql(`
+    insert into public.tablas_referencia (origen_id, clave, nombre, columnas)
+    values ('${origen.id}', 'fletes_por_puerto', 'Fletes por puerto de destino',
+            '[{"clave":"puerto","etiqueta":"Puerto","tipo":"texto"},{"clave":"anio","etiqueta":"Año","tipo":"anio"},{"clave":"monto","etiqueta":"Monto en dólares","tipo":"numero"}]')
+    returning id`)
   await crearPersona({
     email: correoDePrueba(`una-persona-con-un-correo-muy-largo-del-equipo-${info.project.name}`),
     contrasena: 'una-clave-de-prueba-9',
@@ -68,8 +76,14 @@ const PANTALLAS = [
   ['origen-campos', () => `/configuracion/origenes/${origen.id}/campos`],
   ['origen-categorias', () => `/configuracion/origenes/${origen.id}/categorias`],
   ['origen-flujo', () => `/configuracion/origenes/${origen.id}/flujo`],
-  ['origen-formula', () => `/configuracion/origenes/${origen.id}/formula`],
+  ['origen-formulas', () => `/configuracion/origenes/${origen.id}/formulas`],
+  ['origen-formula', () => urlDeLaFormula(origen.id, 'planilla')],
   ['origen-tablas', () => `/configuracion/origenes/${origen.id}/tablas`],
+  ['origen-tablas-nueva', () => `/configuracion/origenes/${origen.id}/tablas?panel=nueva-tabla`],
+  [
+    'origen-tablas-columnas',
+    () => `/configuracion/origenes/${origen.id}/tablas?tabla=${tabla}&panel=columnas-de-tabla`,
+  ],
   ['leads-campos', () => '/configuracion/leads/campos'],
   ['leads-origenes', () => '/configuracion/leads/origenes'],
   ['leads-tipos', () => '/configuracion/leads/tipos'],
@@ -94,6 +108,8 @@ const AL_CIEN = new Set([
   'empresa-monedas',
   'empresa-integraciones',
   'origen-datos',
+  'origen-tablas-nueva',
+  'origen-tablas-columnas',
   'equipo',
   'roles',
 ])
@@ -124,6 +140,8 @@ for (const zoom of ['100', '200'] as const) {
       if (zoom === '100' && !AL_CIEN.has(nombre)) continue
       await page.goto(url())
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+      // Un panel por la URL (las tablas de referencia): se captura abierto.
+      if (url().includes('panel=')) await expect(page.getByRole('dialog')).toBeVisible()
       // La barra de secciones se desplaza hasta la abierta recién al hidratar: se captura con ella ya a la vista.
       if ((await page.getByRole('tablist').count()) > 0) {
         await aLaVistaAlAcomodarse(

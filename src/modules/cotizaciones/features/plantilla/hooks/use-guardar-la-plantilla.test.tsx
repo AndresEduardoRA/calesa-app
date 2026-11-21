@@ -13,6 +13,7 @@ const avisarExito = vi.fn()
 vi.mock('@/shared/ui/toasts', () => ({ avisarExito: (m: string) => avisarExito(m) }))
 
 const ORIGEN = '00000000-0000-4000-8000-000000000001'
+const FDO = '00000000-0000-4000-8000-000000000002'
 const HORA = '2026-11-07T15:00:00.123456+00:00'
 const OTRA = '2026-11-07T15:05:00.654321+00:00'
 const plantilla: PlantillaEnCuadricula = {
@@ -28,6 +29,7 @@ function montar(esperada: string | null = HORA, puedeGuardar = true) {
     ({ esperada }: { esperada: string | null }) =>
       useGuardarLaPlantilla({
         origenId: ORIGEN,
+        formulaDelOrigenId: FDO,
         esperada,
         plantilla,
         puedeGuardar,
@@ -58,6 +60,7 @@ describe('useGuardarLaPlantilla', () => {
     await enviar(result)
     expect(guardarBorrador).toHaveBeenLastCalledWith({
       origenId: ORIGEN,
+      formulaDelOrigenId: FDO,
       esperada: HORA,
       definicion: plantilla,
     })

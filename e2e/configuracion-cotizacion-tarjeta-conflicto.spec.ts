@@ -17,6 +17,8 @@ import {
   visibilidadDeLaMini,
   type TerrenoDePlantilla,
 } from './soporte/plantilla'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
+import { urlDeLaFormula } from './soporte/rutas-de-la-formula'
 
 // @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
 
@@ -51,7 +53,7 @@ test.beforeEach(() => {
 
 async function abrirTarjeta(page: Page) {
   await entrar(page, configuradora, { fresco: true })
-  await page.goto(`/configuracion/origenes/${origenId()}/formula/tarjeta`)
+  await abrirLaFormula(page, origenId(), 'tarjeta')
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(page.getByRole('grid', { name: 'Lienzo de la tarjeta' })).toBeVisible()
 }
@@ -68,6 +70,8 @@ test('E3: un PT409 se dice con el mensaje de la base, conserva lo escrito, no en
   if (!terreno) throw new Error('No hay terreno.')
   const otra = await plantillaSobre(terreno.duena).guardar({
     origenId: origenId(),
+    // La otra persona escribe en la fórmula de trabajo, la única del origen.
+    formulaDelOrigenId: null,
     esperada,
     definicion: cuadriculaValida('de la otra persona'),
   })
@@ -78,11 +82,11 @@ test('E3: un PT409 se dice con el mensaje de la base, conserva lo escrito, no en
   await expect(delTitulo(page)).toHaveText('Lo mío')
   await expect(page.getByRole('link', { name: /Ver cómo quedó/ })).toHaveAttribute(
     'href',
-    `/configuracion/origenes/${origenId()}/formula/tarjeta`,
+    urlDeLaFormula(origenId(), 'tarjeta'),
   )
   await expect(guardar(page)).toBeDisabled()
   expect(comoTexto(borradorGuardado(origenId())?.definicion)).toContain('Título de la otra persona')
-  await page.getByRole('button', { name: /Recargar/ }).click()
+  await page.getByRole('button', { name: /^Recargar$/ }).click()
   await expect(page.getByText(/El borrador de esta plantilla cambió/)).toHaveCount(0)
   await expect(delTitulo(page)).toHaveText('Título de la otra persona')
 })

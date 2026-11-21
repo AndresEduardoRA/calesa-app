@@ -96,7 +96,7 @@ test('E1: cambia el valor por defecto sin tocar esta cotización ni lo escrito e
 }) => {
   await abrir(page)
   await tipearEnLaHoja(page, 'pub', '3')
-  // Abrir el ⚙ lee una fila de `formulas` por `formulas_publicada_unica`: su respuesta tiene tope (`docs/RENDIMIENTO.md`).
+  // Abrir el ⚙ lee una fila de `formulas`, la publicada de la fórmula activa: su respuesta tiene tope (`docs/RENDIMIENTO.md`).
   const lectura = page.waitForResponse(
     (r) => r.url().includes('/rest/v1/formulas') && r.request().method() === 'GET',
   )

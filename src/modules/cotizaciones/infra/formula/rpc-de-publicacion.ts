@@ -48,9 +48,14 @@ function borradorGuardado({ data, error }: Respuesta): Resultado<BorradorGuardad
     : fallo('inesperado', 'No pudimos leer la respuesta. Recarga para ver cómo quedó.')
 }
 
+// La fórmula del origen, sólo si se sabe: nula no viaja y la base usa la de trabajo (`p_formula_del_origen` tiene valor por omisión).
+const deLaFormulaDelOrigen = (id: string | null) =>
+  id === null ? {} : { p_formula_del_origen: id }
+
 // Los argumentos de `formula_guardar_borrador()`: una sola esperada (sin hora crea; con hora pisa) y la nota sólo si hay (la base la toma nula).
 function argumentosDeGuardar({
   origenId,
+  formulaDelOrigenId,
   definicion,
   params,
   diseno,
@@ -66,6 +71,7 @@ function argumentosDeGuardar({
     ...(esperada.sobre === 'publicada'
       ? { p_publicada_esperada: esperada.publicadaId }
       : { p_actualizado_en_esperado: esperada.actualizadoEn }),
+    ...deLaFormulaDelOrigen(formulaDelOrigenId),
   }
 }
 
@@ -75,7 +81,13 @@ export function publicacionSobre(cliente: SupabaseClient<Database>): Repositorio
   return {
     guardarBorrador: async (pedido) =>
       borradorGuardado(await cliente.rpc('formula_guardar_borrador', argumentosDeGuardar(pedido))),
-    publicar: async ({ origenId, nota, publicadaEsperada, actualizadoEsperado }) =>
+    publicar: async ({
+      origenId,
+      formulaDelOrigenId,
+      nota,
+      publicadaEsperada,
+      actualizadoEsperado,
+    }) =>
       idPublicado(
         await cliente.rpc('formula_publicar', {
           p_origen: origenId,
@@ -84,18 +96,20 @@ export function publicacionSobre(cliente: SupabaseClient<Database>): Repositorio
           ...(publicadaEsperada ? { p_publicada_esperada: publicadaEsperada } : {}),
           // La hora del borrador, siempre (4.21-3b-1): otro guardado en el medio da el PT409 de la base.
           p_actualizado_en_esperado: actualizadoEsperado,
+          ...deLaFormulaDelOrigen(formulaDelOrigenId),
         }),
       ),
-    revertir: async ({ origenId, versionId, nota, publicadaEsperada }) =>
+    revertir: async ({ origenId, formulaDelOrigenId, versionId, nota, publicadaEsperada }) =>
       idPublicado(
         await cliente.rpc('formula_revertir', {
           p_origen: origenId,
           p_version: versionId,
           p_nota: nota,
           p_publicada_esperada: publicadaEsperada,
+          ...deLaFormulaDelOrigen(formulaDelOrigenId),
         }),
       ),
-    // Siempre con la esperada: sin ella la base no compara y otra publicación en el medio se pisaría.
+    // Siempre con la esperada: sin ella la base no compara y otra publicación en el medio se pisaría. Sin fórmula del origen: la de trabajo, la activa que se cotiza.
     cambiarConstante: async ({ origenId, nodo, valor, publicadaEsperada }) =>
       idDelCambio(
         await cliente.rpc('formula_cambiar_constante', {
@@ -123,10 +137,11 @@ export function publicacionSobre(cliente: SupabaseClient<Database>): Repositorio
         }),
       ),
     // `returns void`: sin error, entró. Con la hora del borrador que se leyó, siempre (4.21-3b-1).
-    descartar: async ({ origenId, actualizadoEsperado }) => {
+    descartar: async ({ origenId, formulaDelOrigenId, actualizadoEsperado }) => {
       const { error } = await cliente.rpc('formula_descartar_borrador', {
         p_origen: origenId,
         p_actualizado_en_esperado: actualizadoEsperado,
+        ...deLaFormulaDelOrigen(formulaDelOrigenId),
       })
       return error ? { ok: false, error: errorDePostgrest(error) } : ok(null)
     },

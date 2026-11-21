@@ -4,12 +4,13 @@ import { useRouter } from 'next/navigation'
 import { useState, useTransition, type ComponentType } from 'react'
 import type { CatalogoDeTablas } from '../../../entities/compilador'
 import { mismaVersion, otraSesion, type SobreQueVersion } from '../../../entities/formula/sesion'
-import type { FormulaDelOrigen as Formula } from '../../../entities/formula/versiones'
+import type { LecturaDeLaFormula as Formula } from '../../../entities/formula/versiones'
 import type {
   LecturaDeLaTarjetaEnVivo,
   PropsDeLaTarjetaEnVivo,
 } from '../../../entities/tarjeta-en-vivo'
 import { usePanelDeLaFormula } from '../hooks/use-panel-de-la-formula'
+import { AvisosDeLaCopia } from './avisos-de-la-copia'
 import { AccionesDeLaFormula } from './acciones-de-la-formula'
 import { SesionDeLaFormulaDiferida } from './diferidos'
 import { VistaDeLaFormula } from './vista-de-la-formula'
@@ -18,6 +19,8 @@ type Origen = { id: string; nombre: string; activo: boolean }
 
 type Props = {
   origen: Origen
+  // La fórmula del origen que se edita: va en la `key` de la sesión, para que otra fórmula no herede lo suyo.
+  formulaDelOrigenId: string
   formula: Formula
   tarjeta: LecturaDeLaTarjetaEnVivo
   // Las tablas que BUSCARV puede nombrar; null si no se pudieron leer.
@@ -35,12 +38,13 @@ const sobreQue = (formula: Formula) =>
 // La pestaña «Fórmula» de la Fórmula de un origen (Configuración › Orígenes): arriba su publicada, su borrador y sus versiones (`VistaDeLaFormula`; desde el borrador se publica
 // y desde una archivada se revierte, `?panel=publicar-formula`, `?panel=revertir-formula&version=<id>`; el borrador se descarta, `?panel=descartar-borrador`) y abajo
 // la planilla de la fórmula, sobre el borrador o, sin él, la publicada. Con `?panel=editar-formula`, el Modo avanzado (el editor en texto) ocupa el lugar de todo:
-// la sesión que tiene la fórmula de trabajo es la misma y no se vuelve a montar al cambiar de modo. Su `key` no lleva la versión (C8): guardar sobre la publicada
+// la sesión que tiene la fórmula es la misma y no se vuelve a montar al cambiar de modo. Su `key` no lleva la versión (C8): guardar sobre la publicada
 // crea el borrador y la sesión sigue montada; la vuelven a montar «Recargar» tras un conflicto (en la misma transición que trae la pestaña) y una versión que cambió
 // por otra cosa (`otraSesion()`: publicar, descartar, revertir). «Publicar…» espera
 // mientras haya cambios aplicados sin guardar: se publica lo guardado.
 export function FormulaDelOrigen({
   origen,
+  formulaDelOrigenId,
   formula,
   tarjeta,
   tablas,
@@ -71,6 +75,7 @@ export function FormulaDelOrigen({
   }
   return (
     <div className="grid min-w-0 gap-4">
+      <AvisosDeLaCopia origenId={origen.id} formulaDelOrigenId={formulaDelOrigenId} />
       {panel.editando && sobre ? null : (
         <VistaDeLaFormula
           origen={origen}
@@ -81,8 +86,9 @@ export function FormulaDelOrigen({
       )}
       {sobre ? (
         <SesionDeLaFormulaDiferida
-          key={`${origen.id}:${String(vuelta)}:${String(generacion.sesion)}`}
+          key={`${formulaDelOrigenId}:${String(vuelta)}:${String(generacion.sesion)}`}
           origen={origen}
+          formulaDelOrigenId={formulaDelOrigenId}
           formulaId={sobre.id}
           sobre={sobreQue(formula)}
           avanzado={panel.editando}

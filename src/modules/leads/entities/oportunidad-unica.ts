@@ -92,11 +92,13 @@ export function abiertasDeLoCargado(
 export type OpcionDeEmbudo = { valor: string; etiqueta: string; deshabilitada: boolean }
 
 // El campo «Embudo» del panel de crear: el de por defecto (valor `''`: la base lo elige) y los demás; los que ya tienen una abierta van
-// apagados con el motivo. `inicial`: el de por defecto si está libre, si no el primero libre; `null` si no queda ninguno (crear se apaga).
+// apagados con el motivo. `inicial`: el `preferido` (el embudo que se ve en la ficha) si está libre, si no el de por defecto si está libre, si no el
+// primero libre; `null` si no queda ninguno (crear se apaga).
 // Sin embudos todavía, `''`: el de por defecto lo crea la base con la primera.
 export function embudosParaCrear(
   embudos: readonly Embudo[],
   abiertas: readonly AbiertaEnEmbudo[],
+  preferido: string | null = null,
 ): { opciones: OpcionDeEmbudo[]; inicial: string | null } {
   const ocupado = new Set(abiertas.map((a) => a.embudoId))
   const opcion = (valor: string, nombre: string, id: string | null): OpcionDeEmbudo => {
@@ -112,8 +114,10 @@ export function embudosParaCrear(
     opcion('', `${porDefecto?.nombre ?? 'El de siempre'} (por defecto)`, porDefecto?.id ?? null),
     ...embudos.filter((e) => !e.esDefault).map((e) => opcion(e.id, e.nombre, e.id)),
   ]
-  const libre = opciones.find((o) => !o.deshabilitada)
-  return { opciones, inicial: libre ? libre.valor : null }
+  const valorDelPreferido = preferido === porDefecto?.id ? '' : preferido
+  const delPreferido = opciones.find((o) => o.valor === valorDelPreferido && !o.deshabilitada)
+  const alguno = delPreferido ?? opciones.find((o) => !o.deshabilitada)
+  return { opciones, inicial: alguno ? alguno.valor : null }
 }
 
 // El id de la abierta que trajo un rechazo de la guarda (`abierta` en el envío de la action), o `null` si el rechazo es otro.

@@ -24,7 +24,11 @@ type Props = {
 
 function BotonNuevo({ texto, alCrear }: { texto: string; alCrear: () => void }) {
   return (
-    <Button variant="outline" className="h-11 md:h-8" onClick={alCrear}>
+    <Button
+      variant="outline"
+      className="h-auto min-h-11 max-w-full text-left whitespace-normal md:min-h-8"
+      onClick={alCrear}
+    >
       <PlusIcon aria-hidden />
       {texto}
     </Button>

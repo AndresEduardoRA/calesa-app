@@ -8,6 +8,8 @@ import { DescartarLaPlantillaDiferido, ModalDePublicarLaTarjetaDiferido } from '
 type Props = {
   panel: PanelDeLaTarjeta
   origen: { id: string; nombre: string }
+  // La fórmula del origen de lo que la pestaña leyó.
+  formulaDelOrigenId: string
   // El `actualizadoEn` del borrador que la pestaña leyó (nulo sin borrador).
   esperada: string | null
   // «Ir a la celda» desde un rechazo de publicar: el editor elige ese lugar.
@@ -16,7 +18,13 @@ type Props = {
 
 // Los modales de la pestaña «Tarjeta» (4.19-3c: publicar y descartar), montados al abrirse por primera vez y con una `key` por apertura. Aquí sólo se revisa al llegar por la URL (sin borrador
 // no abre); lo que cambia con el modal abierto (tras «Recargar»: el borrador ya no está o es otro) lo dice el modal.
-export function AccionesDeLaPlantilla({ panel, origen, esperada, alIrA }: Props) {
+export function AccionesDeLaPlantilla({
+  panel,
+  origen,
+  formulaDelOrigenId,
+  esperada,
+  alIrA,
+}: Props) {
   const { apertura, publicando, descartando, aDescartar } = useAperturaDeLaTarjeta(panel, esperada)
   const montarPublicar = useAbiertoAlgunaVez(publicando)
   const montarDescartar = useAbiertoAlgunaVez(descartando)
@@ -28,6 +36,7 @@ export function AccionesDeLaPlantilla({ panel, origen, esperada, alIrA }: Props)
           abierto={publicando}
           alCerrar={panel.cerrar}
           origen={origen}
+          formulaDelOrigenId={formulaDelOrigenId}
           esperada={esperada}
           {...(alIrA === undefined ? {} : { alIrA })}
         />
@@ -38,6 +47,7 @@ export function AccionesDeLaPlantilla({ panel, origen, esperada, alIrA }: Props)
           abierto={descartando}
           alCerrar={panel.cerrar}
           origen={origen}
+          formulaDelOrigenId={formulaDelOrigenId}
           esperada={esperada}
           nombrado={aDescartar}
         />

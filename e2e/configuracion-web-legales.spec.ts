@@ -2,11 +2,12 @@
 import { createClient } from '@supabase/supabase-js'
 import { expect, test, type Page } from './soporte/prueba'
 import { admin, entorno } from './soporte/base'
+import { editarTarjeta } from './soporte/empresa'
 import { entrar, limpiarInventario, prepararInventario } from './soporte/inventario'
 import { sql } from './soporte/sql'
 
-// Legales con el editor (8.03-2): la dueña escribe los términos con un título y un párrafo, los guarda entrando por el hub y un visitante los lee
-// (`web.ajustes` como `anon`); la privacidad, sin texto, no se crea. La validación y los permisos los prueba `supabase/tests/areas/web/ajustes-guardar.sql`.
+// Legales con el editor (8.03-2), una tarjeta por documento con su modal: la dueña escribe los términos con un título y un párrafo, los guarda
+// entrando por el hub y un visitante los lee (`web.ajustes` como `anon`); la privacidad, sin texto, no se crea y su tarjeta dice «Sin publicar». La validación y los permisos los prueba `supabase/tests/areas/web/ajustes-guardar.sql`.
 // `ajustes_web` es una fila que otros specs leen: se restaura al final (un solo worker).
 test.describe.configure({ mode: 'serial' })
 
@@ -78,18 +79,30 @@ test('la dueña guarda los términos y un visitante los lee; la privacidad sin t
   await expect(page).toHaveURL(/\/configuracion\/web\/legales$/)
   await expect(page.getByRole('heading', { name: 'Legales', level: 1 })).toBeVisible()
 
-  await expect(page.locator('#terminos-titulo')).toHaveValue('Términos y condiciones')
-  await expect(page.locator('#privacidad-titulo')).toHaveValue('Política de privacidad')
-  // Los legales no llevan imágenes: la barra del editor no la ofrece.
-  await expect(page.getByRole('button', { name: 'Elegir una imagen' })).toHaveCount(0)
+  const terminos = page.getByRole('region', { name: 'Términos y condiciones', exact: true })
+  const privacidad = page.getByRole('region', { name: 'Política de privacidad', exact: true })
+  await expect(terminos).toContainText('Sin publicar')
+  await expect(privacidad).toContainText('Sin publicar')
   expect(await legalesPublicos()).toEqual({})
+
+  const modal = await editarTarjeta(page, 'Términos y condiciones')
+  await expect(page).toHaveURL(/panel=terminos/)
+  await expect(modal.getByLabel('Título', { exact: true })).toHaveValue('Términos y condiciones')
+  // Los legales no llevan imágenes: la barra del editor no la ofrece.
+  await expect(modal.getByRole('button', { name: 'Elegir una imagen' })).toHaveCount(0)
 
   await editorDeTerminos(page).click()
   await page.keyboard.type('## Condiciones')
   await page.keyboard.press('Enter')
   await page.keyboard.type('Pagas al recibir.')
-  await page.getByRole('button', { name: 'Guardar', exact: true }).click()
-  await expect(page.getByText('Legales guardados')).toBeVisible()
+  await modal.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(page.getByText('Términos y condiciones guardado')).toBeVisible()
+  await expect(modal).toBeHidden()
+
+  // La tarjeta dice el estado y de qué trata; la de privacidad sigue sin texto.
+  await expect(terminos).toContainText('Publicada')
+  await expect(terminos).toContainText('Pagas al recibir.')
+  await expect(privacidad).toContainText('Sin publicar')
 
   const guardado = sql("select legales->'terminos'->>'html' from public.ajustes_web where id = 1")
   expect(guardado).toContain('<h2>Condiciones</h2>')
@@ -99,7 +112,7 @@ test('la dueña guarda los términos y un visitante los lee; la privacidad sin t
   expect(visibles['terminos']?.html).toContain('Pagas al recibir.')
   expect(visibles['privacidad']).toBeUndefined()
 
-  // Al volver a la pantalla el texto sigue.
-  await page.reload()
+  // Con `?panel=` el editor abre en el texto guardado.
+  await page.goto('/configuracion/web/legales?panel=terminos')
   await expect(editorDeTerminos(page)).toContainText('Pagas al recibir.')
 })

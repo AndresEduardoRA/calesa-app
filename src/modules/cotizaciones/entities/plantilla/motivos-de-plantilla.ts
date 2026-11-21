@@ -5,7 +5,7 @@
 // `celdas.<id>`) y el mensaje nombra la celda o la fila, nunca el nodo: así no expone el id de un nodo restringido.
 
 // En el orden fijo de la base: el primer rechazo manda. La forma 1 usa `forma`, los cuatro de grupos y tono y los cuatro de nodos; la forma 2, `forma`, los
-// diez de la grilla, `tono_inexistente` y los cinco de nodos (sin `grupo_*` ni `nodo_sin_lugar`).
+// once de la grilla (con `respaldo_vacio`), `tono_inexistente` y los seis de nodos (con `condicion_invalida`; sin `grupo_*` ni `nodo_sin_lugar`).
 export const REGLAS_DE_PLANTILLA = [
   'forma',
   'demasiadas_columnas',
@@ -18,6 +18,7 @@ export const REGLAS_DE_PLANTILLA = [
   'celda_fuera_de_la_grilla',
   'celdas_se_pisan',
   'variable_inexistente',
+  'respaldo_vacio',
   'grupo_inexistente',
   'grupo_repetido',
   'grupo_faltante',
@@ -28,6 +29,7 @@ export const REGLAS_DE_PLANTILLA = [
   'nodo_sin_lugar',
   'nodo_restringido',
   'tipo_de_cambio_restringido',
+  'condicion_invalida',
 ] as const
 
 export type ReglaDePlantilla = (typeof REGLAS_DE_PLANTILLA)[number]
@@ -66,6 +68,8 @@ const MENSAJES: { readonly [R in ReglaDePlantilla]: (x: string) => string } = {
   celdas_se_pisan: (x) => `${mayuscula(enLaCuadricula(x) ?? x)} pisa otra celda.`,
   variable_inexistente: (x) =>
     `${mayuscula(enLaCuadricula(x) ?? x)} muestra un dato que no existe.`,
+  respaldo_vacio: (x) =>
+    `${mayuscula(enLaCuadricula(x) ?? x)} necesita al menos dos datos para mostrar el primero con valor.`,
   grupo_inexistente: (x) => `El grupo «${x}» no es de la fórmula.`,
   grupo_repetido: (x) => `El grupo «${x}» está dos veces.`,
   grupo_faltante: (x) => `Falta el grupo «${x}»: la tarjeta lleva todos los grupos de la fórmula.`,
@@ -99,6 +103,8 @@ const MENSAJES: { readonly [R in ReglaDePlantilla]: (x: string) => string } = {
       ? `La tarjeta no puede nombrar el tipo de cambio de «${x}»: no es del nivel «todos».`
       : `La tarjeta no puede nombrar el tipo de cambio de ${lugar}: no es del nivel «todos».`
   },
+  condicion_invalida: (x) =>
+    `${mayuscula(enLaCuadricula(x) ?? x)} tiene una condición que esta fórmula no puede responder.`,
 }
 
 export const rechazoDePlantilla = (regla: ReglaDePlantilla, donde: string): RechazoDePlantilla => ({

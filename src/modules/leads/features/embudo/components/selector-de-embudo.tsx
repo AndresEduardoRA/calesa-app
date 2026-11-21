@@ -14,10 +14,12 @@ type Props = {
   embudos: readonly Embudo[]
   actual: string
   alElegir: (id: string) => void
+  // El menú se cierra al elegir (en el bloque de la ficha taparía el «⋯»); el de la vista de embudo sigue abierto.
+  cerrarAlElegir?: boolean
 }
 
 // Cuál de sus embudos se ve. Con uno solo, sólo lo nombra.
-export function SelectorDeEmbudo({ embudos, actual, alElegir }: Props) {
+export function SelectorDeEmbudo({ embudos, actual, alElegir, cerrarAlElegir = false }: Props) {
   const elegido = embudos.find((e) => e.id === actual)
   if (embudos.length < 2) {
     return (
@@ -48,6 +50,7 @@ export function SelectorDeEmbudo({ embudos, actual, alElegir }: Props) {
             <DropdownMenuRadioItem
               key={embudo.id}
               value={embudo.id}
+              closeOnClick={cerrarAlElegir}
               className="min-h-11 md:min-h-8"
             >
               {embudo.nombre}

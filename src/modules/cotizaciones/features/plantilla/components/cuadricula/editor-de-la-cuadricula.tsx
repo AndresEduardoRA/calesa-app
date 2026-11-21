@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type ComponentType } from 'react'
-import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
+import { rutaDeLaFormula } from '@/shared/lib/rutas'
 import type { PropsDelEditor } from '../../../../entities/plantilla/props-del-editor'
 import { referenciaUsada } from '../../../../entities/plantilla/referencia-del-lienzo'
 import type { ReferenciaDeLaTarjeta } from '../../../../entities/referencia-de-la-tarjeta'
@@ -53,23 +53,23 @@ function AnuncioDelEditor({ anuncio }: { anuncio: { texto: string; vez: number }
 // del editor encima) y el panel a la derecha (debajo con el texto al 200 %). Escribe sólo la forma 2. Nace de la cuadrícula que le arma el servidor; guardar no lo
 // remonta (sigue el historial) y una versión ajena sí (`key` de la pestaña).
 export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
-  const { origen, esperada, contexto, tonos } = props
+  const { origen, esperada, contexto, tonos, inicial, guardada } = props
   const editor = useEditorDeLaCuadricula({
     origenId: origen.id,
     esperada,
-    inicial: props.inicial,
-    guardada: props.guardada,
+    inicial,
+    guardada,
     contexto,
   })
   const guardar = useGuardarLaPlantilla({
     origenId: origen.id,
+    formulaDelOrigenId: props.formulaDelOrigenId,
     esperada,
     plantilla: editor.plantilla,
     puedeGuardar: editor.puedeGuardar,
     limpiarBorrador: editor.limpiar,
     alGuardar: props.alGuardar,
   })
-  const ocupado = guardar.enCurso || guardar.entro || guardar.recargando
   const lienzo = useLienzoDelEditor({ editor, contexto, tonos, irA: props.irA })
   const logo = useLogoRoto(props.referencia, props.ejemplo)
   return (
@@ -87,7 +87,7 @@ export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
           <BotonesDeLaPlantilla
             esperada={esperada}
             hayCambios={editor.hayCambios}
-            ocupado={ocupado || guardar.conflicto !== null}
+            ocupado={guardar.ocupado || guardar.conflicto !== null}
             guardar={{
               puede: editor.puedeGuardar,
               motivo: editor.motivoParaNoGuardar,
@@ -103,7 +103,7 @@ export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
         deLaLectura={[...props.avisos, ...Object.values(guardar.porCampo)]}
         paraPublicar={editor.rechazoParaPublicar?.mensaje ?? null}
         guardar={guardar}
-        hrefVer={rutaDeConfiguracionDeCotizacion(origen.id, 'tarjeta')}
+        hrefVer={rutaDeLaFormula(origen.id, props.formulaDelOrigenId, 'tarjeta')}
         logoRoto={logo.roto}
         puedeCambiarElLogo={props.puedeCambiarElLogo}
       />
@@ -111,7 +111,7 @@ export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
         <ZonaDelLienzo
           editor={editor}
           lienzo={lienzo}
-          ocupado={ocupado}
+          ocupado={guardar.ocupado}
           origen={origen.nombre}
           referencia={props.referencia}
           ejemplo={props.ejemplo}
@@ -124,7 +124,7 @@ export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
           contexto={contexto}
           tonos={tonos}
           nombrados={lienzo.nombrados}
-          ocupado={ocupado}
+          ocupado={guardar.ocupado}
           enfoque={lienzo.enfoque}
         />
       </div>

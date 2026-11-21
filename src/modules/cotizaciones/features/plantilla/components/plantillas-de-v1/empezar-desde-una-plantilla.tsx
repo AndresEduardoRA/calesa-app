@@ -13,13 +13,15 @@ export const PANEL_DE_PLANTILLAS_DE_V1 = 'plantillas-de-v1'
 
 type Props = {
   origen: { id: string; nombre: string }
+  // La fórmula del origen abierta: el modal escribe sus borradores.
+  formula: { id: string; nombre: string }
   // El lienzo de la pestaña Tarjeta (área `tarjeta`), que la página pasa por este hueco: el modal dibuja con él la tarjeta de cada plantilla con cifras de ejemplo.
   Lienzo: ComponentType<PropsDelLienzoDeLaPlantilla>
 }
 
 // «Empezar desde una plantilla», la acción del origen junto a sus chips (secundaria: cada pestaña ya tiene su primaria). Abre `?panel=plantillas-de-v1`, que vale en las
 // cuatro pestañas; cada apertura empieza de cero (lee otra vez las plantillas y los borradores). docs/UX.md › «Cotización: empezar desde una plantilla».
-export function EmpezarDesdeUnaPlantilla({ origen, Lienzo }: Props) {
+export function EmpezarDesdeUnaPlantilla({ origen, formula, Lienzo }: Props) {
   const panel = usePanelPorUrl(PANEL_DE_PLANTILLAS_DE_V1)
   const montar = useAbiertoAlgunaVez(panel.abierto)
   const apertura = useApertura(panel.abierto)
@@ -40,6 +42,7 @@ export function EmpezarDesdeUnaPlantilla({ origen, Lienzo }: Props) {
           abierto={panel.abierto}
           alCerrar={panel.cerrar}
           origen={origen}
+          formula={formula}
           Lienzo={Lienzo}
         />
       ) : null}

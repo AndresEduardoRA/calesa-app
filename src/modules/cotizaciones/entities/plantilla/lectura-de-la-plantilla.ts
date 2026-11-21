@@ -108,9 +108,11 @@ export type FormulaParaLaPlantilla = {
 }
 
 export type PlantillaDelOrigen = {
+  // La fórmula de trabajo del origen, de la que son la plantilla y la fórmula leídas (nula si el origen todavía no tiene: no hay plantilla ni fórmula).
+  readonly formulaDelOrigenId: string | null
   readonly publicada: VersionDePlantilla | null
   readonly borrador: VersionDePlantilla | null
-  // La fórmula publicada del origen: sin ella no hay contra qué validar (la base lo dice igual al publicar: `formula_sin_publicar`).
+  // La fórmula publicada de esa fórmula del origen: sin ella no hay contra qué validar (la base lo dice igual al publicar: `formula_sin_publicar`).
   readonly formula: { readonly id: string; readonly version: number } | null
   // Lo que se le pasa tal cual a `validarPlantilla()`; nulo sin fórmula.
   readonly contexto: ContextoDePlantilla | null

@@ -33,6 +33,10 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[T314]** «Compartir la cotización» sin el editor de imagen 9:16 de V1 (la historia de WhatsApp o Instagram con la foto y la cotización): hoy se comparte la imagen de la tarjeta o las fotos tal cual.
 - **[T326]** Plantillas de V1: la `usa_moto` de V1 guarda porcentajes enteros (5 … 30) que su motor multiplica tal cual como factor DP; la plantilla los congela como 5 % … 30 % (0,05 … 0,30): confirmar qué cálculo es el bueno para una moto.
 - **[T326]** Plantillas de V1: Compra dealer USA no cotiza Moto ni USA → Chile (V1 sí): la fórmula admite una sola variante y la suya es el contenedor en par — decidir si hacen falta.
+- **[T417]** Tablas de referencia: reactivar una tabla desactivada (hoy no se deshace y su clave queda tomada) — sin tarea que lo tome.
+- **[T417]** Tablas de referencia: hacer propia una compartida (copiarla al origen con sus filas) — hoy se crea una propia vacía con otra clave.
+- **[T417]** Tablas de referencia: renombrar una tabla (su nombre; la clave no cambia) — sin tarea que lo tome.
+- **[T417]** Publicar una fórmula no revisa en la base que existan su tabla y sus columnas (BUSCARV lo revisa al compilar, con el catálogo del origen) — decidir si `formula_publicar()` lo exige.
 - **[—]** Sin hacer: el filtro «Favoritas» y la insignia en el listado, quién reportó en la lista de reportes, el tiempo real en comentarios y el motivo de lo bloqueado en la fila de un lote de la papelera.
 
 ### Leads y web
@@ -185,12 +189,13 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
-- **[—]** Con el texto al 200 % en el celular, Empresa › Monedas y tipos de cambio ensancha la página (522 px en 412): la tarjeta «Moneda base» con su «Cambiar» empuja el contenido; caen `configuracion-200.spec.ts` › «Monedas y tipos de cambio» y «se leen enteras las tarjetas» en `movil`.
 - **[T414]** Con el texto al 200 % en el celular, la cabecera del resumen de la cotización ocupa casi toda la pantalla (el monto se corta contra el borde y las pestañas quedan debajo, sin desplazamiento del drawer, que va con `desplazamiento="propio"`): dejar que el drawer se desplace cuando la cabecera no deja alto a las pestañas, o plegar la cabecera a título y total (`resumen-de-cotizacion.tsx`, `cabecera-del-resumen.tsx`).
 - **[T414]** En el celular, la fila «Creada» de la cabecera del resumen parte su valor bajo la etiqueta («Creada» sola y debajo «hace 2 minutos · …»): dejar la etiqueta con el primer tramo del valor.
 - **[—]** La imagen de la tarjeta quita el recuadro al cargar (`onLoad`) y la grande del resumen puede verse un instante como un marco gris vacío hasta que el
   navegador la decodifica: pasar a «lista» tras `img.decode()` (`imagen-de-la-tarjeta.tsx`, `useCargaDeLaImagen()`).
 - **[—]** En el celular, el buscador de la barra superior muestra «Bu» cortado contra «+ Nuevo»: dibujar sólo la lupa cuando no cabe la palabra.
+- **[T407]** `<Opciones>` (`src/shared/ui/opciones.tsx`): el radio `sr-only` es absoluto sin un `relative` en su etiqueta, y con las opciones en dos renglones cae bajo otra (el «Cómo empieza» de «Nueva fórmula»): sumar `relative` a la etiqueta.
+- **[T407]** En el celular (390 px), la burbuja del chat tapa el «⋯» de la primera fila de una lista de Configuración a la vista al abrir (la pestaña «Fórmulas» de un origen): reservar su lugar al pie del contenido.
 - **[T428]** Con el texto al 200 % en el celular, la burbuja del chat tapa el borde derecho del valor de una tarjeta de ajustes (la dirección de apibara, «Sin dato»): reservar su lugar en el borde de la página o subirla mientras se lee una tarjeta.
 - **[—]** El selector de embudo de la vista de embudo no se cierra al elegir otro (`DropdownMenuRadioItem` de Base UI no cierra al hacer clic): en el
   celular el menú queda sobre las pestañas de etapas hasta tocar afuera (`selector-de-embudo.tsx`; `closeOnClick` en el ítem).

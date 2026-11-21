@@ -41,6 +41,7 @@ const leida = (
   ok: true,
   data: {
     id: FORMULA,
+    formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
     actualizadoEn: '2026-11-07T15:00:00.123456+00:00',
     estado: 'borrador',
     diseno: null,
@@ -63,6 +64,7 @@ const montar = (alVolver = vi.fn()) =>
   render(
     <SesionDeLaFormula
       origen={ORIGEN}
+      formulaDelOrigenId="44444444-4444-4444-8444-444444444444"
       formulaId={FORMULA}
       sobre="Sobre la versión 3 publicada."
       avanzado

@@ -27,7 +27,7 @@ export function GrupoDePar(props: Props) {
   const { grupo, tipos, ultimosCambios, puedeGestionar, puedeSumar, enCurso } = props
   const titulo = `grupo-${grupo.clave}`
   return (
-    <section aria-labelledby={titulo} className="grid gap-3">
+    <section aria-labelledby={titulo} className="grid grid-cols-[minmax(0,1fr)] gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2
           id={titulo}
@@ -40,7 +40,7 @@ export function GrupoDePar(props: Props) {
         {puedeSumar ? (
           <Button
             variant="outline"
-            className="h-11 md:h-8"
+            className="h-auto min-h-11 max-w-full text-left whitespace-normal md:min-h-8"
             aria-label={`Nuevo tipo de cambio de ${grupo.monedaDe} a ${grupo.monedaA}`}
             onClick={() => {
               props.alCrear(grupo)
