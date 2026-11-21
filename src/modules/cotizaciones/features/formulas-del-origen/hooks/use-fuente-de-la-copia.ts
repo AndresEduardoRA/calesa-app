@@ -26,8 +26,13 @@ function piezaDe(copia: FormulaDeLaLista | null, como: ComoEmpieza, elegida: Pie
 
 // Qué copia «Nueva fórmula»: cómo empieza, el origen, la fórmula y la versión. Las fórmulas del origen elegido se leen desde el navegador al elegirlo (las de
 // este origen, al abrir; con `copiaInicial`, también esa aunque esté archivada).
-export function useFuenteDeLaCopia(origenId: string, copiaInicial: string | null) {
-  const [como, setComo] = useState<ComoEmpieza>(copiaInicial ? 'este' : 'blanco')
+export function useFuenteDeLaCopia(
+  origenId: string,
+  copiaInicial: string | null,
+  // Cómo empieza al abrir, si quien lo abre ya lo eligió (la puesta en marcha: «Empezar en blanco» o «Copiar la de otro origen»).
+  comoInicial: ComoEmpieza | null = null,
+) {
+  const [como, setComo] = useState<ComoEmpieza>(comoInicial ?? (copiaInicial ? 'este' : 'blanco'))
   const [otroOrigenId, setOtroOrigenId] = useState<string | null>(null)
   const [copiaId, setCopiaId] = useState<string | null>(copiaInicial)
   const [piezaElegida, setPiezaElegida] = useState<Pieza | null>(null)

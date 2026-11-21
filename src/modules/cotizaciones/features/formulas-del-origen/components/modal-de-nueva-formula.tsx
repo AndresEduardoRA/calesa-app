@@ -20,6 +20,12 @@ type Props = {
   // Los orígenes de los que se puede copiar (los que la persona configura, sin el abierto).
   origenesParaCopiar: readonly { id: string; nombre: string }[]
   copiaInicial: string | null
+  // Lo que propone quien lo abre desde otra pantalla (la puesta en marcha): cómo empieza, el nombre y qué pasa al crear (sin `alCrear`, abre su planilla).
+  comoInicial?: ComoEmpieza | null
+  nombreInicial?: string
+  alCrear?: (id: string) => void
+  // El origen todavía no tiene fórmulas: no se ofrece «Copia de este origen».
+  sinCopiaDeEste?: boolean
 }
 
 const COMO: readonly { valor: ComoEmpieza; etiqueta: string }[] = [
@@ -28,7 +34,8 @@ const COMO: readonly { valor: ComoEmpieza; etiqueta: string }[] = [
   { valor: 'otro', etiqueta: 'Copia de otro origen' },
 ]
 
-// «Nueva fórmula» (`?panel=nueva-formula`, con `&copia=<id>` desde «Copiar»): cómo empieza, qué se copia y el nombre. Al crear abre su planilla. Quien lo monta
+// «Nueva fórmula» (`?panel=nueva-formula`, con `&copia=<id>` desde «Copiar» o `&como=blanco|otro` desde la puesta en marcha): cómo empieza, qué se copia y el
+// nombre. Al crear abre su planilla (o lo que diga `alCrear`). Quien lo monta
 // le da una `key` por apertura: cada una es un intento nuevo.
 export function ModalDeNuevaFormula({
   abierto,
@@ -36,9 +43,17 @@ export function ModalDeNuevaFormula({
   origen,
   origenesParaCopiar,
   copiaInicial,
+  comoInicial = null,
+  nombreInicial,
+  alCrear,
+  sinCopiaDeEste = false,
 }: Props) {
-  const formulario = useNuevaFormula({ origen, copiaInicial })
-  const opciones = origenesParaCopiar.length > 0 ? COMO : COMO.filter((c) => c.valor !== 'otro')
+  const formulario = useNuevaFormula({ origen, copiaInicial, comoInicial, nombreInicial, alCrear })
+  const opciones = COMO.filter(
+    (c) =>
+      !(c.valor === 'otro' && origenesParaCopiar.length === 0) &&
+      !(c.valor === 'este' && sinCopiaDeEste),
+  )
   const largo = [...formulario.nombre].length
   return (
     <ModalDeFormulario

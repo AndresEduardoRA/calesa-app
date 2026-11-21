@@ -1,5 +1,5 @@
 import { IdCardIcon } from 'lucide-react'
-import type { ComponentType } from 'react'
+import type { ComponentType, ReactNode } from 'react'
 import Link from 'next/link'
 import { datosO } from '@/shared/lib/errores'
 import { rutaDeLaFormula } from '@/shared/lib/rutas'
@@ -29,6 +29,8 @@ type Props = {
   Lienzo: ComponentType<PropsDelLienzoDeLaPlantilla>
   // `empresa.ajustes.gestionar` de quien mira (lo calcula la página con su sesión): el aviso del logo que no se dibuja abre Empresa.
   puedeCambiarElLogo: boolean
+  // Lo que se dibuja si la planilla todavía no tiene una versión publicada, en vez del vacío con «Ir a la planilla» (la puesta en marcha deja seguir).
+  sinPlanilla?: ReactNode
 }
 
 // La pestaña «Tarjeta» de la Fórmula de un origen (Configuración › Orígenes), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: el borrador, la
@@ -40,6 +42,7 @@ export async function SeccionDeLaPlantilla({
   referencia,
   Lienzo,
   puedeCambiarElLogo,
+  sinPlanilla,
 }: Props) {
   const [lectura, deReferencia] = await Promise.all([
     leerPlantillaDelOrigen(formula.id),
@@ -47,6 +50,9 @@ export async function SeccionDeLaPlantilla({
   ])
   const editor = propsDelEditor(datosO(lectura), origen)
   if (editor === null) {
+    if (sinPlanilla !== undefined) {
+      return sinPlanilla
+    }
     return (
       <EstadoVacio
         Icono={IdCardIcon}

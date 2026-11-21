@@ -5,23 +5,18 @@ import Link from 'next/link'
 import { useState } from 'react'
 import type { ErrorApp } from '@/shared/lib/errores'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
-import { fechaRelativa } from '@/shared/lib/fechas'
 import { Label } from '@/shared/ui/label'
 import { ModalDeFormulario } from '@/shared/ui/modal-de-formulario'
-import { useRegional } from '@/shared/ui/regional'
 import { Textarea } from '@/shared/ui/textarea'
 import { avisarExito } from '@/shared/ui/toasts'
 import { useEnvioConVersion } from '@/shared/ui/use-envio-con-version'
-import {
-  esperadasDeActivar,
-  loQueCambia,
-  loQueSePublica,
-} from '../../../entities/formulas-del-origen/activar'
+import { esperadasDeActivar, loQueCambia } from '../../../entities/formulas-del-origen/activar'
 import { destinoDelRechazoDeActivar } from '../../../entities/formulas-del-origen/destino-del-rechazo'
 import type { FormulaDeLaLista } from '../../../entities/formulas-del-origen/lista'
 import { activarFormulaDelOrigen } from '../actions/activar-formula'
 import { useCerrarYReleer } from '../hooks/use-cerrar-y-releer'
 import { LARGO_DE_LA_NOTA } from '../schemas/formulas-del-origen'
+import { QueSePublica } from './que-se-publica'
 
 type Props = {
   abierto: boolean
@@ -30,56 +25,11 @@ type Props = {
   formula: FormulaDeLaLista
   // La activa del origen que se vio (nula: no tenía).
   activa: { id: string; nombre: string } | null
+  // Tras activar, en vez de cerrar y volver a leer la pantalla (la puesta en marcha lleva a «Listo»). Se navega sin cerrar antes el panel.
+  alActivar?: () => void
 }
 
 const FALTA_LA_NOTA = 'Escribe una nota: queda en las versiones que se publican.'
-
-function LineaDeLaPieza({
-  titulo,
-  publica,
-  version,
-  guardado,
-}: {
-  titulo: string
-  publica: boolean
-  version: number
-  guardado: string | null
-}) {
-  const { zonaHoraria } = useRegional()
-  const texto = publica
-    ? `Su borrador${guardado ? `, guardado ${fechaRelativa(guardado, { zona: zonaHoraria })},` : ''} se publica como la versión ${String(version)}.`
-    : `Sin borrador: se cotiza con la versión ${String(version)}.`
-  return (
-    <li>
-      <span className="font-medium text-(--color-ink)">{titulo}:</span> {texto}
-    </li>
-  )
-}
-
-function QueSePublica({ formula }: { formula: FormulaDeLaLista }) {
-  const [planilla, tarjeta] = loQueSePublica(formula)
-  return (
-    <section className="grid gap-1 text-(length:--text-sm)">
-      <h3 className="font-semibold text-(--color-ink)">Qué se publica</h3>
-      <ul className="grid gap-1 text-(--color-ink-soft)">
-        {planilla ? (
-          <LineaDeLaPieza
-            titulo="La planilla"
-            {...planilla}
-            guardado={formula.formula.borrador?.actualizadoEn ?? null}
-          />
-        ) : null}
-        {tarjeta ? (
-          <LineaDeLaPieza
-            titulo="La tarjeta"
-            {...tarjeta}
-            guardado={formula.tarjeta.borrador?.actualizadoEn ?? null}
-          />
-        ) : null}
-      </ul>
-    </section>
-  )
-}
 
 const ID_DE_LA_NOTA = 'formula-nota-de-activar'
 
@@ -120,7 +70,7 @@ function CampoDeLaNota({
 
 // «Activar «<nombre>»» (`?panel=activar-formula&formula=<id>`): qué se publica (los borradores de la planilla y de la tarjeta), qué cambia para cotizar y la nota.
 // Lleva lo que se vio de cada pieza: si algo cambió, PT409 con «Recargar». Un rechazo que nombra una fila, un lugar de la tarjeta o una sub-pestaña ofrece ir ahí.
-export function ModalDeActivar({ abierto, alCerrar, origen, formula, activa }: Props) {
+export function ModalDeActivar({ abierto, alCerrar, origen, formula, activa, alActivar }: Props) {
   const cerrarYReleer = useCerrarYReleer()
   const [nota, setNota] = useState('')
   const [rechazo, setRechazo] = useState<ErrorApp | null>(null)
@@ -142,6 +92,10 @@ export function ModalDeActivar({ abierto, alCerrar, origen, formula, activa }: P
     },
     alGuardar: () => {
       avisarExito(`«${formula.nombre}» es la fórmula activa de ${origen.nombre}.`)
+      if (alActivar) {
+        alActivar()
+        return
+      }
       cerrarYReleer()
     },
   })
