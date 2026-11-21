@@ -302,7 +302,7 @@ Lo puro en `entities/formula/`: nunca lanza, no toca lo que recibe y es lineal c
   `validarFormula()` si la fila da error), valida la fórmula de trabajo tras cada cambio (el rechazo, en su fila, en la cabecera de su banda o
   arriba) y la guarda con `formula_guardar_borrador()`. La sesión se vuelve a montar con «Recargar» o si la versión cambia por algo que no hizo
   ella (`otraSesion()`: publicar, descartar, revertir); guardar sobre la publicada no la vuelve a montar. No hay otro editor:
-  `?panel=editar-formula` responde 308 a la misma planilla (`destinoSinElModoAvanzado()`).
+  `?panel=editar-formula` (y `?panel=plantillas-de-v1`, en planilla, hoja o tarjeta) responde 308 a la misma parte sin ese panel (`destinoSinLosPanelesQueYaNoExisten()`).
 - **Vista previa** (`calcularLaVistaPrevia()`): `evaluar()` con `entradaDePrueba()` (datos en 0, banderas apagadas, variante por defecto,
   sin overrides) y los tipos de cambio y tablas que lee el navegador (`consulta-del-terreno-de-prueba.ts`: la del origen gana a la
   compartida, páginas de 1.000 filas); la congelada manda. La unidad de ejemplo de la planilla calcula sobre ella.
