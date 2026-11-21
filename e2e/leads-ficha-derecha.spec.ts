@@ -318,10 +318,11 @@ test('E2E sin red: el índice sigue saltando y «Cotizaciones» lo dice', async 
   await context.setOffline(true)
   await indice(page).getByRole('link', { name: 'Cotizaciones' }).click()
   await expect(titulo(page, 'Cotizaciones')).toBeFocused()
-  // Con el código ya cargado, el error sin red es de la lectura: postgrest-js reintenta un GET tres veces (1, 2 y 4 s) antes de devolverlo.
+  // Con el código ya cargado, el error sin red es de la lectura (el de las tarjetas): postgrest-js reintenta un GET tres veces (1, 2 y 4 s) antes de devolverlo.
+  // Si el bloque aún no se había acercado, es el del límite del bloque o de su código: cualquiera de los tres dice que falló, en su región.
   await expect(
     region(page, 'Cotizaciones').getByText(
-      /Sin conexión\. No se pudo abrir esto\.|No pudimos cargar «Cotizaciones»\./,
+      /Sin conexión\. No se pudo abrir esto\.|No pudimos cargar «Cotizaciones»\.|No pudimos cargar las cotizaciones\./,
     ),
   ).toBeVisible({ timeout: 12_000 })
   await context.setOffline(false)
