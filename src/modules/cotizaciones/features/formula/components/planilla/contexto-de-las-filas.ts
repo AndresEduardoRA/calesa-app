@@ -23,6 +23,8 @@ export type ContextoDeLasFilas = {
   idDelMotivo: string
   alElegir: (id: string) => void
   acciones: AccionesDeLaUnidad
+  // Las filas cuyo dato del vehículo no existe en este origen: id del nodo → clave del campo (`useCamposQueFaltan()`).
+  faltan: ReadonlyMap<string, string>
 }
 
 const SIN_CIFRA: CifraDeLaFila = { tipo: 'nada' }
@@ -86,6 +88,7 @@ export function propsDeLaFila(
     bloqueada: ctx.motivo !== null,
     idDelMotivo: ctx.idDelMotivo,
     rechazo: editor.rechazo?.filaId === fila.id ? editor.rechazo.mensaje : null,
+    falta: ctx.faltan.get(fila.id) ?? null,
     sumando,
     ocupados: nueva.ocupados,
     alCrear: sumando === null ? SIN_CREAR : nueva.crear,

@@ -177,6 +177,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Respalda en `sessionStorage` lo que guardes en `history.state`: con `shallow: false` Next lo pisa a los ~60 ms y Chromium no conserva un `replaceState` en `pagehide`.
 - Elige la primera pestaña con `parseAsStringLiteral(claves).withDefault(primera)`: con `parseAsString` la URL se ensucia con la clave por defecto.
 - Dale clave propia de URL a lo que debe convivir: un `?panel=` compartido entre hoja de filtros y drawers hace que abrir uno cierre el otro.
+- Monta de a uno los diálogos de una pantalla que se abren por la URL (el último que se abrió, para que termine de irse): un `Confirmar` cerrado que sigue montado deja trabado el siguiente que se abre (queda con `data-open` aunque reciba `abierto` en falso). `useAbiertoAlgunaVez()` por diálogo los deja montados a todos.
 - Al pasar de un panel a otro, el que cierra no devuelve el foco (`focoAlCerrar` false): Base UI lo devuelve un instante después y le roba letras al campo nuevo.
 - Llama `useCambiosSinGuardar` y `useVueltaDelFoco` una sola vez por panel y clave: dos llamadas se pisan el estado.
 - No pongas la versión en la `key` de un editor que guarda ni de sus modales vecinos (guardar los remonta y pierde lo tipeado; la base es la fila que devolvió la RPC), pero sí suma a la `key` la lectura que pide «Recargar» tras un rechazo: sin remontar, la hoja vuelve a mandar lo rechazado.
@@ -256,6 +257,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 
 ### Localizar y esperar
 
+- Con un diálogo abierto, lo de afuera sale del árbol accesible: `toHaveCount(0)` de una fila pasa aunque siga ahí. Espera primero `expect(dialogo).toBeHidden()`.
 - Sobre listas de cientos de filas busca por texto, no `*ByRole`: calcular el nombre accesible de cada enlace agota el timeout con un CPU.
 - Una página con `h1` propio (las sub-rutas de Configuración) repite el nombre de sus bloques («Monedas y tipos de cambio» contiene «Tipos de cambio»): busca el `h2` con `exact: true` o `level`.
 - Usa `exact: true` en botones genéricos («Guardar») y cuando un nombre o texto contiene a otro («Ir a la versión» dentro de «Revertir a la versión N»): si no, coincide con el de otra barra.
@@ -328,6 +330,9 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Lee pronto el log de una corrida roja: `gh run view --log-failed` sale vacío al rato y la causa queda sin verificar.
 - `supabase db lint` cambia de formato si detecta un agente (`AI_AGENT`, `CLAUDECODE`): lee con `leerDbLint()` aceptando las dos formas y, para reproducir el CI, quita esas variables.
 - Corre Splinter con los schemas de `[api]` (`pgrst.db_schemas`): sin ellos sólo revisa `public` y no ve los avisos de `web`.
+- El lint con tipos (`projectService`) del repo entero roza los 4 GB del heap de Node que da el runner: `pnpm lint` y `lint:fix` van con
+  `NODE_OPTIONS=--max-old-space-size=8192`. Sin eso, el PR que suma archivos cae por `heap out of memory` (código 134) aunque el lint
+  no tenga nada que decir.
 - Excluye del typecheck y del lint toda carpeta ignorada por git que el orquestador enlaza en el worktree (la copia de V1 en `docs/referencias/cotizador-actual`), y también del recorrido de `scripts/enlaces-internos.mjs`: `tsconfig` incluye `**/*.ts` y el mapa sigue el enlace.
 - Si `next build` cae con «Type '/x' is not assignable to RouteImpl», corre `pnpm typecheck` (hace `next typegen`): no es del código.
 - No nombres `<Confirmar>` con sus signos en un comentario: `scripts/guardas/confirmar-con-url.test.ts` busca el texto crudo (comentarios incluidos) y pide registrar un diálogo que no existe; escribe el nombre sin `<…>`.

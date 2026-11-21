@@ -20,6 +20,7 @@ export const AREAS_DE_COTIZACIONES = [
   'comprobantes',
   'comentarios',
   'aprobada',
+  'formulas-del-origen',
 ] as const
 
 // Las carpetas del núcleo que ya existían cuando se partió el módulo. Una nueva se suma aquí o a las áreas.

@@ -17,6 +17,7 @@ import {
 import { CeldaDelValor } from './celda-del-valor'
 import { CELDA, COLUMNAS, CONCEPTO, DE_DONDE_SALE, NUMERO, PORCENTAJE, VALOR } from './clases'
 import { ValorDeConstante } from '../editor/valor-de-constante'
+import { textoDelCampoQueFalta } from '../../../../entities/campos-que-faltan'
 
 // La celda B de un `porcentaje_de`: su `pct`, editable si es una constante.
 export type CeldaB = {
@@ -44,6 +45,8 @@ export type FilaDeLaPlanillaProps = {
   idDelMotivo: string
   // El rechazo de `validarFormula()` que nombra la fila.
   rechazo: string | null
+  // La clave del dato del vehículo que esta fila nombra y el origen no tiene (una copia de otro origen); nula si no falta.
+  falta: string | null
   // «Sumar fila debajo» abierto bajo esta fila, con el error del último intento.
   sumando: { error: ErrorDeFilaNueva | null } | null
   ocupados: ReadonlySet<string>
@@ -133,6 +136,14 @@ export const FilaDeLaPlanilla = memo(function FilaDeLaPlanilla(p: FilaDeLaPlanil
               {fila.id}
             </code>
           </button>
+          {p.falta === null ? null : (
+            <span
+              data-falta-el-campo={p.falta}
+              className="block text-(length:--text-xs) font-normal text-(--color-aviso-ink)"
+            >
+              {textoDelCampoQueFalta(p.falta)}
+            </span>
+          )}
           {rechazo === null ? null : (
             <span className="inline-flex items-center gap-1 text-(--color-aviso-ink)">
               <TriangleAlertIcon aria-hidden className="size-4" />

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type ComponentType } from 'react'
-import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
+import { rutaDeLaFormula } from '@/shared/lib/rutas'
 import type { PropsDelEditor } from '../../../../entities/plantilla/props-del-editor'
 import { referenciaUsada } from '../../../../entities/plantilla/referencia-del-lienzo'
 import type { ReferenciaDeLaTarjeta } from '../../../../entities/referencia-de-la-tarjeta'
@@ -103,7 +103,7 @@ export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
         deLaLectura={[...props.avisos, ...Object.values(guardar.porCampo)]}
         paraPublicar={editor.rechazoParaPublicar?.mensaje ?? null}
         guardar={guardar}
-        hrefVer={rutaDeConfiguracionDeCotizacion(origen.id, 'tarjeta')}
+        hrefVer={rutaDeLaFormula(origen.id, props.formulaDelOrigenId, 'tarjeta')}
         logoRoto={logo.roto}
         puedeCambiarElLogo={props.puedeCambiarElLogo}
       />

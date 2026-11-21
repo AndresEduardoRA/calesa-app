@@ -295,7 +295,7 @@ Lo puro en `entities/formula/`: nunca lanza, no toca lo que recibe y es lineal c
   `MAX(a; b)`, sin «=») sólo si compilarlo da exactamente ese nodo; si no, `null` y la fila se muestra por sus campos. Una búsqueda no se
   escribe: la fila con BUSCARV nació de su texto.
 - **La pantalla:** la **planilla** (`features/formula/components/planilla/`, la vista por defecto) y el **Modo avanzado** (`components/editor/`,
-  `?panel=editar-formula`), sobre una sola fórmula de trabajo que tiene la sesión (`components/sesion/`, `useEditorDeLaFormula` una vez): compila al
+  `?panel=editar-formula`), sobre la fórmula del origen de la URL, una sola copia de trabajo que tiene la sesión (`components/sesion/`, `useEditorDeLaFormula` una vez): compila al
   aplicar con `compilarFila()` (sin `validarFormula()` si la fila da error), valida la fórmula de trabajo tras cada cambio (el rechazo, en su fila) y
   la guarda con `formula_guardar_borrador()`. La sesión se vuelve a montar con «Recargar» o si la versión cambia por algo que no hizo ella
   (`otraSesion()`: publicar, descartar, revertir); guardar sobre la publicada no la vuelve a montar.
@@ -452,6 +452,12 @@ plantilla_publicada_esperada)`: cada pieza con su esperada (la activa que se vio
     sólo publica lo pendiente. Un error corta todo.
   - La archivada o la activa no se archivan ni se eliminan (22023, hint `activa`: activar otra primero). `actividad` registra
     `formula_del_origen.crear|renombrar|archivar|eliminar|activar|desactivar`.
+- **La pantalla** (área `formulas-del-origen`; `docs/UX.md` › «Cotización: fórmulas del origen (estados propios)»): la pestaña «Fórmulas» de la página
+  del origen (`/configuracion/origenes/<id>/formulas`) lista las del origen (51 por `formulas_del_origen_origen_idx`, la activa primero; las archivadas
+  aparte, de a 20 por cursor hasta 500) y llama a las cinco RPC. Cada una se edita en `/formulas/<fórmula>/planilla|hoja|tarjeta`: la página lee
+  esa fila por PK (`leerLaFormulaDelOrigen()`, con `cache()` entre el layout y la página) y sus lecturas y escrituras llevan **el id de la URL**
+  (`p_formula_del_origen`); una de otro origen o que no existe, 404; una archivada no se edita. La ruta corta (`/formula`, `/formula/hoja`,
+  `/formula/tarjeta`) es un `route.ts` que responde 308 a la fórmula de trabajo, leída como quien pide.
 
 ### Versiones
 
@@ -1217,7 +1223,8 @@ mano desde sus bandas) y la base los publica (P9 de `supabase/tests/areas/formul
   va `v1_<paquete>_<nombre>`, que a su vez se reusa si tiene el mismo hex, y si también choca no se crea nada (PT409). Si no caben en el tope de 48: «No hay
   lugar para N colores más en el catálogo (máximo 48): elimina alguno que no se use.». Después `plantillaConClaves()` reescribe los tonos de los grupos, del
   diseño y de las celdas.
-- **Aplicar es todo o nada, en la base:** `cotizacion_paquete_aplicar(p_origen, p_paquete, p_formula_esperada, p_plantilla_esperada)`, **invocadora**, en este
+- **Aplicar es todo o nada, en la base, sobre una fórmula del origen:** `cotizacion_paquete_aplicar(p_origen, p_paquete, p_formula_esperada,
+p_plantilla_esperada, p_formula_del_origen)` (la de la cabeza del editor donde se abrió el modal; nula, la de trabajo), **invocadora**, en este
   orden: `assert_permiso('cotizaciones.configurar', p_origen)`; la forma de `p_paquete` (22023, `hint` `paquete.<pieza>`); `formula_guardar_borrador()` con la
   esperada de la fórmula (nula = crear) y sin la publicada esperada; `plantilla_guardar_borrador()` con la de la tarjeta; `_paquete_colores_preparar()`
   (definer: toma `tonos` en `share row exclusive` y comprueba que cada color que se reusa sigue con su hex —si no, PT409 «Mientras elegías, cambiaron los

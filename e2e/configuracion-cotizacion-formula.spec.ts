@@ -14,6 +14,7 @@ import {
 import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
 import { sembrarVersiones } from './soporte/formula-versiones'
 import { crearAsesoraDeLaSemilla } from './soporte/recorrido'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // La sub-pestaña «Fórmula» de la pestaña Fórmula de un origen (4.20-2a, `docs/UX.md` › «Cotización: fórmula (estados propios)»): entra quien tiene `cotizaciones.configurar` en algún origen,
 // también sin los permisos de los niveles; muestra la publicada, el borrador (atrasado si se publicó otra después) y las versiones de a 20 por cursor hasta 500, con
@@ -71,8 +72,8 @@ const versiones = (page: Page) =>
 const menu = (page: Page) => page.getByRole('navigation', { name: 'Secciones de Configuración' })
 
 async function abrirFormula(page: Page, origenId: string) {
-  await page.goto(`/configuracion/origenes/${origenId}/formula`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origenId, 'planilla')
+  await enLaPestana(page, 'Planilla')
 }
 
 test('quien sólo configura la fórmula de un origen entra por el hub y el menú a «Fórmula» de su origen, sin los otros ni los niveles', async ({
@@ -87,9 +88,13 @@ test('quien sólo configura la fórmula de un origen entra por el hub y el menú
   await menu(page).getByRole('link', { name: chica.nombre, exact: true }).click()
   await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${chica.id}/datos$`))
   await expect(page.getByRole('heading', { name: chica.nombre, level: 1 })).toBeVisible()
-  await page.getByRole('tab', { name: 'Fórmula', exact: true }).first().click()
-  await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${chica.id}/formula$`))
-  await enLaPestana(page, 'Fórmula')
+  await page.getByRole('tab', { name: 'Fórmulas', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`/configuracion/origenes/${chica.id}/formulas$`))
+  await page
+    .getByRole('link', { name: /^Editar «/ })
+    .first()
+    .click()
+  await enLaPestana(page, 'Planilla')
   await expect(page.getByRole('heading', { name: 'Publicada: versión 26' })).toBeVisible()
   // Los niveles tampoco se abren escribiendo la URL: van al primer catálogo que abre.
   await page.goto('/configuracion/catalogos/niveles')
@@ -97,7 +102,7 @@ test('quien sólo configura la fórmula de un origen entra por el hub y el menú
   await expect(page.getByRole('heading', { name: 'Colores', level: 1 })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Niveles de acceso' })).toHaveCount(0)
   // Un origen que no es suyo no se abre.
-  await page.goto(`/configuracion/origenes/${grande.id}/formula`)
+  await abrirLaFormula(page, grande.id, 'planilla')
   await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Publicada: versión 26' })).toHaveCount(0)
 })
@@ -195,7 +200,7 @@ test('la lista de versiones pesa lo medido: bytes de «Ver más» y nodos con 20
 
 test('la asesora, sin los niveles ni la fórmula, sigue sin entrar', async ({ page }) => {
   await entrar(page, asesora, { fresco: true })
-  await page.goto(`/configuracion/origenes/${chica.id}/formula`)
+  await abrirLaFormula(page, chica.id, 'planilla')
   await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Publicada: versión 26' })).toHaveCount(0)
 })

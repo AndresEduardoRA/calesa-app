@@ -113,12 +113,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   concesiones.
 - **Para cotizar y mover** — `pasosParaCotizarYMover()` / `<ParaCotizarYMover>`: lo que le falta a un origen activo para cotizar y mover sus
   vehículos, en cinco pasos con su estado (✓ listo, ⚠ aviso, ✗ bloquea): Datos (apibara en una subasta), Campos, Flujo (con fases), Fórmula
-  (activa) y Tarjeta (publicada en la fórmula de trabajo), cada uno enlazado a su pestaña de la página del origen. Un inactivo dice sólo «Inactivo». Lo accionable se ve
+  (una activa) y Tarjeta (publicada en la activa), cada uno enlazado a su pestaña de la página del origen (Fórmula, a la lista de las fórmulas). Un inactivo dice sólo «Inactivo». Lo accionable se ve
   también en el inicio de Configuración como **lo que falta** (`faltasPorSeccion()`, `<QueFaltaDeLaSeccion>`: una línea por origen en Orígenes,
   apibara en Empresa). No: «siguientes pasos», «checklist».
 - **Página del origen** — `/configuracion/origenes/<id>/<pestaña>` (`MarcoDelOrigen`, `PESTANAS_DEL_ORIGEN`): todo lo de un origen en un lugar,
-  con su encabezado, «Para cotizar y mover» y seis **pestañas**: Datos, Campos, Categorías, Flujo, Fórmula (con sus sub-pestañas Fórmula, Hoja y
-  Tarjeta) y Tablas. Cada pestaña pide su permiso en ese origen; la que no se abre va apagada con su motivo.
+  con su encabezado, «Para cotizar y mover» y seis **pestañas**: Datos, Campos, Categorías, Flujo, Fórmulas (la lista de las fórmulas del origen;
+  cada una se edita en `/formulas/<fórmula>` con sus pestañas Planilla, Hoja y Tarjeta) y Tablas. Cada pestaña pide su permiso en ese origen; la que no se abre va apagada con su motivo.
 - **Catálogos (Configuración)** — `SECCION_DE_CATALOGOS`, `/configuracion/catalogos/<clave>`: lo que es de toda la empresa y no de un origen, en
   tres tramos: «Cotizaciones» (Colores, Niveles, Vigencia), «Logística» (Puertos, Navieras, Categorías de gasto, Tipos de documento) y las Tablas
   compartidas. No es el catálogo de repuestos ni el de apibara.
@@ -464,8 +464,16 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   (`formula_del_origen_renombrar|archivar|eliminar|activar`). No: «variante», «plantilla» (la plantilla es la de la tarjeta).
 - **Fórmula activa** — `formulas_del_origen.activa` (`formulas_del_origen_activa_unica`): la fórmula del origen con que se cotiza, a lo sumo una por
   origen y siempre con versión publicada; se cotiza con su publicada (`_publicada_de_la_activa()`). Activar otra publica sus borradores y apaga la anterior.
-- **Fórmula de trabajo** — `_fdo_de_trabajo()` / `leerFormulaDeTrabajoSobre()`: la que leen y escriben las sub-pestañas Fórmula, Hoja y Tarjeta de la página del origen y la que
-  usa una RPC que no recibe `p_formula_del_origen`: la activa o, sin ella, la más nueva sin archivar; el primer guardado de un origen sin ninguna la crea.
+- **Fórmula de trabajo** — `_fdo_de_trabajo()` / `leerFormulaDeTrabajo()`: la que usa una RPC que no recibe `p_formula_del_origen` y adonde lleva la
+  ruta corta (`/configuracion/origenes/<id>/formula`, `/formula/hoja`, `/formula/tarjeta`: 308): la activa o, sin ella, la más nueva sin archivar; el
+  primer guardado de un origen sin ninguna la crea. El editor de una fórmula lee y escribe la de su URL.
+- **Activar (una fórmula del origen)** — `formula_del_origen_activar()`, «Activar…» del «⋯» (`?panel=activar-formula&formula=<id>`): volverla la que se
+  cotiza en su origen. Publica con una nota sus borradores (de la planilla y de la tarjeta), exige que la tarjeta calce con la versión que se va a
+  cotizar y apaga la activa anterior. Cada pieza va con su esperada (PT409 si cambió). No: «publicar la fórmula» (eso es una versión), «usar».
+- **Avisos de la copia** — `AvisoDeLaCopia` (`entities/avisos-de-la-copia.ts`), `avisos` de `formula_del_origen_crear()`: lo que copiar una fórmula de
+  otro origen cambió o no pudo resolver —una tabla creada con las filas de la copia, una tabla del destino usada en su lugar, un dato del vehículo
+  que el origen no tiene—. Se muestran arriba de la planilla de la copia hasta «Ocultar» (`sessionStorage`), y los datos que faltan quedan marcados
+  en su fila (`useCamposQueFaltan()`).
 - **Nodo** — `definicion.nodos[]`: una línea de la fórmula: input, constante, tipo de cambio, campo, bandera, tabla, tramo, cálculo.
 - **Constante** — nodo `constante` + `params`: valor por defecto versionado que el ⚙ de la XCell cambia.
 - **Versión del flujo** — `flujos.actualizado_en` como texto ISO: la lee el editor del flujo y la devuelve cada escritura para detectar
@@ -635,8 +643,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Editor de la fórmula** — `EditorDeLaFormula` (`features/formula/components/editor/`), `?panel=editar-formula`: donde se escriben en texto
   las filas de la fórmula de un origen, sobre el borrador o la publicada; compila cada fila al aplicar. En la pantalla se llama «Modo avanzado».
 - **Modo avanzado** — el editor de la fórmula en texto (`?panel=editar-formula`), detrás del botón «Modo avanzado» de la planilla; comparte la
-  fórmula de trabajo con ella. No es «Avanzado» (la sección de la hoja que se edita en un modal).
-- **Planilla de la fórmula** — `PlanillaDeLaFormula` (`features/formula/components/planilla/`): la vista por defecto de la pestaña «Fórmula», como la
+  fórmula con ella. No es «Avanzado» (la sección de la hoja que se edita en un modal).
+- **Planilla de la fórmula** — `PlanillaDeLaFormula` (`features/formula/components/planilla/`): la pestaña «Planilla» del editor de una fórmula del origen, como la
   planilla de V1: filas numeradas con A · concepto, B · %, C · valor y D · de dónde sale, en bandas, con las celdas que se editan marcadas.
 - **Banda (de la planilla)** — `BandaDeLaPlanilla`, `bandasDeLaPlanilla()`: un tramo de la planilla con su cabecera: «Tipo de cambio», «Unidad de
   ejemplo», «Variante», cada grupo con su color, y «Sin grupo».
@@ -711,8 +719,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `comprobantes_serie_cambiar`) y `comprobantes_contadores` (último número de cada serie usada): numeración sin huecos.
 - **Diseño de la hoja** — `formulas.diseno` / `entities/diseno.ts`, `validarDiseno()`, `validar_diseno()`: cómo se ve la hoja de un origen
   (secciones, celdas, atajos, variantes, interruptores, modos, tarjeta) y el aspecto de cada pieza en la rejilla de la hoja.
-- **Hoja (pestaña)** — `/configuracion/origenes/<id>/formula/hoja`, clave `hoja` de `SUBPESTANAS_DE_LA_FORMULA`: el nombre en la UI de la
-  sub-pestaña de la Fórmula de un origen donde se edita el diseño de la hoja («Cómo se ve y se llena la cotización.»). El término técnico sigue siendo «Diseño de la hoja»
+- **Hoja (pestaña)** — `/configuracion/origenes/<id>/formulas/<fórmula>/hoja`, clave `hoja` de `SUBPESTANAS_DE_LA_FORMULA`: el nombre en la UI de la
+  pestaña del editor de una fórmula del origen donde se edita el diseño de la hoja («Cómo se ve y se llena la cotización.»). El término técnico sigue siendo «Diseño de la hoja»
   (`features/diseno/`); la «Hoja» de cotizar es la pantalla donde se cotiza.
 - **Aspecto** — claves planas y opcionales del diseño de la hoja / `entities/aspecto-de-la-hoja.ts`, `features/hoja/components/clases-de-la-rejilla.ts`:
   cómo se ve una pieza, de escalas cerradas (nunca px, CSS ni hex). Ítem: ancho, alto, letra y énfasis; sección: ancho, alto, relleno,

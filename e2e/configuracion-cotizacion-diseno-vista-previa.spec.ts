@@ -10,6 +10,7 @@ import {
 import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
 import { leerElBorradorDelDiseno, publicarFormulaDeTresSumandos } from './soporte/diseno-editor'
 import { sinScrollHorizontal } from './soporte/recorrido'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // La vista previa de la pestaña «Diseño» (4.22-5, `docs/UX.md` › «Cotización: hoja (estados propios)»): el diseño en edición dibujado con los componentes de la hoja a 412 px, a
 // 1.280 px y a 412 con el texto al doble. Un recorrido: la elección va en la URL, cada ancho dispara sus cortes, la página no se ensancha, lo que se edita se ve sin guardar y la hoja
@@ -59,7 +60,7 @@ test('V1: la vista previa va a 412, a 1.280 y a 200 %, sigue al diseño sin guar
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/origenes/${origen.id}/formula/hoja`)
+  await abrirLaFormula(page, origen.id, 'hoja')
   await enLaPestana(page, 'Hoja')
   const boton = page.getByRole('button', { name: 'Vista previa', exact: true })
   await expect(boton).toHaveAttribute('aria-expanded', 'false')

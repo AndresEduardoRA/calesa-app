@@ -617,7 +617,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `diferido()`) (`docs/PENDIENTES.md`).
 - La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada
   ruta). dnd-kit (el orden del diseño y las asas de fila del editor de la tarjeta) viaja sólo en los `diferido()` de las pestañas «Hoja» y «Tarjeta»
-  (`/configuracion/origenes/<id>/formula/hoja|tarjeta`), que no tienen tope; lo que se sume a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB).
+  (`/configuracion/origenes/<id>/formulas/<fórmula>/hoja|tarjeta`), que no tienen tope; lo que se sume a la hoja va con `diferido()` (el aviso de subasta cerrada suma 0,1 KB).
   La guardada viaja con la hoja nueva (`hoja-de-cotizar.tsx` importa su guardado).
 - `/vehiculos` (el inventario): ≤ 530 KB, medido 506,8 en 33 chunks (los filtros «Subasta» y «Fase» y el orden por cierre con su ubicación: +3,4). El «⋯» de la fila sigue siendo un botón (su contenido se arma al abrirse) y sus
   paneles van una vez por lista con `diferido()` + `useAbiertoAlgunaVez()` (`listado/components/diferidos.tsx`): «Editar imágenes», la vitrina completa y
@@ -652,16 +652,22 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   «Ver todos»): no cruzan como código, son enlaces del mismo menú.
 - Configuración › Empresa (tarjetas de ajustes, cada modal con `diferido()` al abrirse por primera vez): JS en frío (KB gz, `.next-e2e`) `/empresa` 228,4, `/empresa/integraciones` 228,4, `/empresa/comprobantes` 358,9 (sin tope propio).
 - La página de un origen y Catálogos: cada pestaña y cada catálogo carga sólo su pantalla (`pantallas/origen-*`, `formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
-  JS en frío (KB gz, `medirJsEnFrio()` sobre `.next-e2e`): `/configuracion/origenes/<id>/datos` 390,1, `/campos` 392,4, `/categorias` 390,4, `/formula` 470,6,
-  `/formula/hoja` 387,3 (dnd-kit y el editor del diseño, en su `diferido()`), `/formula/tarjeta` 392,6 (la pestaña dibuja en frío el aviso de menos de 1.024 px
-  y arma la lectura del lienzo; el editor, 26,4, llega por `diferido()`), `/tablas` 392,5 («Nueva tabla» y el «⋯» de cada tabla en frío; sus paneles, por `diferido()`); `/configuracion/catalogos/colores` 356,8, `/niveles` 366,7,
+  JS en frío (KB gz, `medirJsEnFrio()` sobre `.next-e2e`): `/configuracion/origenes/<id>/datos` 390,1, `/campos` 392,4, `/categorias` 390,4, `/formulas` 393,6
+  (la lista y el «⋯» de cada fila en frío; los paneles de nueva, renombrar, activar, archivar y eliminar, y las archivadas, por `diferido()`), y el editor de
+  una fórmula, `/formulas/<fórmula>/planilla` 476,7, `/hoja` 392,4 (dnd-kit y el editor del diseño, en su `diferido()`), `/tarjeta` 398,9 (la
+  pestaña dibuja en frío el aviso de menos de 1.024 px y arma la lectura del lienzo; el editor llega por `diferido()`; la cabeza del editor, con el nombre, el estado y el «⋯» de la fórmula, suma ≈ 6 KB a cada parte y
+  pasa su meta por ≤ 1 %: regla del 5 %), `/tablas` 392,5 («Nueva tabla» y el «⋯» de cada tabla en frío; sus paneles, por `diferido()`); `/configuracion/catalogos/colores` 356,8, `/niveles` 366,7,
   `/vigencia` 359,3, `/puertos`, `/navieras` y `/categorias-de-gasto` 356,4, `/tipos-de-documento` 370,4, `/tablas` 368,1. El marco del origen (encabezado,
   «Para cotizar y mover» y las pestañas) lee `origenes_resumen()` una vez por pedido (`leerElOrigen`, con `cache()`, la comparten el marco y la pestaña) y,
-  en un origen de subasta, si apibara está activa: nada cuenta ni crece con las cotizaciones. `/configuracion/origenes/<id>` y `/formula` solos redirigen
-  con `route.ts` (308), sin `page.tsx` ni `loading.tsx` intermedios.
-  Cada pestaña de un origen lee antes su fórmula de trabajo: una fila de `formulas_del_origen` por `formulas_del_origen_origen_idx`
-  (`limit 1`), entre a lo sumo 50 sin archivar por origen (el tope de `formula_del_origen_crear()`, 22023 hint `formulas`); versiones, borradores y
-  tarjeta van después por los índices de esa fórmula del origen.
+  en un origen de subasta, si apibara está activa: nada cuenta ni crece con las cotizaciones. `/configuracion/origenes/<id>` y las rutas cortas
+  (`/formula`, `/formula/hoja`, `/formula/tarjeta`: la fórmula de trabajo, una fila por `formulas_del_origen_origen_idx`, `limit 1`) redirigen con
+  `route.ts` (308), sin `page.tsx` ni `loading.tsx` intermedios; `/formulas/<fórmula>` sola, por `next.config.ts`.
+- Las fórmulas del origen (la pestaña «Fórmulas», `infra/formulas-del-origen/`): la lista lee 51 filas por `formulas_del_origen_origen_idx` (`limit 51`) y
+  dibuja hasta 50 (el tope de `formula_del_origen_crear()`, 22023 hint `formulas`), con su versión publicada y si tiene tarjeta por los índices únicos
+  parciales, sin conteo exacto: a las 50, «Nueva fórmula» apagada con su aviso. Las archivadas se leen sólo al abrir su sección, de a 20 por cursor
+  hasta 500 con `<AvisoDeTope>`. «Copia de otro origen» ofrece los orígenes de `getOrigenes(true)` (tope 100) y lee las fórmulas del elegido desde el
+  navegador (tope 51). El editor de una fórmula lee su fila por PK con `cache()` (la comparten el layout `[formula]` y la página) y versiones,
+  borrador y tarjeta por los índices de esa fórmula. Tablas de configuración (≤ 50 vivas por origen): sin `db:medir:volumen`.
 - Configuración › Orígenes: la lista de tarjetas, 382,8 KB gz en frío en 26 chunks (`medirJsEnFrio()`); muestra sólo los orígenes que la persona
   abre, con su tira de pasos de la misma lectura. Sin `diferido()` nuevo: el bloque de datos clave se ve apenas carga «Campos».
 - «Vista y opciones» en las barras de los listados: en frío viaja sólo el botón (el panel, `Popover`, `Sheet` y las secciones van con `diferido()`); el
@@ -733,8 +739,8 @@ fallar.
 - La hoja de una guardada (`cotizacion_hoja_guardada()`, `medir-cotizacion-hoja-guardada.sql`, 50.000 y 250.000): ≤ 20 ms y 1.500
   buffers, razón de `cotizacion_crear`, 0 recorridos de `cotizaciones` (la anterior por la clave; la nueva viva por `cotizacion_padre_id`),
   `_nodos_visibles` 2 veces y la respuesta de la dueña ≤ 14.230 B. Guarda: buscar la nueva sin índice recorre.
-- Versiones de la fórmula (la pestaña «Fórmula» de un origen, `infra/formula/consulta-de-versiones.ts`): PostgREST de a 20 + 1 por
-  cursor sobre `formulas_formula_del_origen_id_version_key` (`version < n`, la serie de la fórmula de trabajo), sin `definicion`, `params`, `diseno` ni `visibilidad`; tope 500 con «Ir a la
+- Versiones de la fórmula (la pestaña «Planilla» de una fórmula del origen, `infra/formula/consulta-de-versiones.ts`): PostgREST de a 20 + 1 por
+  cursor sobre `formulas_formula_del_origen_id_version_key` (`version < n`, la serie de la fórmula de la URL), sin `definicion`, `params`, `diseno` ni `visibilidad`; tope 500 con «Ir a la
   versión»; la primera página, el estado (`limit 2`) y los autores en el servidor, «Ver más» desde el navegador. El plan lo fija
   `supabase/tests/areas/formula/versiones-por-cursor.sql` (`db:probar`); falta su `EXPLAIN` en `db:medir:volumen`.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un

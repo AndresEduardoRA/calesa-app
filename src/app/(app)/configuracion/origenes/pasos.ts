@@ -9,7 +9,7 @@ import {
 import { MOTIVO_SIN_CONFIGURAR_EL_COTIZADOR, MOTIVO_SIN_CONFIGURAR_EL_FLUJO } from './pestanas'
 
 // A dónde lleva cada paso de «Para cotizar y mover»: a la pestaña del origen donde se arregla, con el permiso que pide en ese origen.
-// La Tarjeta, a la sub-pestaña de Fórmula. Datos con aviso (un origen de subasta sin apibara) lleva a Empresa › Integraciones, que es
+// La Fórmula, a la lista de las fórmulas; la Tarjeta, a la ruta corta (`…/formula/tarjeta`), que lleva a la de la fórmula de trabajo. Datos con aviso (un origen de subasta sin apibara) lleva a Empresa › Integraciones, que es
 // donde se activa: la pestaña Datos no la enciende.
 export type PasoConDestino = PasoParaCotizar & {
   ruta: string
@@ -31,7 +31,7 @@ export const DESTINOS_DE_PASO: Record<ClaveDePaso, Destino> = {
     motivo: MOTIVO_SIN_CONFIGURAR_EL_FLUJO,
   },
   formula: {
-    ruta: A_LA_PESTANA('formula'),
+    ruta: A_LA_PESTANA('formulas'),
     permiso: 'cotizaciones.configurar',
     motivo: MOTIVO_SIN_CONFIGURAR_EL_COTIZADOR,
   },
