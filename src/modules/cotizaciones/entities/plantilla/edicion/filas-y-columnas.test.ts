@@ -1,12 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { anuncioDe, celda, grilla, motivoDe, plantillaDe } from './edicion.soporte'
 import {
+  MOTIVO_DE_LAS_CONDICIONES_DE_LA_FILA,
   MOTIVO_DEL_ALTO,
   MOTIVO_DEL_ANCHO,
   MOTIVO_SIN_NODO,
   altoDeFila,
   anchoDeColumna,
   moverFila,
+  ocultarSegun,
   ocultarSi,
 } from './filas-y-columnas'
 import { MOTIVOS_DE_LOS_TOPES } from './limites'
@@ -54,6 +56,32 @@ describe('ocultarSi', () => {
   })
   it('sin nodo no se oculta por nada', () => {
     expect(motivoDe(ocultarSi(P, 0, 'no_aplica', null))).toBe(MOTIVO_SIN_NODO)
+  })
+})
+
+describe('ocultarSegun', () => {
+  const SI = [{ es: 'mayor', nodo: 'remate', a: 1000 }] as const
+  it('con sus condiciones y sin el nodo que la decidía; volver a «nunca» las quita', () => {
+    const conNodo = plantillaDe(ocultarSi(grilla(2, 1), 1, 'no_aplica', 'remate'))
+    const r = ocultarSegun(conNodo, 1, SI)
+    expect(anuncioDe(r)).toBe('La fila 2 se oculta si se cumplen sus condiciones.')
+    const p = plantillaDe(r)
+    expect(p.filas[1]).toEqual({ id: 'f2', alto: 25, ocultar_si: 'condiciones', si: SI })
+    expect(plantillaDe(ocultarSi(p, 1, 'nunca', null)).filas[1]).toEqual({
+      id: 'f2',
+      alto: 25,
+      ocultar_si: 'nunca',
+    })
+    const igual = ocultarSegun(p, 1, SI)
+    expect(igual.ok && igual.plantilla).toBe(p)
+  })
+  it('de 1 a 3 condiciones, en una fila que está', () => {
+    const P = grilla(1, 1)
+    expect(motivoDe(ocultarSegun(P, 0, []))).toBe(MOTIVO_DE_LAS_CONDICIONES_DE_LA_FILA)
+    expect(motivoDe(ocultarSegun(P, 0, [...SI, ...SI, ...SI, ...SI]))).toBe(
+      MOTIVO_DE_LAS_CONDICIONES_DE_LA_FILA,
+    )
+    expect(motivoDe(ocultarSegun(P, 3, SI))).toBe('Esa fila no está en la tarjeta.')
   })
 })
 

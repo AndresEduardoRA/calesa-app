@@ -3,7 +3,7 @@
 import { useId, useMemo, useState } from 'react'
 import { Input } from '@/shared/ui/input'
 import { Label } from '@/shared/ui/label'
-import type { ContenidoDeLaCelda } from '../../../../../entities/cuadricula-de-la-tarjeta'
+import type { DatoDeLaCelda } from '../../../../../entities/cuadricula-de-la-tarjeta'
 import {
   acotarDatos,
   mostrarQueAdmite,
@@ -16,12 +16,12 @@ import type { ContextoDePlantilla } from '../../../../../entities/plantilla/vali
 import { Eleccion } from './eleccion'
 
 type Props = {
-  // Lo que muestra la celda ahora, si es un dato.
-  actual: Extract<ContenidoDeLaCelda, { tipo: 'dato' }> | null
+  // Lo que muestra la celda ahora (o el dato de la lista o de la rama), si es un dato.
+  actual: DatoDeLaCelda | null
   contexto: ContextoDePlantilla
   // Los nodos que la plantilla ya nombra (un restringido se lista marcado).
   nombrados: ReadonlySet<string>
-  alElegir: (contenido: ContenidoDeLaCelda) => void
+  alElegir: (dato: DatoDeLaCelda) => void
 }
 
 const CLASE_DEL_GRUPO = 'px-2 text-(length:--text-xs) font-semibold text-(--color-ink-soft)'

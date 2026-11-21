@@ -125,6 +125,53 @@
           "contenido": {}
         }
       ]
+    },
+    "con_reglas": {
+      "forma": 2,
+      "columnas": [{ "id": "a", "ancho": 200 }],
+      "filas": [
+        {
+          "id": "f",
+          "alto": 24,
+          "ocultar_si": "condiciones",
+          "si": [{ "es": "encendido", "nodo": "seguro" }]
+        }
+      ],
+      "celdas": [
+        {
+          "id": "c_texto",
+          "fila": "f",
+          "columna": "a",
+          "contenido": { "tipo": "texto", "texto": "Hola" }
+        },
+        {
+          "id": "c_respaldo",
+          "fila": "f",
+          "columna": "a",
+          "contenido": {
+            "tipo": "respaldo",
+            "datos": [
+              { "tipo": "dato", "variable": "titulo" },
+              { "tipo": "dato", "variable": "vehiculo_titulo" }
+            ]
+          }
+        },
+        {
+          "id": "c_condiciones",
+          "fila": "f",
+          "columna": "a",
+          "contenido": {
+            "tipo": "condiciones",
+            "ramas": [
+              {
+                "si": [{ "es": "encendido", "nodo": "seguro" }],
+                "contenido": { "tipo": "texto", "texto": "Con seguro" }
+              }
+            ],
+            "si_no": { "tipo": "texto", "texto": "Sin seguro" }
+          }
+        }
+      ]
     }
   },
   "casos": [
@@ -648,6 +695,24 @@
         "regla": "celda_no_es_texto",
         "donde": "celdas.c_rara"
       }
+    },
+    {
+      "nombre": "celda que no es de texto: una lista de respaldo",
+      "plantilla": "con_reglas",
+      "retoques": { "celdas": { "c_respaldo": "x" } },
+      "motivo": { "regla": "celda_no_es_texto", "donde": "celdas.c_respaldo" }
+    },
+    {
+      "nombre": "celda que no es de texto: según condiciones, aunque sus ramas sean texto",
+      "plantilla": "con_reglas",
+      "retoques": { "celdas": { "c_condiciones": "x" } },
+      "motivo": { "regla": "celda_no_es_texto", "donde": "celdas.c_condiciones" }
+    },
+    {
+      "nombre": "una fila que se oculta según condiciones se oculta a mano, y su celda de texto se retoca",
+      "plantilla": "con_reglas",
+      "retoques": { "celdas": { "c_texto": "Chau" }, "filas_ocultas": ["f"] },
+      "valida": true
     }
   ],
   "octetos": [

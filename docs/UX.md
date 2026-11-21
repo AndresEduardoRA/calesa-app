@@ -1434,14 +1434,34 @@ Excel. Edita el **borrador** de la plantilla (sólo la forma 2, la cuadrícula),
   - **Nada, «Resumen»:** «Columnas» (cada una con su ancho en número), «Σ ancho N / 1.600 px», «Sumar columna»; «Paleta» (los colores del catálogo, sólo para
     ver) con «Editar en General › Colores»; «Tamaño: n de 24 KiB».
   - **Una celda, un rango o columnas** (aplicado a todas): la ruta («Fila 4 › Columna «C · Monto»»); con columnas, su «Ancho»; «Contenido» (Texto | Dato |
-    Logo | Vacío; el texto con «n de 300»; «Dato» con «Buscar un dato», las variables «De la cotización» y los nodos de la fórmula del nivel «todos» por
-    grupo, a lo sumo 50 con «Escribe para acotar.», un restringido que la plantilla ya nombra marcado «Restringido», y «Qué mostrar» con lo que admite el
-    nodo); «Color» (fondo y texto: «Automático» y las muestras del catálogo; con un fondo en el que no se lee, el aviso suave «Con este color el texto de la
+    Logo | Vacío; el texto con «n de 300»; «Dato» con «Cuál dato» (Uno | El primero con valor | Según condiciones) y, con «Uno», «Buscar un dato», las
+    variables «De la cotización» y los nodos de la fórmula del nivel «todos» por grupo, a lo sumo 50 con «Escribe para acotar.», un restringido que la
+    plantilla ya nombra marcado «Restringido», y «Qué mostrar» con lo que admite el nodo); «Color» (fondo y texto: «Automático» y las muestras del catálogo; con un fondo en el que no se lee, el aviso suave «Con este color el texto de la
     tarjeta se lee con dificultad.», que nunca frena); «Formato» (negrita, cursiva, tamaño de los 8 pasos, alineación horizontal y vertical); «Bordes» (el
     lado o todos, y ninguno, fino o grueso); con celdas, «Seleccionar su fila» y «Seleccionar su columna».
-  - **Una fila:** «Fila N», su «Alto» (16 a 240 px) y «Ocultar si…» (Nunca | Si no aplica | Si no aplica o vale 0) con «El nodo que la decide».
+  - **Una fila:** «Fila N», su «Alto» (16 a 240 px) y «Ocultar la fila» (Nunca | Si no aplica | Si no aplica o vale 0 | Según condiciones) con «El nodo
+    que la decide» (no con «Nunca» ni «Según condiciones»).
+  - **«El primero con valor»** (la lista de respaldo): «La celda muestra el primero que tenga valor.» y los datos en orden («Dato 1», «Dato 2»…), cada uno con
+    su nombre y su «⋯» («Más acciones del dato N»: «Subir», «Bajar», «Cambiar el dato», «Quitar», apagados con su motivo: «Ya es el primero.», «Ya es el
+    último.», «La lista lleva al menos dos datos.»). Sin elegir, «Elegir el dato»; elegir abre el buscador de «Dato» en línea con «Listo» (uno abierto a la
+    vez). Debajo, «Agregar un dato» a lo ancho (apagado con «Hasta 5 datos.» al lado).
+  - **«Según condiciones»:** una sección por rama, «Si» y después «Si no, si», con su «⋯» arriba a la derecha («Más acciones de la rama N»: «Subir», «Bajar»,
+    «Quitar la condición N», «Quitar la rama», apagados con su motivo: «Ya es la primera.», «Queda al menos una condición.», «Queda al menos una rama.»). Cada
+    condición se arma como una frase: «Lo que mira» (las variables «De la cotización» y los nodos por grupo, un restringido marcado), «Qué pregunta» (sólo lo
+    que ese dato puede responder: «está vacío», «no está vacío», «es 0», «es mayor que», «es» una opción, «está encendido»…) y su «Número» u «Opción»; el grupo
+    se nombra con la frase entera cuando está completa («Remate es mayor que 1.000»). Entre condiciones, «Y»; debajo, «Y además…» (apagado con «Hasta 3
+    condiciones.»). «Mostrar»: Texto | Dato | Nada, con «Texto que muestra» o el dato. Después de las ramas, «Agregar «si no, si…»» (apagado con «Hasta 5
+    ramas con el «si no».») y la sección «Si no» con «Si no, mostrar». Sin separadores de tarjeta: un título por bloque y una línea entre ramas.
+  - **«Ocultar la fila» según condiciones:** «Se oculta si» con su «⋯» («Más acciones de las condiciones de la fila») y las condiciones como arriba, sin
+    «si no».
+  - **A medio armar** (una lista con un dato, una condición sin número u opción): el motivo va bajo su campo («Elige al menos dos datos.», «Elige el dato.»,
+    «Falta el número.», «Elige la opción.», con `aria-invalid` y `aria-describedby`) y arriba «Sin terminar: la celda no cambia hasta completarla.» (o «la
+    fila»); la celda, el lienzo y «Guardar borrador» siguen con lo de antes hasta completarla. Deshacer afuera trae lo de la plantilla si lo armado estaba
+    entero. Un dato que la fórmula ya no tiene: «Este dato ya no está en la fórmula: se salta.» (el lienzo lo dibuja saltado; publicar da
+    `nodo_inexistente`). Mientras llega su código, el aviso de `diferido()` en su lugar.
 - **Ocultas con esta referencia (N)** (debajo del lienzo): cada fila que no se dibuja con la referencia elegida, con su rótulo, por qué («No aplica en esta
-  cotización: la variante es …», «Vale 0», «Su nodo no está en la versión de la referencia») y «Seleccionar la fila» (para cambiar su «Ocultar si…»); y
+  cotización: la variante es …», «Vale 0», «Su nodo no está en la versión de la referencia», «Se cumplen sus condiciones») y «Seleccionar la fila» (para
+  cambiar su «Ocultar si…»); y
   «Cambia a «Cifras de ejemplo» para verla en el lienzo.». Sin ocultas, nada. Con las cifras de ejemplo no se oculta ninguna.
 - **La referencia:** sin cotizaciones del origen que veas, sólo «Cifras de ejemplo», apagado, con «Todavía no hay cotizaciones de <Origen> que veas: se
   usan cifras de ejemplo.»; si no se pudo leer, «No se pudo leer la cotización de referencia.» y cifras de ejemplo. Elegirla no va al servidor.
