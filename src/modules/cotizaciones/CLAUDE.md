@@ -193,13 +193,19 @@ consulta?)` y, para quien no conoce la fórmula, la ruta corta `rutaDeConfigurac
   (`<CambiosSinGuardar preguntaAlCerrar>`).
 - **La fórmula** (área `formula`; la pestaña «Planilla»: `/configuracion/origenes/<id>/formulas/<fórmula>/planilla`, `cotizaciones.configurar`, a ancho completo): arriba la publicada, el
   borrador y las versiones (`VistaDeLaFormula`) y abajo la sesión de edición (`SesionDeLaFormula` por `diferido()`: lee la versión desde el navegador y
-  llama **una vez** a `useEditorDeLaFormula`), que dibuja la planilla (`components/planilla/`, por `diferido()`; lo que arma, `usePlanilla()`) o, con
-  `?panel=editar-formula`, el Modo avanzado (`EditorDeLaFormula` como marco y `ListaDeFilas` por `diferido()`), sobre la misma fórmula del origen. El
+  llama **una vez** a `useEditorDeLaFormula`), que dibuja la planilla (`components/planilla/`, por `diferido()`; lo que arma, `usePlanilla()`), sobre la misma
+  fórmula del origen. **La planilla edita como una hoja de cálculo** (`docs/COTIZADOR.md` › «La planilla»): la cuadrícula `role="grid"` (`cuadricula/`, la celda
+  activa por `aria-activedescendant`, eventos delegados), la barra de fórmula (`barra/`: el texto en A1 pintado por referencia, la leyenda, las sugerencias y
+  el error con su tramo), el «⋯» y el clic derecho de cada fila y banda (`menu/`) y los paneles por URL (`paneles/`: banda, «Total y tipos de cambio», «Tipo
+  de celda» y «¿Cómo se escribe?»). Lo guardado sigue en ids: A1 es sólo del navegador (`entities/formula/referencias-a1.ts` sobre la hoja numerada de
+  `hoja-de-la-planilla.ts`); las operaciones de fila (`insertar-fila.ts`, `mover-fila.ts`, `eliminar-fila.ts`, `tipo-de-celda.ts`) y de banda (`bandas.ts`)
+  son puras y devuelven la fórmula nueva o el motivo. `?panel=editar-formula` (el Modo avanzado, que ya no existe) responde 308 a la misma planilla desde
+  el proxy (`destinoSinElModoAvanzado()`, `src/shared/lib/sin-el-modo-avanzado.ts`). El
   catálogo de tablas del origen (`leerCatalogoDeTablas()`: clave y columnas de las `tablas_referencia` activas del origen y las compartidas, la del origen
   gana; tope 100; nulo si falla) lo lee la sección en paralelo con la fórmula y llega a la sesión para revisar BUSCARV al compilar. La unidad
   de ejemplo y el modo viven en la sesión; «Publicar…» espera con cambios aplicados sin guardar (`alCambiarPendientes`, en `useLayoutEffect`). La `key` de la
   sesión es `<origen>:<vuelta>:<sesión>` (`otraSesion()`). La página pasa `tarjeta` (la promesa de `leerLaTarjetaDeTrabajo()`), `TarjetaEnVivo` y
-  `puedeCambiarTiposDeCambio`. Las celdas editables usan `BOTON_DEL_VALOR` y `ENTRADA` de `@/shared/ui/xcell`; los colores de las bandas, `leerTonosDelCatalogo()`
+  `puedeCambiarTiposDeCambio` y los tipos de cambio de la empresa (`tiposDeCambio`, clave y nombre, para «Tipo de celda»). Las celdas editables usan `BOTON_DEL_VALOR` y `ENTRADA` de `@/shared/ui/xcell`; los colores de las bandas, `leerTonosDelCatalogo()`
   con claro y oscuro y `<EstiloDeTonos>`.
 - **El PDF** (área `tarjeta`): `GET /cotizaciones/[id]/pdf` (`requerirSesion()`; 404 en texto igual al de la página para lo que no existe, está en la
   papelera o no se ve; `rutaDelPdf(id)`) arma la página (fecha del último guardado en la zona de `leerAjustes()`, que falla en vez de dar lo de fábrica) y
@@ -345,6 +351,13 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
   `casos-del-motor.json`.
 - Validación: `entities/validar*.ts` espeja `validar_formula()` (`docs/COTIZADOR.md` › «Las reglas») y `validar-diseno*.ts` a `validar_diseno()` (con el
   tope de 40 ítems, `demasiados_items`, primero tras la forma); juegos `casos-de-{formula,diseno}.json` (regla nueva = su caso).
+- La planilla de la fórmula (área `formula`; `docs/COTIZADOR.md` › «La planilla»), pura y con su test: `entities/formula/hoja-de-la-planilla.ts` (la hoja
+  numerada, la `pct` que absorbe la B y los tramos de banda), `referencias-a1.ts` y `de-a1.ts` (ids ↔ A1, con el mapa de los tramos de error),
+  `referencias-tipeadas.ts` (colores, leyenda y bordes de lo tipeado), `autocompletar.ts` y `ayuda-de-funciones.ts`, `texto-de-la-celda.ts` y
+  `escrito-en-la-celda.ts` (qué abre y qué hace lo escrito en cada columna), `teclas-de-la-cuadricula.ts`, `filas-a-la-vista.ts` (buscar y el tope sin
+  renumerar), las operaciones de fila (`insertar-fila.ts`, `mover-fila.ts` y `eliminar-fila.ts` sobre `usos-de-la-fila.ts`), `tipo-de-celda.ts` y
+  `tipo-de-celda-nodos.ts`, `opciones-de-la-variante.ts`, las bandas (`bandas.ts`, `buckets.ts`, `total-de-la-formula.ts`, `sumas-de-banda.ts`),
+  `mensaje-en-a1.ts` y `params-para-validar.ts`; en el núcleo, `entities/nodos-del-diseno.ts` (lo que la hoja muestra: la planilla no lo borra).
 - La plantilla: `validar_plantilla()` (`docs/COTIZADOR.md` › «Plantilla de tarjeta (PDF)»), espejo `entities/plantilla/validar-plantilla.ts` (code points,
   `btrim`, orden C, tope en bytes del texto jsonb, sin prototipo) con su juego `casos-de-plantilla.json`; dos formas: la de grupos (`forma-de-plantilla.ts`,
   `nodos-de-plantilla.ts`) y la cuadrícula (`forma-de-cuadricula.ts`, `celdas-de-cuadricula.ts`, `condiciones-de-cuadricula.ts` —la forma de la lista de

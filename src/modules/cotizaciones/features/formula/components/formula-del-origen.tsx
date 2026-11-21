@@ -13,6 +13,7 @@ import { usePanelDeLaFormula } from '../hooks/use-panel-de-la-formula'
 import { AvisosDeLaCopia } from './avisos-de-la-copia'
 import { AccionesDeLaFormula } from './acciones-de-la-formula'
 import { SesionDeLaFormulaDiferida } from './diferidos'
+import type { TipoDeCambioDeLaEmpresa } from './planilla/tipos'
 import { VistaDeLaFormula } from './vista-de-la-formula'
 
 type Origen = { id: string; nombre: string; activo: boolean }
@@ -27,6 +28,7 @@ type Props = {
   tablas: CatalogoDeTablas
   TarjetaEnVivo: ComponentType<PropsDeLaTarjetaEnVivo>
   puedeCambiarTiposDeCambio: boolean
+  tiposDeCambio: readonly TipoDeCambioDeLaEmpresa[]
 }
 
 // Sobre qué versión se edita: el borrador o, sin él, la publicada.
@@ -37,8 +39,7 @@ const sobreQue = (formula: Formula) =>
 
 // La pestaña «Fórmula» de la Fórmula de un origen (Configuración › Orígenes): arriba su publicada, su borrador y sus versiones (`VistaDeLaFormula`; desde el borrador se publica
 // y desde una archivada se revierte, `?panel=publicar-formula`, `?panel=revertir-formula&version=<id>`; el borrador se descarta, `?panel=descartar-borrador`) y abajo
-// la planilla de la fórmula, sobre el borrador o, sin él, la publicada. Con `?panel=editar-formula`, el Modo avanzado (el editor en texto) ocupa el lugar de todo:
-// la sesión que tiene la fórmula es la misma y no se vuelve a montar al cambiar de modo. Su `key` no lleva la versión (C8): guardar sobre la publicada
+// la planilla de la fórmula, sobre el borrador o, sin él, la publicada. La `key` de la sesión no lleva la versión (C8): guardar sobre la publicada
 // crea el borrador y la sesión sigue montada; la vuelven a montar «Recargar» tras un conflicto (en la misma transición que trae la pestaña) y una versión que cambió
 // por otra cosa (`otraSesion()`: publicar, descartar, revertir). «Publicar…» espera
 // mientras haya cambios aplicados sin guardar: se publica lo guardado.
@@ -50,6 +51,7 @@ export function FormulaDelOrigen({
   tablas,
   TarjetaEnVivo,
   puedeCambiarTiposDeCambio,
+  tiposDeCambio,
 }: Props) {
   const panel = usePanelDeLaFormula()
   const router = useRouter()
@@ -76,14 +78,12 @@ export function FormulaDelOrigen({
   return (
     <div className="grid min-w-0 gap-4">
       <AvisosDeLaCopia origenId={origen.id} formulaDelOrigenId={formulaDelOrigenId} />
-      {panel.editando && sobre ? null : (
-        <VistaDeLaFormula
-          origen={origen}
-          formula={formula}
-          panel={panel}
-          publicarEspera={pendientes}
-        />
-      )}
+      <VistaDeLaFormula
+        origen={origen}
+        formula={formula}
+        panel={panel}
+        publicarEspera={pendientes}
+      />
       {sobre ? (
         <SesionDeLaFormulaDiferida
           key={`${formulaDelOrigenId}:${String(vuelta)}:${String(generacion.sesion)}`}
@@ -91,9 +91,6 @@ export function FormulaDelOrigen({
           formulaDelOrigenId={formulaDelOrigenId}
           formulaId={sobre.id}
           sobre={sobreQue(formula)}
-          avanzado={panel.editando}
-          alAbrirAvanzado={panel.abrirEditor}
-          alVolver={panel.cerrar}
           recargando={recargando}
           alRecargar={recargar}
           alCambiarPendientes={setPendientes}
@@ -101,6 +98,7 @@ export function FormulaDelOrigen({
           tablas={tablas}
           TarjetaEnVivo={TarjetaEnVivo}
           puedeCambiarTiposDeCambio={puedeCambiarTiposDeCambio}
+          tiposDeCambio={tiposDeCambio}
         />
       ) : null}
       <AccionesDeLaFormula panel={panel} origen={origen} formula={formula} />

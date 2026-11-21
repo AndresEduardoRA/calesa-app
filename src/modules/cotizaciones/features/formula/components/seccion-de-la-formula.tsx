@@ -7,6 +7,7 @@ import type {
   PropsDeLaTarjetaEnVivo,
 } from '../../../entities/tarjeta-en-vivo'
 import { FormulaDelOrigen } from './formula-del-origen'
+import type { TipoDeCambioDeLaEmpresa } from './planilla/tipos'
 
 type Origen = { id: string; nombre: string; activo: boolean }
 
@@ -21,6 +22,8 @@ type Props = {
   TarjetaEnVivo: ComponentType<PropsDeLaTarjetaEnVivo>
   // `empresa.tipos_cambio.gestionar`: la banda «Tipo de cambio» ofrece «Cambiar en Empresa › Monedas».
   puedeCambiarTiposDeCambio: boolean
+  // Los tipos de cambio de la empresa (`empresa`, que este módulo no lee aquí): la página los pide sin esperarlos. Nunca rechaza (sin lectura, ninguno).
+  tiposDeCambio: Promise<readonly TipoDeCambioDeLaEmpresa[]>
 }
 
 // La pestaña «Fórmula» de la Fórmula de un origen (Configuración › Orígenes) (4.20-2a), leída en el servidor con la sesión de quien mira y detrás de `<Suspense>`: la
@@ -32,11 +35,13 @@ export async function SeccionDeLaFormula({
   tarjeta,
   TarjetaEnVivo,
   puedeCambiarTiposDeCambio,
+  tiposDeCambio,
 }: Props) {
-  const [leida, deLaTarjeta, tablas] = await Promise.all([
+  const [leida, deLaTarjeta, tablas, tipos] = await Promise.all([
     leerFormulaDelOrigen(formula),
     tarjeta,
     leerCatalogoDeTablas(origen.id),
+    tiposDeCambio,
   ])
   return (
     <FormulaDelOrigen
@@ -47,6 +52,7 @@ export async function SeccionDeLaFormula({
       tablas={tablas}
       TarjetaEnVivo={TarjetaEnVivo}
       puedeCambiarTiposDeCambio={puedeCambiarTiposDeCambio}
+      tiposDeCambio={tipos}
     />
   )
 }

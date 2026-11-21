@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
 import type { PlantillaDelOrigen, VersionDePlantilla } from './lectura-de-la-plantilla'
-import { lecturaDeLaTarjetaDeTrabajo } from './tarjeta-de-trabajo'
+import { lecturaDeLaTarjetaDeTrabajo, nombradoPorLaTarjeta } from './tarjeta-de-trabajo'
 
 const cuadricula = (nodos: readonly string[], conPorcentaje = false): PlantillaEnCuadricula => ({
   forma: 2,
@@ -178,5 +178,33 @@ describe('lecturaDeLaTarjetaDeTrabajo y los tipos de cambio', () => {
     expect(r.estado).toBe('lista')
     if (r.estado !== 'lista') return
     expect(r.lectura.tiposDeCambio.buckets).toEqual([{ bucket: 'b', nombre: null, nodo: null }])
+  })
+})
+
+describe('nombradoPorLaTarjeta: lo que la planilla no borra', () => {
+  it('los nodos de la cuadrícula, también los restringidos que no viajan en la lectura', () => {
+    const r = lecturaDeLaTarjetaDeTrabajo(
+      lectura({ borrador: version(cuadricula(['fees', 'cif'])) }),
+      origen,
+    )
+    expect(r.estado === 'lista' ? r.nombra : null).toEqual({ nodos: ['fees', 'cif'], grupos: [] })
+  })
+
+  it('de la forma 1, sus grupos y las claves de sus etiquetas y leyendas', () => {
+    const forma1 = {
+      forma: 1 as const,
+      plantilla: {
+        grupos: [{ grupo: 'compra' }],
+        etiquetas: { comision: 'Comisión' },
+        leyendas: { tasa: 'Del remate' },
+        total: { etiqueta: 'Total' },
+        logo: false,
+        columnas: { leyenda: false, plazo: false, tipo_cambio: false },
+      },
+    }
+    const p = lectura({ publicada: { ...version(cuadricula([])), contenido: forma1 } })
+    const r = nombradoPorLaTarjeta(p, 'publicada', cuadricula(['fees']))
+    expect(r.grupos).toEqual(['compra'])
+    expect([...r.nodos].sort()).toEqual(['comision', 'fees', 'tasa'])
   })
 })

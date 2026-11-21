@@ -16,8 +16,7 @@ type Props = {
 
 type Origen = { id: string; nombre: string; activo: boolean }
 
-// Lo de arriba de la pestaña «Fórmula» (4.20-2a): la publicada del origen, su borrador y sus versiones (el origen se elige en la página). Se edita en la planilla, debajo;
-// el Modo avanzado se abre desde su barra.
+// Lo de arriba de la pestaña «Fórmula» (4.20-2a): la publicada del origen, su borrador y sus versiones (el origen se elige en la página). Se edita en la planilla, debajo.
 export function VistaDeLaFormula({ origen, formula, panel, publicarEspera }: Props) {
   return (
     <>

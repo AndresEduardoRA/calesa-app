@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { leerLaTarjetaDeLaFormula } from '@/modules/cotizaciones'
+import { getTiposCambio } from '@/modules/empresa'
 import { SeccionDeLaFormula } from '@/modules/cotizaciones/pantallas/formula'
 import { TarjetaEnVivoDiferida } from '@/modules/cotizaciones/pantallas/tarjeta-formula'
 import { puede } from '@/shared/lib/permisos'
@@ -11,9 +12,10 @@ import { abrirFormula } from '../abrir-formula'
 export const metadata: Metadata = { title: 'Planilla de la fórmula' }
 
 // Configuración › Orígenes › un origen › Fórmulas › una fórmula › Planilla: qué se calcula. Arriba la publicada, el borrador y las versiones
-// (`?panel=publicar-formula`, `revertir-formula&version=`, `descartar-borrador`); abajo la planilla y, con `?panel=editar-formula`, el Modo avanzado; con
-// `?fila=<id>`, esa fila marcada. A todo el ancho: al costado de la planilla van «Totales» y la tarjeta en vivo. La tarjeta de la fórmula (área `plantilla`) se
-// pide aquí como promesa, sin esperarla: la sección la espera junto a la fórmula, y su dibujo (área `tarjeta`) entra por el hueco `TarjetaEnVivo`.
+// (`?panel=publicar-formula`, `revertir-formula&version=`, `descartar-borrador`); abajo la planilla con sus paneles en la URL; con `?fila=<id>`, esa fila
+// elegida. A todo el ancho: al costado de la planilla van «Totales» y la tarjeta en vivo. La tarjeta de la fórmula (área `plantilla`) y los tipos de cambio de la
+// empresa («Tipo de celda › Tipo de cambio») se piden aquí como promesas, sin esperarlas: la sección las espera junto a la fórmula, y el dibujo de la tarjeta (área
+// `tarjeta`) entra por el hueco `TarjetaEnVivo`.
 export default async function PaginaDeLaPlanilla({
   params,
 }: PageProps<'/configuracion/origenes/[id]/formulas/[formula]/planilla'>) {
@@ -41,6 +43,9 @@ async function Planilla({ origenId, formulaId }: { origenId: string; formulaId: 
       formula={abierto.formula}
       tarjeta={leerLaTarjetaDeLaFormula(origen, abierto.formula.id)}
       TarjetaEnVivo={TarjetaEnVivoDiferida}
+      tiposDeCambio={getTiposCambio().then((tipos) =>
+        tipos.map(({ clave, nombre }) => ({ clave, nombre })),
+      )}
       puedeCambiarTiposDeCambio={puede(abierto.sesion.permisos, 'empresa.tipos_cambio.gestionar')}
     />
   )

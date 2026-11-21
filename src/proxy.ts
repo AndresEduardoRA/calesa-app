@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { decidirAcceso } from '@/shared/lib/rutas'
+import { destinoSinElModoAvanzado } from '@/shared/lib/sin-el-modo-avanzado'
 import { actualizarSesion } from '@/shared/lib/supabase/proxy'
 
 // Next 16: `proxy.ts` (antes `middleware.ts`) va al nivel de `app/`, no adentro.
@@ -22,6 +23,16 @@ export async function proxy(request: NextRequest) {
     esAccion: request.headers.has('next-action'),
   })
   if (decision.tipo === 'seguir') {
+    // El Modo avanzado de la planilla de la fórmula ya no existe: 308 a la misma planilla (una action sigue: repetiría el POST).
+    const sinElModoAvanzado = request.headers.has('next-action')
+      ? null
+      : destinoSinElModoAvanzado(request.nextUrl.pathname, busqueda)
+    if (sinElModoAvanzado !== null) {
+      return conLasCookies(
+        NextResponse.redirect(new URL(sinElModoAvanzado, request.nextUrl.origin), 308),
+        respuesta,
+      )
+    }
     return esElInventarioViejo(request.nextUrl.pathname, busqueda)
       ? conLasCookies(
           NextResponse.rewrite(new URL(`${INVENTARIO_VIEJO}?${query}`, request.nextUrl.origin)),

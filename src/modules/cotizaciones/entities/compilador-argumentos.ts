@@ -49,8 +49,8 @@ export const calculo = (
   ...(extra.pct === undefined ? {} : { pct: extra.pct }),
 })
 
-// Los miembros de un grupo, en su orden, como referencias (SUMA, MAX y MIN de un grupo): el grupo tiene que existir, no ser el de
-// la fila, no tener miembros más abajo ni estar vacío.
+// Los miembros de un grupo, en su orden, como referencias (SUMA, MAX y MIN de un grupo): el grupo tiene que existir (el parser sólo
+// lo toma por grupo si existe), no ser el de la fila, no tener miembros más abajo ni estar vacío.
 export function expandirGrupo(
   arg: Clave,
   nombres: Nombres,
@@ -58,7 +58,7 @@ export function expandirGrupo(
 ): Referencia[] | ErrorCrudo {
   const g = arg.texto
   const dato = { nombre: g }
-  if (!esta(nombres.grupos, g, nombres.m)) return errorEn(arg, 'grupo_inexistente', dato)
+  if (!esta(nombres.grupos, g, nombres.m)) return errorEn(arg, 'nombre_desconocido', dato)
   if (nombres.destino.grupo === g) return errorEn(arg, 'ciclo', { nombre: nombres.destino.id })
   if (esta(nombres.conMiembrosPosteriores, g, nombres.m))
     return errorEn(arg, 'referencia_hacia_adelante', dato)

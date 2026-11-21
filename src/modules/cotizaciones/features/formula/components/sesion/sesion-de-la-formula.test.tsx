@@ -1,4 +1,5 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { NuqsTestingAdapter } from 'nuqs/adapters/testing'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Resultado } from '@/shared/lib/errores'
 import type { FormulaParaEditar } from '../../../../entities/formula/edicion'
@@ -25,9 +26,6 @@ vi.mock('../../../../areas/formula/composicion.client', () => ({
 vi.mock('@/shared/ui/toasts', () => ({ avisar: vi.fn() }))
 vi.mock('next/navigation', () => ({ useRouter: () => ({ refresh: vi.fn() }) }))
 // Lo diferido llega directo.
-vi.mock('./diferidos', async () => ({
-  ListaDeFilasDiferida: (await import('../editor/lista-de-filas')).ListaDeFilas,
-}))
 vi.mock('../planilla/diferidos', async () => ({
   PlanillaDiferida: (await import('../planilla/planilla-de-la-formula')).PlanillaDeLaFormula,
 }))
@@ -56,9 +54,6 @@ const props = (extra: Partial<PropsDeLaSesion> = {}): PropsDeLaSesion => ({
   formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
   formulaId: '22222222-2222-4222-8222-222222222222',
   sobre: 'Sobre el borrador de Ana.',
-  avanzado: false,
-  alAbrirAvanzado: vi.fn(),
-  alVolver: vi.fn(),
   recargando: false,
   alRecargar: vi.fn(),
   alCambiarPendientes: vi.fn(),
@@ -66,8 +61,16 @@ const props = (extra: Partial<PropsDeLaSesion> = {}): PropsDeLaSesion => ({
   tablas: [],
   TarjetaEnVivo: () => null,
   puedeCambiarTiposDeCambio: false,
+  tiposDeCambio: [],
   ...extra,
 })
+
+const dibujar = (p: PropsDeLaSesion) =>
+  render(
+    <NuqsTestingAdapter>
+      <SesionDeLaFormula {...p} />
+    </NuqsTestingAdapter>,
+  )
 
 const responder = async () => {
   await waitFor(() => {
@@ -80,43 +83,42 @@ const responder = async () => {
 }
 
 beforeEach(() => {
+  // jsdom no desplaza: la celda activa se lleva a la vista.
+  Element.prototype.scrollIntoView = () => undefined
   pedidos.length = 0
   window.sessionStorage.clear()
 })
 afterEach(cleanup)
 
 describe('SesionDeLaFormula', () => {
-  it('mientras lee, el esqueleto en la planilla; leída, la planilla con sus cuatro columnas y la frase', async () => {
-    render(<SesionDeLaFormula {...props()} />)
+  it('mientras lee, el esqueleto en la planilla; leída, la cuadrícula con sus columnas y la frase', async () => {
+    dibujar(props())
     expect(screen.getByRole('region', { name: 'Planilla de la fórmula' })).toBeTruthy()
     expect(screen.getByLabelText('Cargando la lista')).toBeTruthy()
     await responder()
+    expect(screen.getByRole('grid', { name: 'Filas de la fórmula de Japón' })).toBeTruthy()
     for (const columna of ['A · concepto', 'B · %', 'C · valor', 'D · de dónde sale']) {
       expect(screen.getByRole('columnheader', { name: columna })).toBeTruthy()
     }
-    expect(
-      screen.getByText(
-        'Las celdas que se editan están marcadas. Todo lo demás se calcula, igual que en la planilla.',
-      ),
-    ).toBeTruthy()
+    expect(screen.getByText(/Elige una celda y escribe, como en una hoja de cálculo/)).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Modo avanzado/ })).toBeNull()
   })
 
-  it('lo aplicado en la planilla se ve en el Modo avanzado, sin volver a leer, y avisa que hay cambios sin guardar', async () => {
+  it('lo aplicado en una celda queda en la fórmula de trabajo, sin volver a leer, y avisa que hay cambios sin guardar', async () => {
     const alCambiarPendientes = vi.fn()
-    const p = props({ alCambiarPendientes })
-    const { rerender } = render(<SesionDeLaFormula {...p} />)
+    dibujar(props({ alCambiarPendientes }))
     await responder()
-    fireEvent.click(screen.getByRole('button', { name: /^Despacho, valor/ }))
-    fireEvent.change(screen.getByRole('textbox', { name: 'Despacho, valor' }), {
-      target: { value: '950' },
-    })
-    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Despacho, valor' }), { key: 'Enter' })
+    const celdaDeDespacho = () => document.querySelector('tr[data-fila="despacho"] [data-col="C"]')
+    const celda = celdaDeDespacho()
+    if (celda === null) throw new Error('Falta la C de «Despacho».')
+    fireEvent.doubleClick(celda)
+    const entrada = screen.getByRole('combobox', { name: /^C\d+, Despacho, valor$/ })
+    fireEvent.change(entrada, { target: { value: '=950' } })
+    fireEvent.keyDown(entrada, { key: 'Enter' })
     await waitFor(() => {
       expect(alCambiarPendientes).toHaveBeenLastCalledWith(true)
     })
-    rerender(<SesionDeLaFormula {...p} avanzado />)
-    expect(screen.getByRole('list', { name: 'Filas de la fórmula' })).toBeTruthy()
-    expect(document.querySelector('li[data-fila="despacho"]')?.textContent).toContain('=950')
+    expect(celdaDeDespacho()?.textContent).toContain('950')
     expect(pedidos).toHaveLength(1)
   })
 })

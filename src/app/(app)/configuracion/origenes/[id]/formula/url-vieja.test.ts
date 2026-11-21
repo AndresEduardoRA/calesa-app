@@ -21,6 +21,20 @@ describe('destinoDeLaFormulaVieja', () => {
     ).toBe(`${BASE}/formulas/${TRABAJO}/tarjeta?panel=publicar-tarjeta&x=1&x=2`)
   })
 
+  it('el panel del Modo avanzado, que ya no existe, no sigue: la planilla llega en un solo salto', () => {
+    expect(
+      destinoDeLaFormulaVieja(ORIGEN, 'planilla', TRABAJO, {
+        panel: 'editar-formula',
+        version: 'v-2',
+      }),
+    ).toBe(`${BASE}/formulas/${TRABAJO}/planilla?version=v-2`)
+    expect(
+      destinoDeLaFormulaVieja(ORIGEN, 'planilla', TRABAJO, {
+        panel: ['editar-formula', 'publicar'],
+      }),
+    ).toBe(`${BASE}/formulas/${TRABAJO}/planilla?panel=publicar`)
+  })
+
   it('sin fórmula de trabajo, cada parte va a la lista, sin consulta', () => {
     for (const [parte, parametros] of [
       ['planilla', {}],

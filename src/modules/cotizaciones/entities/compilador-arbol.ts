@@ -97,6 +97,8 @@ export type TipoDeArgumento =
   | 'valor'
   | 'condicion'
   | 'valor_o_grupo'
+  // SUMA: un grupo solo (el nombre y lo que cierra o separa el argumento) o un valor.
+  | 'sumando'
   | 'buscado'
   | 'texto'
   | 'logico'

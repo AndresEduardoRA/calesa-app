@@ -26,7 +26,7 @@ export type { Contar } from './compilador-argumentos'
 export const FUNCIONES: ReadonlyMap<string, EspecDeFuncion> = new Map(
   (
     [
-      { nombre: 'SUMA', args: ['grupo'] },
+      { nombre: 'SUMA', args: ['sumando'], resto: 'sumando', minimo: 1 },
       { nombre: 'SI', args: ['condicion', 'valor', 'valor'], minimo: 2 },
       { nombre: 'Y', args: [], resto: 'condicion', minimo: 2 },
       { nombre: 'O', args: [], resto: 'condicion', minimo: 2 },
@@ -51,10 +51,19 @@ function esIdValido(s: string): boolean {
   return true
 }
 
-function cerrarSuma(arg: Arbol, rango: Rango, nombres: Nombres, contar: Contar) {
-  if (arg.k !== 'clave') return invalido(arg, 'grupo')
-  const hijos = expandirGrupo(arg, nombres, contar)
-  return esError(hijos) ? hijos : calculo('suma', rango, hijos)
+// SUMA: un grupo solo (sus miembros, en el orden de la lista) o uno o más valores (`SUMA(a; b; c)`, lo que la planilla escribe
+// por un rango `C5:C9`).
+function cerrarSuma(args: Arbol[], rango: Rango, nombres: Nombres, contar: Contar) {
+  const [primero] = args
+  if (args.length === 1 && primero?.k === 'clave') {
+    const hijos = expandirGrupo(primero, nombres, contar)
+    return esError(hijos) ? hijos : calculo('suma', rango, hijos)
+  }
+  for (const a of recorrer(args, nombres.m)) {
+    if (a.k === 'clave') return errorEn(a, 'grupo_con_otros', { nombre: a.texto })
+  }
+  if (!contar(args.length)) return demasiadosTerminos(rango)
+  return calculo('suma', rango, args)
 }
 
 function cerrarRedondear(args: Arbol[], rango: Rango) {
@@ -149,7 +158,7 @@ function porNombre(
     case 'SUMA':
       return primero === undefined
         ? faltaUnValor(rango)
-        : cerrarSuma(primero, rango, ctx.nombres, ctx.contar)
+        : cerrarSuma(args, rango, ctx.nombres, ctx.contar)
     case 'SI':
       return cerrarSi(args, rango)
     case 'Y':

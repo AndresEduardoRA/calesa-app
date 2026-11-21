@@ -2,7 +2,12 @@
 // en una fila y la fórmula se vuelve a armar». Usa `compilarExpresion()` (4.07, que no se toca) con el contexto de la fila: lo que está antes de su
 // primera auxiliar. Puro, nunca lanza (errores como valores), no toca lo que recibe y lineal con el medidor. `compilar-fila.ts` suma la pregunta
 // antes de pisar un ⚙ (C10); `texto-vigente.ts` compila con esto el texto guardado.
-import { compilarExpresion, type CatalogoDeTablas, type ErrorDeCompilacion } from '../compilador'
+import {
+  compilarExpresion,
+  type CatalogoDeTablas,
+  type ErrorDeCompilacion,
+  type NombreEnLaPlanilla,
+} from '../compilador'
 import type { Formula } from '../formula'
 import { inicioDeLineas, tramoDe, type Tramo } from '../motivos-del-compilador'
 import { recorrer, type Medidor } from '../medidor'
@@ -14,8 +19,14 @@ import { mismaEstructura } from './misma-estructura'
 import { sitioDe, type DestinoDeLaFila, type ErrorDeSitio, type Sitio } from './sitio-de-la-fila'
 
 export type { DestinoDeLaFila } from './sitio-de-la-fila'
-// `tablas`: el catálogo de tablas del origen, para BUSCARV (sin él, BUSCARV no compila).
-export type PedidoBase = { destino: DestinoDeLaFila; texto: string; tablas?: CatalogoDeTablas }
+// `tablas`: el catálogo de tablas del origen, para BUSCARV (sin él, BUSCARV no compila). `nombrar`: cómo nombran los mensajes un nodo («C5 (Remate)»,
+// `nombrarConLaHoja()`); sin él, por su id.
+export type PedidoBase = {
+  destino: DestinoDeLaFila
+  texto: string
+  tablas?: CatalogoDeTablas
+  nombrar?: (id: string) => NombreEnLaPlanilla | undefined
+}
 
 export type CambioQueSePisa = { id: string; guardado: number; nuevo: number | null }
 export type ErrorDeFila =
@@ -117,7 +128,7 @@ function auxiliarNombrada(p: Pedido, m: Medidor): ErrorDeFila | undefined {
 function contextoDe(
   formula: Formula,
   sitio: Sitio,
-  tablas: CatalogoDeTablas | undefined,
+  { tablas, nombrar }: Pick<PedidoBase, 'tablas' | 'nombrar'>,
   m: Medidor,
 ) {
   const nodos = formula.definicion.nodos
@@ -137,6 +148,7 @@ function contextoDe(
       params: constantes,
       destino: sitio.destino as never,
       ...(tablas === undefined ? {} : { tablas }),
+      ...(nombrar === undefined ? {} : { nombrar }),
     },
   }
 }
@@ -154,7 +166,7 @@ export function compilarFilaBase(
   const tope = errorDelTope(pedido.texto, m)
   if (tope !== undefined) return fallo(tope)
 
-  const { constantes, contexto } = contextoDe(formula, sitio, pedido.tablas, m)
+  const { constantes, contexto } = contextoDe(formula, sitio, pedido, m)
   const compilado = compilarExpresion(pedido.texto, contexto, m)
   const raiz = compilado.ok ? compilado.nodos[compilado.nodos.length - 1] : undefined
   if (!compilado.ok) return fallo(compilado.error)

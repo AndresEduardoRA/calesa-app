@@ -2,7 +2,6 @@
 // compilada por el camino de verdad (`compilarFila()` de `src/`, que guarda `{ ...raíz compilada, texto }`) y publicada con `_preparar_publicacion()`; el ⚙ simulado
 // sobre su auxiliar (como `formula_cambiar_constante()`: publica N+1 con `params || {nodo: valor}` sin mirar el texto); y un borrador de muchas filas para el tope.
 // Los orígenes son los de `crearOrigenDeCotizar()`: los borra `borrarOrigenesDeCotizar()` con sus fórmulas.
-import { expect, type Page } from '@playwright/test'
 import { compilarFila } from '../../src/modules/cotizaciones/entities/formula/compilar-fila'
 import { esquemaFormula, type Formula } from '../../src/modules/cotizaciones/entities/formula'
 import { validarFormula } from '../../src/modules/cotizaciones/entities/validar'
@@ -102,13 +101,4 @@ export function sembrarBorradorDeNFilas(origenId: string, n: number, autor: stri
     insert into public.formulas (origen_id, estado, definicion, params, nota, creado_por)
     values (${literal(origenId)}::uuid, 'borrador', ${json(definicionDeNFilas(n))}, '{}'::jsonb, 'Borrador E2E grande',
             (select id from public.perfiles where email = ${literal(autor)}))`)
-}
-
-// El Modo avanzado (el editor en texto, `?panel=editar-formula`): se abre desde la barra de la planilla de la fórmula, la vista por defecto de la pestaña.
-export async function abrirModoAvanzado(page: Page): Promise<void> {
-  await page
-    .getByRole('region', { name: 'Planilla de la fórmula' })
-    .getByRole('button', { name: 'Modo avanzado', exact: true })
-    .click()
-  await expect(page).toHaveURL(/panel=editar-formula/)
 }

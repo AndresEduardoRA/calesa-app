@@ -1,0 +1,59 @@
+'use client'
+
+import type { Grupo } from '../../../../../entities/formula'
+import { MenuDeLaBanda } from '../menu/menu-de-la-banda'
+import { COLUMNAS } from './clases'
+
+type Props = {
+  grupo: Grupo
+  // La etiqueta de su tipo de cambio con el modo elegido.
+  tipoDeCambio: string
+  // El rechazo de `validarFormula()` que nombra la banda, o nulo.
+  rechazo: string | null
+  // Un grupo sin filas (se dibuja al final, para arreglarlo).
+  vacia: boolean
+  motivoParaQuitar: string | null
+  alEditar: () => void
+  alQuitar: () => void
+}
+
+const notaDe = (grupo: Grupo, tipoDeCambio: string) =>
+  [grupo.plazo === undefined ? null : `Plazo: ${grupo.plazo}`, `Tipo de cambio: ${tipoDeCambio}`]
+    .filter((x) => x !== null)
+    .join(' · ')
+
+// La cabecera de un tramo de banda (D1, D13): sin número, con el color, la etiqueta, el plazo, el tipo de cambio y su «⋯», pegada a la izquierda al desplazarse de
+// costado y nunca más ancha que el marco.
+export function CabeceraDeLaBanda(p: Props) {
+  const { grupo } = p
+  return (
+    <tr data-banda={grupo.id}>
+      <td
+        colSpan={COLUMNAS}
+        className="border-y border-[color:var(--tono-borde,var(--color-line))] bg-[color:var(--tono-fondo,var(--color-surface-2))] p-0 text-left text-[color:var(--tono-tinta,var(--color-ink))]"
+      >
+        <div className="sticky left-0 flex max-w-[100cqw] flex-wrap items-center gap-x-3 gap-y-1 px-2 py-1">
+          <span className="font-semibold">{grupo.etiqueta}</span>
+          <span className="text-(length:--text-xs)">{notaDe(grupo, p.tipoDeCambio)}</span>
+          {p.vacia ? (
+            <span className="text-(length:--text-xs)">Esta banda no tiene filas.</span>
+          ) : null}
+          <MenuDeLaBanda
+            etiqueta={grupo.etiqueta}
+            motivoParaQuitar={p.motivoParaQuitar}
+            alEditar={p.alEditar}
+            alQuitar={p.alQuitar}
+          />
+        </div>
+        {p.rechazo === null ? null : (
+          <p
+            role="alert"
+            className="sticky left-0 max-w-[100cqw] bg-(--color-aviso-soft) px-2 py-1.5 text-(--color-aviso-ink)"
+          >
+            {p.rechazo}
+          </p>
+        )}
+      </td>
+    </tr>
+  )
+}

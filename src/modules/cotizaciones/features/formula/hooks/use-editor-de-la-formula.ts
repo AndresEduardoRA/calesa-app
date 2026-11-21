@@ -1,39 +1,18 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { useUnEnvioALaVez } from '@/shared/ui/use-un-envio-a-la-vez'
 import type { CatalogoDeTablas } from '../../../entities/compilador'
 import type { Formula } from '../../../entities/formula'
-import type { ErrorDeFila } from '../../../entities/formula/compilar-fila'
 import type { FormulaParaEditar } from '../../../entities/formula/edicion'
-import { useAplicarFila } from './use-aplicar-fila'
-import { useCambiosDeLaPlanilla } from './use-cambios-de-la-planilla'
 import { filasParaDibujar } from './use-editor-de-la-formula.soporte'
 import { useGuardadoDelEditor } from './use-guardar-borrador'
-import { useGruposDelEditor } from './use-grupos-del-editor'
-import { usePonerEnPar } from './use-poner-en-par'
-import { useSumarFila } from './use-sumar-fila'
 import { useVistaPrevia } from './use-vista-previa'
 
-// La fila abierta: su id y, tras «Aplicar», el error que la dejó abierta.
-export type FilaAbierta = { id: string; error: ErrorDeFila | null }
-// Lo que el último «Aplicar» que entró soltó de una fila (nombres de campo).
-export type Aplicada = { id: string; soltados: string[] }
-// El rechazo de `validarFormula()` sobre la fórmula de trabajo: en su fila, en la tarjeta de su grupo (4.21-3c) o, si no nombra ninguno, arriba de la lista.
+// Lo que el último cambio que entró soltó de una fila (nombres de campo).
+export type Aplicada = { id: string; soltados: readonly string[] }
+// El rechazo de `validarFormula()` sobre la fórmula de trabajo: en su fila, en la cabecera de su banda o, si no nombra ninguna, arriba de la planilla.
 export type RechazoEnElEditor = { mensaje: string; filaId: string | null; grupoId: string | null }
-
-// El editor de la fórmula en texto (4.21-3a-1): la fórmula de trabajo empieza en la leída y cambia sólo con un «Aplicar» que compila (`compilarFila()`, 4.21-1).
-// No se compila al tipear: el texto de la fila abierta vive en su campo y llega aquí al aplicar. Un error (del compilador, del sitio, el de 2.001 caracteres, una
-// auxiliar que otra fila nombra) deja la fila abierta y la fórmula igual; `pisa_un_valor` (4-5) espera «Pisar el valor». Tras cada cambio (y al leer) corre
-// `validarFormula()`: lo que rechaza queda aplicado y se dice en su fila (un borrador inválido sólo vive aquí: la base valida al guardar). Guardar el borrador
-// (4.21-3b-1) y lo aplicado en la pestaña son de `useGuardadoDelEditor`; mientras guarda, nada se abre, se aplica ni se suma.
-// Abrir una fila o un grupo: sólo con nada abierto, y suelta la marca de la fila recién creada.
-const siEstaLibre =
-  (libre: boolean, soltarLaCreada: () => void) => (abrir: (id: string) => void) => (id: string) => {
-    if (!libre) return
-    soltarLaCreada()
-    abrir(id)
-  }
 
 type PropsDelEditor = {
   origenId: string
@@ -42,87 +21,67 @@ type PropsDelEditor = {
   tablas?: CatalogoDeTablas
 }
 
+// La fórmula de trabajo de la planilla: empieza en la leída y cambia sólo con `cambiar()` (lo escrito en una celda que entró, insertar, mover, eliminar, el tipo de
+// celda, las bandas). Lo que se escribe no se compila al tipear: vive en la edición de la planilla y llega aquí al aplicar. Tras cada cambio (y al leer) corre
+// `validarFormula()`: lo que rechaza queda aplicado y se dice en su fila (un borrador inválido sólo vive aquí: la base valida al guardar). `abierta` es la fila con
+// texto sin aplicar: «Guardar el borrador» espera. Guardar y lo aplicado en la pestaña son de `useGuardadoDelEditor`; mientras guarda, nada cambia.
 export function useEditorDeLaFormula({ origenId, leida, tablas = null }: PropsDelEditor) {
   const [trabajo, setTrabajo] = useState<Formula>(leida.formula)
-  const [abierta, setAbierta] = useState<FilaAbierta | null>(null)
+  const [abierta, setAbierta] = useState<string | null>(null)
   const [aplicada, setAplicada] = useState<Aplicada | null>(null)
   const envio = useUnEnvioALaVez()
+  const { enCurso } = envio
 
   const filas = useMemo(() => filasParaDibujar(trabajo, undefined, tablas), [trabajo, tablas])
   const previa = useVistaPrevia({ origenId, trabajo, filas })
-  // Los grupos (4.21-3c): lo aplicado cambia la fórmula de trabajo como el «Aplicar» de una fila.
-  const grupos = useGruposDelEditor({ trabajo, enCurso: envio.enCurso, alAplicar: setTrabajo })
-  // «Sumar fila» (4.21-3a-2): una sola cosa abierta a la vez, esta fila en edición, un grupo o el formulario.
-  const nueva = useSumarFila({
-    trabajo,
-    tablas,
-    hayAbierta: abierta !== null || grupos.abierto !== null || envio.enCurso,
-    alCrear: (formula, creada) => {
-      setTrabajo(formula)
-      setAplicada(creada)
-    },
-  })
-
   const guardado = useGuardadoDelEditor({
     origenId,
     leida,
     trabajo,
     filas,
-    hayAbierta: abierta !== null || nueva.sumando !== null || grupos.abierto !== null,
+    hayAbierta: abierta !== null,
     hayRechazo: previa.rechazo !== null,
     envio,
     alReemplazar: (formula) => {
       setTrabajo(formula)
       setAbierta(null)
       setAplicada(null)
-      nueva.cancelarSumar()
-      grupos.cancelar()
     },
   })
 
-  const aplicar = useAplicarFila({
-    trabajo,
-    tablas,
-    abierta,
-    enCurso: envio.enCurso,
-    setTrabajo,
-    setAbierta,
-    setAplicada,
-  })
-
-  // Nada más abierto ni guardándose: se abre una fila o un grupo.
-  const libre =
-    abierta === null && nueva.sumando === null && grupos.abierto === null && !envio.enCurso
-  const alPonerEnPar = usePonerEnPar(libre, setTrabajo)
-  const siLibre = siEstaLibre(libre, nueva.soltarLaCreada)
-  const planilla = useCambiosDeLaPlanilla({
-    trabajo,
-    libre,
-    ocupado: grupos.abierto !== null || envio.enCurso,
-    setTrabajo,
-    setAbierta,
-    nueva,
-  })
+  // Estables mientras no cambia `enCurso`: las filas de la planilla son `memo`.
+  const cambiar = useCallback(
+    (formula: Formula, deLaFila: Aplicada | null = null): boolean => {
+      if (enCurso) return false
+      setTrabajo(formula)
+      setAplicada(deLaFila)
+      return true
+    },
+    [enCurso],
+  )
+  const abrir = useCallback(
+    (id: string) => {
+      if (!enCurso) setAbierta(id)
+    },
+    [enCurso],
+  )
+  const cerrar = useCallback(() => {
+    setAbierta(null)
+  }, [])
   return {
     trabajo,
-    libre,
+    tablas,
+    // Nada con texto sin aplicar ni guardándose: se puede operar sobre filas y bandas.
+    libre: abierta === null && !enCurso,
+    enCurso,
     filas,
     ...previa,
     abierta,
     aplicada,
     guardado,
-    abrir: siLibre((id) => {
-      setAbierta({ id, error: null })
-    }),
-    grupos,
-    abrirGrupo: siLibre(grupos.abrir),
-    nueva,
-    cancelar: () => {
-      setAbierta(null)
-    },
-    aplicar,
-    ponerEnPar: alPonerEnPar,
-    ...planilla,
+    abrir,
+    cerrar,
+    cambiar,
   }
 }
 

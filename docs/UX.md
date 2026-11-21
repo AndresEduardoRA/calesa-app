@@ -603,7 +603,8 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
     cabeza del editor (el nombre, su estado y el «⋯» de la lista) y sus pestañas **Planilla · Hoja · Tarjeta** (`/planilla`, `/hoja`, `/tarjeta`;
     `/formulas/<fórmula>` sola abre la planilla) y «Empezar desde una plantilla» a la derecha (`?panel=plantillas-de-v1`, escribe en esa fórmula).
     «Planilla» («Qué se calcula.», a todo el ancho): arriba la publicada, el borrador y las versiones, y abajo la planilla; `?panel=publicar-formula`,
-    `revertir-formula&version=<id>`, `descartar-borrador` y `editar-formula` (el Modo avanzado). «Hoja» («Cómo se ve y se llena la cotización.»):
+    `revertir-formula&version=<id>` y `descartar-borrador`, y los de la planilla («Cotización: fórmula (estados propios)»); `editar-formula`
+    responde 308 a la misma planilla. «Hoja» («Cómo se ve y se llena la cotización.»):
     `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe el cliente.»): `?panel=publicar-tarjeta|descartar-plantilla` y
     `?referencia=ejemplo`, a todo el ancho. La ruta corta `/formula`, `/formula/hoja` y `/formula/tarjeta` responde 308 a esa parte de la fórmula de
     trabajo (por persona, con su consulta) o, sin ninguna, a la lista.
@@ -1428,50 +1429,66 @@ publicar, revertir, descartar y editar una fórmula del origen. `?fila=<nodo>` e
 - **Descartar** (`?panel=descartar-borrador`, `<Confirmar>`; al día **y atrasado**): borra el borrador sin deshacer; publicada y lista no
   cambian. Lo que no entró queda en el diálogo con el mensaje de la base o, sin respuesta, «No sabemos si se descartó: recarga para verlo.»
   (sin reintento solo). Por URL sin borrador: avisa y limpia.
-- **Planilla** (la vista por defecto, sobre el borrador o, sin él, la publicada; sin ninguna, el vacío de la publicada y no hay planilla): lee la
-  versión desde el navegador al abrir la pestaña (esqueleto, error con «Reintentar», versión que ya no se abre). Arriba «Sobre…», «Modo avanzado»
-  (outline), «Guardar el borrador» y la frase «Las celdas que se editan están marcadas. Todo lo demás se calcula, igual que en la planilla.». La tabla:
-  «#» (sólo para leer, el mismo al buscar), «A · concepto» (etiqueta e id; elige la fila), «B · %» (el porcentaje de un `porcentaje_de`), «C · valor»
-  (con la unidad de ejemplo; sin cifra, «—» con su motivo en el `title` y para el lector) y «D · de dónde sale». Bandas, en este orden: «Tipo de
-  cambio» («no se versiona: cambia varias veces por semana», el valor de hoy y, con `empresa.tipos_cambio.gestionar`, «Cambiar en Empresa ›
-  Monedas»), «Unidad de ejemplo» («no se guarda: sirve para ver el efecto de cada cambio», «Volver a ceros»: los `input`, los datos del vehículo,
-  las banderas como interruptor y la variante como chips; con «Se cotiza en par», «Se cotiza en par: el cliente recibe las dos.»), «Variante» (sus
-  opciones y «Se cotiza en par»), un grupo por banda con su color, plazo, tipo de cambio del modo elegido y «Editar grupo» (el formulario de
-  siempre, debajo), y «Sin grupo». Se editan en su celda, con el estilo de la XCell editable y el nombre «<concepto>, valor»: el valor de una
-  constante en C y el % de un par en B (escriben `params` y reescriben su texto, como el ⚙; nunca preguntan; lo que no se lee o no entra deja el
-  valor anterior con el motivo y `aria-invalid`) y la unidad de ejemplo. Mientras haya texto sin aplicar, un grupo abierto, una fila nueva o un
-  guardado, las celdas de la fórmula esperan con su motivo arriba de la tabla. **Barra de fórmula**, arriba de la tabla: la fila elegida (número,
-  etiqueta, id) con su texto; el primer cambio lo abre, «Aplicar» o `Ctrl/Cmd+Enter` compila, Esc o «Descartar» vuelven al texto de la fila; el
-  error queda debajo y la fila se marca; «Pisar el valor» como en el Modo avanzado; con texto sin aplicar, elegir otra fila no la cambia («Aplica o descarta el
-  cambio de «X» antes de elegir otra fila.»). Una fila que no se escribe dice «Esta fila no se escribe: <de dónde sale>.». «Sumar fila debajo» va en
-  su «⋯». Hasta 500 filas con aviso y «Buscar fila». **Al costado** (cuando la planilla mide 72 rem o más; si no, debajo): «Totales» (el total en dólares y
+- **Planilla** (la vista por defecto, sobre el borrador o, sin él, la publicada; sin ninguna, el vacío de la publicada y no hay planilla; la única
+  forma de editar la fórmula): lee la versión desde el navegador al abrir la pestaña (esqueleto, error con «Reintentar», versión que ya no se
+  abre). Arriba «Sobre…», el «⋯» de la planilla («Nueva banda…», «Total y tipos de cambio…», «Unidad de ejemplo: volver a ceros», apagado en
+  ceros, y «¿Cómo se escribe?») y «Guardar el borrador»; debajo, la leyenda de los ocho tipos de celda (el fondo que cada uno da a C) y la
+  **Barra de fórmula**, que queda fija bajo la cabecera de la página al desplazarse. La cuadrícula (`role="grid"`, «Filas de la fórmula de
+  <origen>»), con las filas en el orden en que se calculan: «#» (el número, el mismo al buscar; arrastrarlo mueve la fila), «A · concepto»,
+  «B · %», «C · valor» (con la unidad de ejemplo; sin cifra, «—» con su motivo en el `title` y para el lector) y «D · de dónde sale». Cada tramo
+  de una banda lleva su cabecera (color, etiqueta, «Plazo: …», «Tipo de cambio: …» del modo elegido y su «⋯»); las filas sin banda, ninguna.
+  Hasta 500 filas con aviso y «Buscar fila» (por concepto: «Ninguna fila tiene «x» en el concepto.»); sin filas, «Esta fórmula no tiene
+  filas.» con «Sumar la primera fila». **Al costado** (cuando la planilla mide 72 rem o más; si no, debajo): «Totales» (el total en dólares y
   en la moneda local con el modo elegido, la base imponible y lo aparte, cada uno con `<Monto>` y cómo sale; lo aparte apagado dice por qué) y
   «Tarjeta de la cotización» (la plantilla de trabajo del origen, el borrador si hay, con la unidad de ejemplo y el selector de modo «Tipo de
   cambio» con dos o más modos; sin plantilla, «Esta fórmula todavía no tiene tarjeta.» con «La imagen que recibe el cliente»; si no se leyó,
-  «Reintentar»). En el celular y con el texto al 200 % la tabla se desplaza de costado en su marco con «#» y A pegadas; la página no se ensancha.
-- **Modo avanzado** (`?panel=editar-formula`; los enlaces viejos lo abren): el editor en texto, sobre la misma
-  fórmula que la planilla (lo aplicado en uno se ve en el otro), con «Volver a la planilla» («atrás» también, y el foco vuelve a «Modo
-  avanzado»). Sin fórmula, la URL avisa y se limpia. Cada fila: etiqueta, id y tipo; un cálculo o una constante, su texto vigente (tras un ⚙, el
-  reescrito con su aviso) y «Editar», que abre su texto (una fila a la vez; «Aplicar» o `Ctrl/Cmd+Enter` compila, Esc cierra; el error queda bajo
-  el texto; pisar un valor del ⚙ pide «Pisar el valor»; un rechazo de la fórmula entera va a la fila que nombra). Lo aplicado se repone al volver
-  o recargar, con «Descartar», hasta guardar. Hasta 500 filas con aviso y «Buscar fila».
-- **Vista previa y filas nuevas** (Modo avanzado): «Vista previa» con «Cifras de prueba.» y qué se supuso (datos en 0, opciones apagadas, variante por
-  defecto, tipos de cambio y tablas de hoy): esqueleto, error, fórmula inválida, sin cálculo posible y, calculada, los totales por
-  `<Monto>` con avisos de lo que no se pudo leer (tabla inexistente o de 1.000 filas o más, tipo de cambio inactivo). Cada fila suma su
-  cifra o por qué no la tiene. «Sumar fila debajo de <etiqueta>»: etiqueta, tipo (Cálculo o Constante), nombre (propuesto desde la
-  etiqueta; una constante nueva no aparece en la hoja hasta colocarla en el diseño) y texto; errores junto al campo. Una sola cosa abierta
-  a la vez. Una fila existente no cambia de nombre.
-- **Guardar el borrador:** espera si hay una fila abierta, si no valida o sin cambios (un cambio del ⚙ cuenta). Sin confirmación. Sobre la
+  «Reintentar»). En el celular y con el texto al 200 % la cuadrícula se desplaza de costado en su marco con «#» y A pegadas y la barra a lo
+  ancho; la página no se ensancha.
+- **Escribir, como en Excel:** una celda activa que mueven las flechas, Tab y Shift+Tab, Enter y Shift+Enter, Inicio y Fin, Ctrl+Inicio y
+  Ctrl+Fin y RePág y AvPág. F2, doble clic o una tecla escriben en ella (el mismo texto se ve en la barra, que también se edita); Enter o Tab
+  aplican y pasan a la de abajo o a la de la derecha, `Ctrl/Cmd+Enter` aplica desde la barra y Esc descarta. Con «=», un clic o un toque en
+  otra celda mientras el cursor espera un operando inserta su referencia (Shift+clic, un rango): cada referencia toma un color, con la leyenda
+  («C5 Remate · C7 Fees») bajo la barra y el borde del mismo color en su celda. Las sugerencias (funciones con su firma y un ejemplo, conceptos
+  de arriba, bandas y, en BUSCARV, tablas y columnas) se eligen con ↑/↓ y Enter o Tab. Un error queda bajo la barra (`role="alert"`) con su
+  tramo ondulado y la edición abierta (`aria-invalid`): «C12 está más abajo: una fórmula sólo usa filas de arriba.» con «Mover esta fila debajo
+  de la 12», «Una fila no se usa a sí misma (C7).», las columnas A y D, una B sin %, un rango fuera de SUMA, MAX o MIN; pisar un valor del ⚙
+  pide «Pisar el valor». Con texto sin aplicar, lo demás espera: «Aplica o descarta lo que escribes en la planilla.». Una celda que no se
+  escribe lo dice: «Esta celda no se escribe: <de dónde sale>. Cambia su tipo en «Tipo de celda».»; D, «D dice de dónde sale el valor: se
+  calcula sola.». Lo escrito en la B o la C de un valor fijo escribe `params` y reescribe su texto como el ⚙, sin preguntar; en una fila del
+  asesor, un dato del vehículo, un interruptor o la variante es la unidad de ejemplo (no se guarda). Bajo la barra, sin nada escrito: lo que
+  el último cambio soltó, lo que dice el texto tras un ⚙ (reescrito o «ya no manda») y, en un tipo de cambio, el camino a Empresa › Monedas.
+- **Filas:** el «⋯» de la fila activa (arriba a la derecha de la fila, `Acciones de la fila N`) y el clic derecho abren la misma lista:
+  «Insertar arriba», «Insertar abajo» (la fila nueva, «Fila nueva», un valor fijo en 0 con la banda de la de referencia, abre su concepto
+  elegido para escribir), «Duplicar», «Mover arriba» y «Mover abajo» (Alt+↑ y Alt+↓; apagados en la primera y la última), «Tipo de celda ›»,
+  «Banda ›» (cada banda, «Sin banda» y «Nueva banda…») y «Eliminar». Mover o arrastrar se rechaza con su motivo si rompe el orden: «C9 usa
+  esta fila: no puede quedar arriba de ella.» o «Esta fila usa C5: no puede quedar arriba de ella.». «Eliminar» va apagado con su motivo si
+  la usa otra fila («La usan C9 y C12.»), es un tipo de cambio de una banda o del total, la fila del total, la única de su banda, la muestra la
+  hoja («La muestra la hoja: quítala en «Hoja» antes.») o la usa la tarjeta («La usa la tarjeta: quítala en «Tarjeta» antes.»); si entra, el
+  aviso «Se eliminó «X».» con «Deshacer». Lo elegido en el menú deja el foco en lo que cambió (el concepto de la nueva, la celda movida).
+- **Tipo de celda** (`?panel=tipo-de-celda&fila=<id>` para los que piden datos): «Valor fijo», «Cálculo» (se escribe con «=»), «Lo escribe el
+  asesor», «Interruptor Sí/No», «Dato del vehículo», «Tipo de cambio», «De una tabla» y «Variante» (una por fórmula; con otra, apagada con su
+  motivo). Un dato del vehículo, un tipo de cambio, una tabla y la variante abren su panel («Tipo de celda: <tipo>»; la variante con sus
+  opciones, la por defecto y «Se cotiza en par», apagada con menos o más de dos opciones: «Sólo una variante de dos opciones se cotiza en
+  par.»). Un cambio que la fórmula no admite se rechaza con su motivo en A1 y la fila queda como estaba.
+- **«¿Cómo se escribe?»** (`?panel=como-se-escribe`, sólo lectura): las referencias (C5, B9, C5:C9), las diez funciones con su firma y un
+  ejemplo, y las teclas de la planilla.
+- **Guardar el borrador:** espera con texto sin aplicar («Aplica o descarta lo que escribes en la planilla.»), si la fórmula no valida («Corrige
+  lo marcado para guardar.») o sin cambios («No hay cambios por guardar.»; un cambio del ⚙ cuenta). Sin confirmación. Sobre la
   publicada crea el borrador con su diseño; sobre el borrador lo pisa con su hora, sin releer. Conflicto: el texto de la base con
   «Recargar» (lo aplicado y no guardado se pierde); regla de la base, sin permiso, sin respuesta y otro error, cada uno con su mensaje. Lo
   que el diseño no muestra (una constante sin celda) se avisa: «Para publicar, el diseño de la hoja tiene que mostrar: «…». Puedes guardar
   igual.»; sin diseño, todavía no se puede publicar.
-- **Grupos** (Modo avanzado; en la planilla, «Editar grupo» en su banda abre el mismo formulario): con grupos, una tarjeta por grupo en el orden de la fórmula (hasta `TOPE_DE_LO_CARGADO`): etiqueta, id, plazo, color, tipo de
-  cambio (bucket), filas y «Editar». Sin grupos no se dibuja; no se suman ni quitan grupos (la plantilla de la tarjeta los nombra). El
-  formulario: etiqueta, plazo de pago (opcional), color (del catálogo, leído al montarse; «Aplicar» espera a que llegue), tipo de cambio (el
-  bucket; con modos, cada modo elige el de cada bucket) y «Filas del grupo» con «Quitar» (sin grupo, una fila no entra en el total) y
-  «Sumar una fila». Aplicar recalcula la vista previa y cuenta como cambio; un rechazo (`grupo_vacio`…) va a su tarjeta. Cada fila con
-  grupo dice «Grupo: <etiqueta>».
+- **Bandas** (glosario: «Banda (de la planilla)»): «Nueva banda…» (`?panel=nueva-banda`, desde el «⋯» de la planilla o desde «Banda ›» de una
+  fila, que nace con ella) y el «⋯» de cada cabecera: «Renombrar, color, plazo y tipo de cambio…» (`?panel=banda&banda=<id>`, «Banda «X»») y
+  «Quitar banda» (sus filas quedan sin banda, con «Se quitó la banda «X».» y «Deshacer»; apagado con su motivo si un texto la nombra o la usa
+  la tarjeta). El panel: «Etiqueta», «Plazo de pago» (opcional), «Color» (del catálogo, leído al montarse; si no se leyó, «No se pudieron leer
+  los colores de la empresa.»), «Tipo de cambio» (una fila «Tipo de cambio» de la fórmula; con modos en la hoja, cada modo elige el de cada
+  banda y uno que no tiene bucket se rechaza: «La hoja tiene modos de tipo de cambio: suma este tipo de cambio primero en cada modo, en
+  «Hoja».») y sus filas, con «Quitar» y «Sumar una fila» (sin banda, una fila no entra en el total); «Crear banda» o «Aplicar». Arrastrar una
+  fila a un tramo de otra banda le pone esa banda. Un rechazo de la fórmula (el doble conteo, «… se contaría dos veces.»; una banda vacía) va a
+  la cabecera de su banda y «Guardar el borrador» espera.
+- **Total y tipos de cambio** (`?panel=total-y-tipos-de-cambio`): «Tipo de cambio del total», «Fila del total» (una fila de cálculo) y «Tipo
+  de cambio de «<bucket>»» por cada uno; «Aplicar». Con modos en la hoja, la cabecera de cada banda y «Totales» siguen al modo elegido.
 
 ### Cotización: tarjeta (estados propios)
 

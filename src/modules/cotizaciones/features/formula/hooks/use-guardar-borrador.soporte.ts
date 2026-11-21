@@ -79,7 +79,7 @@ export type EstadoDelGuardado =
   | { tipo: 'sin_respuesta' }
   | { tipo: 'error' }
 
-export const ESPERA_A_LA_FILA = 'Aplica o cancela la fila abierta.'
+export const ESPERA_A_LA_FILA = 'Aplica o descarta lo que escribes en la planilla.'
 export const SIN_CAMBIOS = 'No hay cambios por guardar.'
 export const CORREGIR = 'Corrige lo marcado para guardar.'
 export const SE_GUARDO = 'Se guardó el borrador.'

@@ -17,7 +17,7 @@ export const DescartarBorradorDiferido = diferido(() =>
   import('./descartar-borrador').then((modulo) => modulo.DescartarBorrador),
 )
 
-// La sesión de edición de la fórmula (la fórmula de trabajo que comparten la planilla y el Modo avanzado): trae el compilador y el validador, que la pestaña no carga
+// La sesión de edición de la fórmula (la fórmula de trabajo de la planilla): trae el compilador y el validador, que la pestaña no carga
 // para mostrarse.
 export const SesionDeLaFormulaDiferida = diferido(
   () => import('./sesion/sesion-de-la-formula').then((modulo) => modulo.SesionDeLaFormula),

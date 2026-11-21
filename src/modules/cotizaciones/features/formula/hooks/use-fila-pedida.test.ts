@@ -19,6 +19,16 @@ describe('useFilaPedida', () => {
     expect(window.location.search).toBe('?panel=x')
   })
 
+  it('con el panel del tipo de celda, elige la fila y la deja en la URL (es de ese panel)', () => {
+    window.history.replaceState(null, '', '/planilla?panel=tipo-de-celda&fila=costo')
+    const alPedir = vi.fn()
+    renderHook(() => {
+      useFilaPedida(alPedir)
+    })
+    expect(alPedir).toHaveBeenCalledWith('costo')
+    expect(window.location.search).toBe('?panel=tipo-de-celda&fila=costo')
+  })
+
   it('sin ?fila= (o vacía) no elige nada', () => {
     for (const busqueda of ['', '?fila=']) {
       window.history.replaceState(null, '', `/planilla${busqueda}`)

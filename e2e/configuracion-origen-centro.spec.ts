@@ -299,6 +299,16 @@ const REDIRECCIONES: Record<string, Redireccion> = {
     a: () =>
       `/configuracion/origenes/${f.id}/formulas/${formulaDeF}/tarjeta?panel=publicar-tarjeta`,
   },
+  'origenes/<id>/formula ?panel=editar-formula': {
+    de: () => `/configuracion/origenes/${f.id}/formula?panel=editar-formula`,
+    a: () => `/configuracion/origenes/${f.id}/formulas/${formulaDeF}/planilla`,
+  },
+  // El Modo avanzado de la planilla ya no existe (proxy): a la misma planilla, sin el panel y con el resto de la consulta.
+  'origenes/<id>/formulas/<fórmula>/planilla ?panel=editar-formula': {
+    de: () =>
+      `/configuracion/origenes/${f.id}/formulas/${formulaDeF}/planilla?panel=editar-formula&fila=x`,
+    a: () => `/configuracion/origenes/${f.id}/formulas/${formulaDeF}/planilla?fila=x`,
+  },
   'origenes/<id>/formula, sin fórmulas': {
     de: () => `/configuracion/origenes/${a.id}/formula?version=2`,
     a: () => `/configuracion/origenes/${a.id}/formulas`,

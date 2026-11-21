@@ -4,13 +4,19 @@
 // texto que no compila devuelve un error con su código y su tramo.
 import { esError } from './compilador-arbol'
 import { emitir } from './compilador-emitir'
-import { crearNombres, type ContextoDeCompilacion } from './compilador-nombres'
+import {
+  crearNombres,
+  type ContextoDeCompilacion,
+  type NombreEnLaPlanilla,
+} from './compilador-nombres'
 import { analizar } from './compilador-sintaxis'
 import type { Medidor } from './medidor'
 import {
   inicioDeLineas,
   mensajeDe,
   tramoDe,
+  type CodigoDeCompilacion,
+  type DatosDeError,
   type ErrorDeCompilacion,
   type Tramo,
 } from './motivos-del-compilador'
@@ -19,6 +25,7 @@ import type { Nodo } from './nodos'
 export type {
   ContextoDeCompilacion,
   DestinoDeCompilacion,
+  NombreEnLaPlanilla,
   CatalogoDeTablas,
   TablaDelCatalogo,
 } from './compilador-nombres'
@@ -36,6 +43,20 @@ export type ResultadoDeCompilacion =
     }
   | { ok: false; error: ErrorDeCompilacion }
 
+// El nombre del mensaje, como lo ve quien escribe: «C5 (Remate)»; la variante, sólo su celda, porque el ejemplo se escribe con ella
+// (`C3="a"`).
+function nombrados(
+  codigo: CodigoDeCompilacion,
+  datos: DatosDeError,
+  nombrar: ContextoDeCompilacion['nombrar'],
+): DatosDeError {
+  const n: NombreEnLaPlanilla | undefined =
+    datos.nombre === undefined ? undefined : nombrar?.(datos.nombre)
+  if (n === undefined) return datos
+  const nombre = codigo === 'variante_en_calculo' ? n.celda : `${n.celda} (${n.etiqueta})`
+  return { ...datos, nombre }
+}
+
 export function compilarExpresion(
   texto: string,
   contexto: ContextoDeCompilacion,
@@ -50,7 +71,14 @@ export function compilarExpresion(
     const tramo = tramoDe(lineas(), emitido.desde, emitido.hasta, m)
     return {
       ok: false,
-      error: { codigo: emitido.codigo, mensaje: mensajeDe(emitido.codigo, emitido.datos), tramo },
+      error: {
+        codigo: emitido.codigo,
+        mensaje: mensajeDe(
+          emitido.codigo,
+          nombrados(emitido.codigo, emitido.datos, contexto.nombrar),
+        ),
+        tramo,
+      },
     }
   }
   const inicios = lineas()

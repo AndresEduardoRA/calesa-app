@@ -145,3 +145,31 @@ describe('el contrato del compilador', () => {
     expect(JSON.stringify(con)).not.toContain('otro texto')
   })
 })
+
+describe('nombrar: los mensajes con la celda de la planilla', () => {
+  const celdas: Record<string, { celda: string; etiqueta: string }> = {
+    remate: { celda: 'C3', etiqueta: 'Remate' },
+    variante: { celda: 'C9', etiqueta: 'Variante' },
+    total: { celda: 'C12', etiqueta: 'Total' },
+  }
+  const nombrar = (id: string) => celdas[id]
+  const mensaje = (texto: string, extra: Partial<ContextoDeCompilacion> = {}) => {
+    const r = compilarExpresion(texto, { ...juego.contexto, nombrar, ...extra })
+    return r.ok ? 'compiló' : r.error.mensaje
+  }
+
+  it('un nodo se nombra por su celda y su concepto, nunca por su id', () => {
+    expect(mensaje('total+1')).toBe('«C12 (Total)» es esta misma fila: no puede usarse a sí misma.')
+  })
+
+  it('la variante se nombra sólo por su celda, porque el ejemplo se escribe con ella', () => {
+    expect(mensaje('variante+1')).toBe(
+      '«C9» es la variante: no entra en un cálculo. Para preguntar por una opción, escribe C9="a".',
+    )
+  })
+
+  it('lo que no es una fila (un grupo, un nombre que no existe) queda como se escribió', () => {
+    expect(mensaje('compra+1')).toContain('SUMA(compra)')
+    expect(mensaje('zzz')).toBe('«zzz» no es ningún nodo de la fórmula.')
+  })
+})

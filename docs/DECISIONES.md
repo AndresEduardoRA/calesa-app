@@ -641,9 +641,25 @@ las trampas, en `docs/LECCIONES.md`.
   la lista hace `router.refresh()`, la cabeza aplica el nombre nuevo y archivar o eliminar desde el editor vuelven a la lista por `salirSinPerder()`.
 - **Los avisos de la copia quedan hasta «Ocultar»** (sin preguntar; `sessionStorage`, por fórmula): dicen qué tablas se crearon y qué datos del vehículo
   faltan, y se leen al llegar a la planilla, no en un toast que se va. Los datos que faltan siguen marcados en sus filas mientras falten, sin el aviso.
-- **La fórmula se ve como planilla** (A · concepto, B · %, C · valor, D · de dónde sale) **y el editor en texto es el «Modo avanzado».** Los dos editan
-  la misma fórmula de trabajo, que tiene la sesión; las tarjetas de la publicada y del borrador no llevan «Editar». La sesión se vuelve a montar
-  con «Recargar» o si la versión cambia por algo que no hizo ella (publicar, descartar, revertir), nunca al guardar.
+- **La fórmula se ve y se edita como planilla con referencias A1; se guardan ids.** A · concepto, B · %, C · valor, D · de dónde sale. `C5` y `B9` son
+  del navegador (`aA1()` al mostrar, `deA1()` antes de compilar): `nodo.texto` nunca lleva una celda, así que insertar, mover o eliminar filas no reescribe
+  ningún texto. No hay editor en texto aparte (`?panel=editar-formula` responde 308 a la planilla). Una sola copia de trabajo, la de la sesión; las
+  tarjetas de la publicada y del borrador no llevan «Editar». La sesión se vuelve a montar con «Recargar» o si la versión cambia por algo que no hizo
+  ella (publicar, descartar, revertir), nunca al guardar.
+- **Orden único** (sin preguntar): la planilla dibuja las filas en el orden de `definicion.nodos`, numeradas de 1 a n. Una banda es un tramo de filas
+  seguidas con el mismo `grupo`, con su cabecera sin número (un grupo partido lleva una por tramo); las filas sin grupo no llevan cabecera. No hay
+  seudobandas «Tipo de cambio», «Unidad de ejemplo» ni «Variante»: el tipo de la fila lo dice el color de su celda. Así «una fórmula sólo usa filas de
+  arriba» es lo que se ve, y el orden guardado ya vale: no se migra nada.
+- **La B absorbe el %** (sin preguntar): una constante `pct` raíz que sólo nombra un `porcentaje_de` raíz no tiene fila propia; se ve y se edita en la B
+  de esa fila, y mover, duplicar o eliminar la fila la lleva. Un `pct` compartido o que es un `input` conserva su fila y la B lo muestra.
+- **Rangos sólo en `SUMA`, `MAX` y `MIN`** (sin preguntar): `Cn:Cm` sobre la C y con filas de arriba. Se guarda la lista de ids y al mostrar, 3 o más
+  filas seguidas se comprimen. El rango no crece solo: insertar una fila en medio muestra `SUMA(C5:C6; C8:C10)`, que es lo que se calcula.
+- **Eliminar una fila se rechaza con su motivo** (sin preguntar): otra fila la usa («La usan C9 y C12.»), es el tipo de cambio de una banda o del total,
+  es la fila del total, es la única de su banda, la hoja la muestra o la tarjeta de trabajo la nombra. Quitar una banda, igual si la tarjeta la nombra.
+  Sin esto, publicar dejaría la tarjeta sin plantilla o la hoja con `nodo_sin_seccion`.
+- **Deshacer de un nivel** (sin preguntar): eliminar una fila y quitar una banda guardan la fórmula anterior y avisan con «Deshacer»; no hay Ctrl+Z general.
+- **Los ids no se muestran:** la referencia es la celda. Una banda se nombra por su id en `SUMA(primer_pago)` y el autocompletar la ofrece como
+  «Primer pago → SUMA(primer_pago)».
 - **Editar un valor en la planilla nunca pregunta.** C de una constante o B de un par escriben `params` y reescriben su texto, como el ⚙; si el texto no
   puede decirlo, queda «el texto ya no manda» y «Pisar el valor» rige sólo al recompilar ese texto en la barra de fórmula.
 - **«Publicar…» espera mientras haya cambios aplicados sin guardar** («Guarda el borrador antes de publicar: se publica lo guardado.»): publicar algo
@@ -653,8 +669,17 @@ las trampas, en `docs/LECCIONES.md`.
   72 rem o más (una consulta de contenedor, no `xl`): a 1.280 px la columna de Configuración deja ≈ 52 rem y la tabla quedaría apretada.
 - **La tarjeta en vivo** dibuja la plantilla de la fórmula de trabajo leída con su fórmula publicada (sus etiquetas) y los valores de la fórmula de trabajo; «Ver total»
   sale del diseño (`ver_total_bs_por_defecto`, apagado sin él) y no se cambia en la planilla.
-- **Qué edita el editor en texto.** Sólo cálculos y constantes; el id de una fila no cambia; un negativo no se escribe en el texto; tope 2.000 por fila en UTF-16. La vista previa usa «Cifras de prueba» que no se guardan. `key` = `<origen>:<vuelta>:<sesión>`.
-- **Grupos en el editor.** No se suman ni se quitan (la plantilla nombra exactamente los de la fórmula); `buckets` y `total_en` no se editan; una auxiliar nunca suma a un grupo.
+- **Qué hace lo que se escribe en C** (sin preguntar): en un valor fijo, un número cambia el valor y `=` la vuelve cálculo; en un cálculo, `=` recompila y
+  un número la vuelve valor fijo; en las filas del asesor, dato del vehículo, interruptor y variante, un número es el valor de la unidad de ejemplo y `=`
+  la vuelve cálculo; el tipo de cambio y la tabla no se escriben («Cambia su tipo en «Tipo de celda».»). El id de una fila no cambia; un negativo no se
+  escribe en el texto; tope 2.000 por fila en UTF-16, del texto guardado (con ids). `key` = `<origen>:<vuelta>:<sesión>`.
+- **Bandas.** «Nueva banda» pide etiqueta, color, plazo, tipo de cambio y al menos una fila, y va al final de `grupos`; si la fórmula no tiene `total_en`,
+  toma el tipo de cambio de la banda. Quitar una banda deja sus filas sin banda. Arrastrar una fila a un tramo le pone esa banda; a un tramo sin banda, se
+  la quita. Una auxiliar nunca suma a una banda; el doble conteo lo marca la validación de después, como tras aplicar una fila.
+- **El tipo de cambio de una banda es una fila `tipo_cambio`** (el bucket, sin preguntar): se usa el bucket que ya apunta a ella o se crea uno (id = su
+  `clave`). Si el diseño tiene modos, crear un bucket se rechaza («La hoja tiene modos de tipo de cambio: …»): los modos llenan exactamente los buckets de
+  la fórmula. Sin modos, los buckets que quedan sin uso se limpian. «Total y tipos de cambio» edita `total_en`, la fila del total (pasa `salida: 'total'`
+  en la misma operación) y el tipo de cambio de cada bucket.
 - **Lo tipeado se normaliza a 15 cifras**, como la XCell: «1,1 %» manda 0,011. Las comparaciones con lo guardado también van a 15 cifras.
 - **El ⚙ espera la publicada que leyó el panel**, nunca la versión que dibuja la hoja; si difieren, el panel lo dice. Lo enciende un proveedor y lo decide la base; sin proveedor no se registra el panel.
 - **El ⚙ de la cabecera publica la N+1 desde la publicada, sin tocar el borrador**, como el de una constante (`formula_cambiar_cabecera()`, parámetros

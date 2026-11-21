@@ -7,7 +7,9 @@ import type { Formula } from '../../../entities/formula'
 import type { FormulaParaEditar } from '../../../entities/formula/edicion'
 import { conElAjuste, formulaDePrueba } from '../../../entities/formula/fila-de-prueba.soporte'
 import type { BorradorGuardado, PedidoDeGuardar } from '../../../entities/formula/repositorio'
+import { aplicarEnLaFila } from './aplicar-en-la-fila.soporte'
 import { useEditorDeLaFormula } from './use-editor-de-la-formula'
+import { ESPERA_A_LA_FILA, SIN_CAMBIOS } from './use-guardar-borrador.soporte'
 
 // «Guardar el borrador» desde el editor (4.21-3b-1, T6): la action simulada, sin red; lo de prueba de la vista previa, sin tablas.
 type Respuesta = { data?: ResultadoDeAccion<BorradorGuardado> } | undefined
@@ -81,12 +83,7 @@ const falla = (codigo: string, mensaje: string) =>
   })
 
 function aplicarEnBase(result: Editor, texto: string) {
-  act(() => {
-    result.current.abrir('base')
-  })
-  act(() => {
-    result.current.aplicar(texto)
-  })
+  aplicarEnLaFila(result, 'base', texto)
 }
 const textoDe = (result: Editor, id: string) => {
   const t = result.current.filas.find((f) => f.id === id)?.texto
@@ -107,16 +104,17 @@ beforeEach(() => {
 })
 
 describe('useEditorDeLaFormula › guardar (C3, C5, C7)', () => {
-  it('sin cambios espera con su motivo; con una fila abierta, el de la fila; tras aplicar, listo', () => {
+  it('sin cambios espera con su motivo; con una celda en edición, el de la edición; tras aplicar, listo', () => {
     const { result } = montar(leida('borrador'))
-    expect(result.current.guardado.motivo).toBe('No hay cambios por guardar.')
+    expect(result.current.guardado.motivo).toBe(SIN_CAMBIOS)
     act(() => {
       result.current.abrir('base')
     })
-    expect(result.current.guardado.motivo).toBe('Aplica o cancela la fila abierta.')
+    expect(result.current.guardado.motivo).toBe(ESPERA_A_LA_FILA)
     act(() => {
-      result.current.aplicar('=remate+flete')
+      result.current.cerrar()
     })
+    aplicarEnBase(result, '=remate+flete')
     expect(result.current.guardado.motivo).toBeNull()
   })
 
@@ -203,7 +201,7 @@ describe('useEditorDeLaFormula › tras guardar, un error o mientras guarda (C3,
     expect(result.current.guardado.estado).toEqual({ tipo: 'regla' })
   })
 
-  it('mientras guarda, «Editar» y «Sumar fila» esperan y nada cambia el trabajo; al volver, el trabajo es lo guardado', async () => {
+  it('mientras guarda, abrir una celda espera y nada cambia el trabajo; al volver, el trabajo es lo guardado', async () => {
     const { result } = montar(leida('borrador'))
     aplicarEnBase(result, '=remate+flete')
     let soltar: (r: Respuesta) => void = () => undefined
@@ -220,13 +218,7 @@ describe('useEditorDeLaFormula › tras guardar, un error o mientras guarda (C3,
       result.current.abrir('base')
     })
     expect(result.current.abierta).toBeNull()
-    act(() => {
-      result.current.nueva.sumar('base')
-    })
-    expect(result.current.nueva.sumando).toBeNull()
-    act(() => {
-      result.current.aplicar('=fees')
-    })
+    expect(aplicarEnLaFila(result, 'base', '=fees').entro).toBe(false)
     expect(textoDe(result, 'base')).toBe('=remate+flete')
     await act(async () => {
       soltar({ data: { ok: true, data: { id: BORRADOR, actualizadoEn: HORA_NUEVA } } })

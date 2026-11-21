@@ -29,7 +29,12 @@ export type ContextoDeCompilacion = {
   // Las tablas de referencia que BUSCARV puede nombrar (las del origen y las compartidas, la del origen antes), con las claves de sus
   // columnas en su orden; null o sin dar si no se pudieron leer.
   tablas?: CatalogoDeTablas
+  // Cómo se nombra un nodo en un mensaje: la planilla dice «C5 (Remate)» y no el id. Sin dar, o si no lo nombra, el id.
+  nombrar?: (id: string) => NombreEnLaPlanilla | undefined
 }
+
+// La celda de una fila (`C5`) y su concepto, para los mensajes.
+export type NombreEnLaPlanilla = { celda: string; etiqueta: string }
 
 export type TablaDelCatalogo = { clave: string; columnas: readonly string[] }
 export type CatalogoDeTablas = readonly TablaDelCatalogo[] | null

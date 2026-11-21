@@ -22,6 +22,8 @@ export const T = {
   COMPARA: 14,
   // Un texto entre comillas, con ellas.
   TEXTO: 15,
+  // `:`, el de un rango (`C5:C9`): el parser no lo acepta; sólo lo lee la capa de las referencias A1 de la planilla.
+  DOS_PUNTOS: 16,
 } as const
 
 export type Token = { t: number; desde: number; hasta: number; codigo?: CodigoDeCompilacion }
@@ -37,6 +39,7 @@ const SIGNOS = new Map<number, number>([
   [59, T.PUNTO_Y_COMA],
   [44, T.COMA],
   [37, T.PORCIENTO],
+  [58, T.DOS_PUNTOS],
 ])
 
 const esDigito = (c: number) => c >= 48 && c <= 57
