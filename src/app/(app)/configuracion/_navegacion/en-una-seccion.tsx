@@ -23,6 +23,11 @@ export function MarcoSegunLaRuta({
   children?: ReactNode
 }) {
   return (
-    <div className={usePathname() === inicio ? claseEnElInicio : claseEnUnaSeccion}>{children}</div>
+    <div
+      data-oculto-al-editar=""
+      className={usePathname() === inicio ? claseEnElInicio : claseEnUnaSeccion}
+    >
+      {children}
+    </div>
   )
 }

@@ -10,8 +10,7 @@ import { useEditorDeLaCuadricula } from '../../hooks/use-editor-de-la-cuadricula
 import { useGuardarLaPlantilla } from '../../hooks/use-guardar-la-plantilla'
 import { useLienzoDelEditor } from '../../hooks/use-lienzo-del-editor'
 import { AvisosDelEditor } from '../avisos-del-editor'
-import { BotonesDeLaPlantilla } from '../botones-de-la-plantilla'
-import { EncabezadoDelEditor } from '../encabezado-del-editor'
+import { CabezaDelEditor } from './cabeza-del-editor'
 import { PanelDelEditor } from './panel/panel-del-editor'
 import { ZonaDelLienzo } from './zona-del-lienzo'
 
@@ -78,27 +77,7 @@ export function EditorDeLaCuadricula(props: PropsDelEditorDeLaCuadricula) {
       className="@container/editor grid min-w-0 gap-4"
       data-editor-de-la-tarjeta=""
     >
-      <EncabezadoDelEditor
-        origen={origen}
-        de={props.de}
-        esperada={esperada}
-        publicada={props.publicada}
-        acciones={
-          <BotonesDeLaPlantilla
-            esperada={esperada}
-            hayCambios={editor.hayCambios}
-            ocupado={guardar.ocupado || guardar.conflicto !== null}
-            guardar={{
-              puede: editor.puedeGuardar,
-              motivo: editor.motivoParaNoGuardar,
-              enCurso: guardar.enCurso,
-              alGuardar: () => void guardar.enviar(),
-            }}
-            alPublicar={props.alPublicar}
-            alDescartar={props.alDescartar}
-          />
-        }
-      />
+      <CabezaDelEditor props={props} editor={editor} guardar={guardar} />
       <AvisosDelEditor
         deLaLectura={[...props.avisos, ...Object.values(guardar.porCampo)]}
         paraPublicar={editor.rechazoParaPublicar?.mensaje ?? null}

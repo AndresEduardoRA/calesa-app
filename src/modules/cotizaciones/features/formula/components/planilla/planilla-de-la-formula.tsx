@@ -1,5 +1,9 @@
 'use client'
 
+import {
+  AccionesDeLaEdicion,
+  useEdicionAPantallaCompleta,
+} from '@/shared/ui/edicion-a-pantalla-completa'
 import { EstiloDeTonos } from '@/shared/ui/xcell'
 import { usePlanilla, type Planilla } from '../../hooks/use-planilla'
 import { BarraDeFormula } from './barra/barra-de-formula'
@@ -22,7 +26,9 @@ function CabeceraDeLaPlanilla({ p, planilla }: { p: PropsDeLaPlanilla; planilla:
     <>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">{p.sobre}</p>
-        <MenuDeLaPlanilla planilla={planilla} />
+        <AccionesDeLaEdicion orden={3}>
+          <MenuDeLaPlanilla planilla={planilla} />
+        </AccionesDeLaEdicion>
       </div>
       <GuardarBorrador
         nombreDelOrigen={p.origen.nombre}
@@ -50,6 +56,12 @@ function CabeceraDeLaPlanilla({ p, planilla }: { p: PropsDeLaPlanilla; planilla:
 export function PlanillaDeLaFormula(p: PropsDeLaPlanilla) {
   const { editor } = p
   const planilla = usePlanilla(p)
+  // En la edición a pantalla completa la barra de arriba dice el estado y «Salir» pregunta si hay cambios sin guardar.
+  useEdicionAPantallaCompleta({
+    estado: editor.guardado.hayCambios ? { tipo: 'cambios' } : p.estadoGuardado,
+    hayCambios: editor.guardado.hayCambios,
+    alDescartar: editor.guardado.limpiar,
+  })
   const tonos = planilla.bandas.tonos.estado
   return (
     <section aria-label="Planilla de la fórmula" className="@container/formula grid min-w-0 gap-3">

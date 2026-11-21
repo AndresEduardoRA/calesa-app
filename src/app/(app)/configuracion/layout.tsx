@@ -21,10 +21,13 @@ const OCULTA_CON_MENU = 'lg:@min-[44rem]/configuracion:hidden'
 export default function LayoutDeConfiguracion({ children }: { children: ReactNode }) {
   return (
     <div className="@container/configuracion flex min-w-0 gap-4">
-      <Suspense fallback={<div className={CLASE_DEL_MENU} />}>
+      <Suspense fallback={<div data-oculto-al-editar="" className={CLASE_DEL_MENU} />}>
         <MenuLateral />
       </Suspense>
-      <div className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)] content-start gap-4 pb-24 md:pb-0">
+      <div
+        data-relleno-del-marco=""
+        className="grid min-w-0 flex-1 grid-cols-[minmax(0,1fr)] content-start gap-4 pb-24 md:pb-0"
+      >
         <Suspense
           fallback={
             <MarcoSegunLaRuta
@@ -48,7 +51,7 @@ async function MenuLateral() {
     return null
   }
   return (
-    <div className={CLASE_DEL_MENU}>
+    <div data-oculto-al-editar="" className={CLASE_DEL_MENU}>
       <BuscadorDeConfiguracion
         grupos={grupos}
         variante="menu"

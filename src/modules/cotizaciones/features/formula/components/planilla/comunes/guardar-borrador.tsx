@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/shared/ui/button'
+import { AccionesDeLaEdicion } from '@/shared/ui/edicion-a-pantalla-completa'
 import {
   MENSAJE_DE_ERROR,
   MENSAJE_DE_REGLA,
@@ -64,14 +65,17 @@ export function GuardarBorrador(props: Props) {
   return (
     <div data-guardado className="grid min-w-0 gap-2">
       <div className="flex flex-wrap items-center gap-2">
-        <Button
-          type="button"
-          className="min-h-11 md:min-h-9"
-          disabled={motivo !== null || enCurso || conflicto !== null}
-          onClick={props.alGuardar}
-        >
-          {enCurso ? 'Guardando…' : 'Guardar el borrador'}
-        </Button>
+        {/* En la edición a pantalla completa el botón va a la barra de arriba; la línea de estado y los avisos quedan acá. */}
+        <AccionesDeLaEdicion orden={1}>
+          <Button
+            type="button"
+            className="min-h-11 md:min-h-9"
+            disabled={motivo !== null || enCurso || conflicto !== null}
+            onClick={props.alGuardar}
+          >
+            {enCurso ? 'Guardando…' : 'Guardar el borrador'}
+          </Button>
+        </AccionesDeLaEdicion>
         <p role="status" className="min-w-0 text-(length:--text-sm) text-(--color-ink-soft)">
           {lineaDe(estado, motivo, enCurso)}
         </p>
