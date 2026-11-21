@@ -1,34 +1,33 @@
 'use client'
 
-import { useCallback, useId, useMemo, useState } from 'react'
-import { useRegional } from '@/shared/ui/regional'
-import type { Nodo } from '../../../entities/nodos'
-import { contextoDeDondeSale, deDondeSale } from '../../../entities/formula/de-donde-sale'
-import { opcionesDeTipoDeCambio } from '../../../entities/formula/buckets'
-import { bandasDeLaPlanilla } from '../../../entities/formula/planilla'
-import { totalesDeLaUnidad } from '../../../entities/formula/totales-de-la-planilla'
-import {
-  modoDelMotor,
-  UNIDAD_EN_CEROS,
-  type UnidadDeEjemplo,
-} from '../../../entities/formula/unidad-de-ejemplo'
-import type { AccionesDeLaUnidad } from '../components/planilla/celda-de-la-unidad'
-import type { ContextoDeLasBandas } from '../components/planilla/banda-de-la-planilla'
-import {
-  motivoDeEspera,
-  type ContextoDeLasFilas,
-} from '../components/planilla/contexto-de-las-filas'
+import { useId, useMemo, useState } from 'react'
+import type { CambioDeLaUnidad } from '../../../entities/formula/escrito-en-la-celda'
+import { unidadConElCambio } from '../../../entities/formula/escrito-en-la-celda'
+import { filasALaVista, tramosALaVista } from '../../../entities/formula/filas-a-la-vista'
+import { hojaDeLaPlanilla } from '../../../entities/formula/hoja-de-la-planilla'
+import { UNIDAD_EN_CEROS, type UnidadDeEjemplo } from '../../../entities/formula/unidad-de-ejemplo'
+import { ETIQUETA_DE_FILA_NUEVA } from '../../../entities/formula/insertar-fila'
+import type {
+  LecturaDeLaTarjetaEnVivo,
+  NombradoPorLaTarjeta,
+} from '../../../entities/tarjeta-en-vivo'
+import type { FilaDeLaHoja } from '../../../entities/formula/hoja-de-la-planilla'
+import type { TipoDeCelda } from '../../../entities/formula/tipo-de-celda'
 import type { PropsDeLaPlanilla } from '../components/planilla/tipos'
-import {
-  candidatasDe,
-  miembrosPorGrupo,
-  SIN_CANDIDATAS,
-} from '../components/editor/miembros-de-los-grupos'
-import { filasVisibles } from './use-editor-de-la-formula.soporte'
+import { useAccionesDeLaCuadricula } from './use-acciones-de-la-cuadricula'
+import { useBandasDeLaPlanilla } from './use-bandas-de-la-planilla'
+import { elegirTipo } from './elegir-tipo'
+import { useCalculoDeLaPlanilla, type CalculoDeLaPlanilla } from './use-calculo-de-la-planilla'
 import { useCamposQueFaltan } from './use-campos-que-faltan'
-import { useFilaPedida } from './use-fila-pedida'
-import { useTonos } from './use-tonos'
-import { useUnidadDeLaPlanilla } from './use-unidad-de-la-planilla'
+import { useCuadricula } from './use-cuadricula'
+import type { EdicionConReferencias } from './use-edicion-con-referencias'
+import { useEdicionDeLaPlanilla } from './use-edicion-de-la-planilla'
+import { useOperacionesDeFila, type OperacionesDeFila } from './use-operaciones-de-fila'
+import { usePanelesDeLaPlanilla, type PanelesDeLaPlanilla } from './use-paneles-de-la-planilla'
+
+export const idDeLaGrilla = (prefijo: string) => `${prefijo}-grilla`
+
+const SIN_NOMBRAR: NombradoPorLaTarjeta = { nodos: [], grupos: [] }
 
 const enCeros = (u: UnidadDeEjemplo) =>
   u === UNIDAD_EN_CEROS ||
@@ -37,223 +36,159 @@ const enCeros = (u: UnidadDeEjemplo) =>
     Object.keys(u.vehiculo).length === 0 &&
     u.variante === undefined)
 
-// Cambiar la unidad de ejemplo: estable (el `set` de la sesión), para las filas `memo`.
-function useAccionesDeLaUnidad(cambiar: PropsDeLaPlanilla['alCambiarUnidad']): AccionesDeLaUnidad {
-  return useMemo(
-    () => ({
-      alCambiarInput: (id, valor) => {
-        cambiar((u) => ({ ...u, inputs: { ...u.inputs, [id]: valor } }))
-      },
-      alCambiarBandera: (id, valor) => {
-        cambiar((u) => ({ ...u, banderas: { ...u.banderas, [id]: valor } }))
-      },
-      alCambiarCampo: (campo, valor) => {
-        cambiar((u) => ({ ...u, vehiculo: { ...u.vehiculo, [campo]: valor } }))
-      },
-      alElegirVariante: (clave) => {
-        cambiar((u) => ({ ...u, variante: clave }))
-      },
-    }),
-    [cambiar],
-  )
+// Lo que la tarjeta de trabajo nombra (no se borra lo que usa); nulo si no se pudo leer (no se borra nada a ciegas).
+function nombradoPor(t: LecturaDeLaTarjetaEnVivo): NombradoPorLaTarjeta | null {
+  if (t.estado === 'lista') return t.nombra
+  return t.estado === 'sin_tarjeta' ? SIN_NOMBRAR : null
 }
 
-// El cálculo con la unidad de ejemplo y el modo elegido, «de dónde sale» de cada fila (una vez por fórmula de trabajo) y las líneas de «Totales».
-function useCalculoDeLaPlanilla(p: PropsDeLaPlanilla) {
-  const { editor } = p
-  const { locale } = useRegional()
-  const modos = useMemo(() => p.diseno?.cabecera.modos ?? [], [p.diseno])
-  const delModo = modos.find((m) => m.clave === p.modo)
-  const modo = useMemo(() => (delModo === undefined ? undefined : modoDelMotor(delModo)), [delModo])
-  const { vista, cifras } = useUnidadDeLaPlanilla({
-    validada: editor.validada,
-    filas: editor.filas,
-    lectura: editor.lectura,
-    unidad: p.unidad,
-    modo,
-  })
-  const dicho = useMemo(() => contextoDeDondeSale(editor.trabajo, locale), [editor.trabajo, locale])
-  const dichas = useMemo(
-    () => new Map(editor.filas.map((f) => [f.id, deDondeSale(f.nodo, dicho)])),
-    [editor.filas, dicho],
-  )
-  const lineas = useMemo(
-    () =>
-      vista?.tipo === 'calculada' && editor.validada !== null
-        ? totalesDeLaUnidad(editor.validada, vista, modo, dicho)
-        : [],
-    [vista, editor.validada, modo, dicho],
-  )
-  return { modos, delModo, vista, cifras, dicho, dichas, lineas }
-}
-
-// Las filas que se dibujan (búsqueda y tope; la de la barra y la de «Sumar fila debajo», siempre) en sus bandas, y el número de cada una.
-function useBandas(
-  editor: PropsDeLaPlanilla['editor'],
-  busqueda: string,
-  deLaBarra: string | null,
-) {
-  const forzada = editor.nueva.sumando?.tras ?? deLaBarra
-  const visibles = useMemo(
-    () => filasVisibles(editor.filas, busqueda, forzada),
-    [editor.filas, busqueda, forzada],
-  )
-  const ids = useMemo(() => new Set(visibles.filas.map((f) => f.id)), [visibles.filas])
+// Las filas que se dibujan (búsqueda y tope; la que está en edición, siempre) en sus tramos, y la celda activa entre ellas.
+function useFilasALaVista(hoja: ReturnType<typeof hojaDeLaPlanilla>, enEdicion: string | null) {
+  const prefijo = useId()
+  const [busqueda, setBusqueda] = useState('')
+  const vista = useMemo(() => filasALaVista(hoja, busqueda, enEdicion), [hoja, busqueda, enEdicion])
   const buscando = busqueda.trim() !== ''
-  const bandas = useMemo(
-    () =>
-      bandasDeLaPlanilla(editor.trabajo, editor.filas, {
-        visibles: ids,
-        conGruposVacios: !buscando,
-      }),
-    [editor.trabajo, editor.filas, ids, buscando],
+  const tramos = useMemo(
+    () => tramosALaVista(vista.filas, buscando ? [] : hoja.gruposSinFilas),
+    [vista.filas, buscando, hoja.gruposSinFilas],
   )
-  const numeros = useMemo(
-    () =>
-      new Map(
-        bandas.flatMap((b) =>
-          b.tipo === 'variante' ? [] : b.filas.map((f) => [f.fila.id, f.numero] as const),
-        ),
-      ),
-    [bandas],
-  )
-  return { visibles, bandas, numeros }
+  const ids = useMemo(() => vista.filas.map((f) => f.id), [vista.filas])
+  const cuadricula = useCuadricula({ ids, editando: enEdicion !== null, prefijo })
+  return { prefijo, busqueda, setBusqueda, vista, tramos, cuadricula }
 }
 
-// Qué fila se elige para la barra de fórmula: con texto sin aplicar, la elegida no cambia y la barra lo dice (y recibe el foco).
-function useEleccion(editor: PropsDeLaPlanilla['editor'], nodos: ReadonlyMap<string, Nodo>) {
-  const [elegida, setElegida] = useState<string | null>(null)
-  const [aviso, setAviso] = useState<string | null>(null)
-  const [enfocar, setEnfocar] = useState(0)
-  const { abierta } = editor
-  const { soltarLaCreada } = editor.nueva
-  const alElegir = useCallback(
-    (id: string) => {
-      if (abierta !== null && abierta.id !== id) {
-        const etiqueta = nodos.get(abierta.id)?.etiqueta ?? abierta.id
-        setAviso(`Aplica o descarta el cambio de «${etiqueta}» antes de elegir otra fila.`)
-        setEnfocar((n) => n + 1)
-        return
-      }
-      setAviso(null)
-      soltarLaCreada()
-      setElegida(id)
-    },
-    [abierta, nodos, soltarLaCreada],
-  )
-  // `?fila=` (el «Ir a la fila» de «Activar»): la elige al abrir, sin texto sin aplicar todavía.
-  useFilaPedida(setElegida)
-  const deLaBarra = abierta?.id ?? editor.nueva.creada ?? elegida
-  return { deLaBarra, alElegir, aviso: abierta === null ? null : aviso, enfocar }
-}
-
-type Calculo = ReturnType<typeof useCalculoDeLaPlanilla>
-
-// Lo de las bandas que no es de una fila: los grupos (su formulario y sus colores), el permiso de los tipos de cambio y la unidad de ejemplo.
-function useDeLasBandas(p: PropsDeLaPlanilla, c: Calculo): ContextoDeLasBandas {
-  const { editor } = p
-  const tonos = useTonos()
-  const hayGrupoAbierto = editor.grupos.abierto !== null
-  const miembros = useMemo(() => miembrosPorGrupo(editor.trabajo), [editor.trabajo])
-  const candidatas = useMemo(
-    () => (hayGrupoAbierto ? candidatasDe(editor.trabajo) : SIN_CANDIDATAS),
-    [hayGrupoAbierto, editor.trabajo],
-  )
-  const conModos = c.modos.length > 0
-  const tiposDeCambio = useMemo(
-    () => opcionesDeTipoDeCambio(editor.trabajo, { conModos }),
-    [editor.trabajo, conModos],
-  )
+// La etiqueta del tipo de cambio de un bucket con el modo elegido (la nota de la cabecera de una banda).
+function tipoDeCambioDeLa(editor: PropsDeLaPlanilla['editor'], calculo: CalculoDeLaPlanilla) {
   const deOmision = editor.trabajo.definicion.buckets ?? {}
+  return (bucket: string) => {
+    const id =
+      calculo.delModo === undefined
+        ? Object.hasOwn(deOmision, bucket)
+          ? deOmision[bucket]
+          : undefined
+        : calculo.delModo.buckets.find((b) => b.bucket === bucket)?.nodo
+    return id === undefined ? bucket : (calculo.dicho.nodos.get(id)?.etiqueta ?? id)
+  }
+}
+
+type Cuadricula = ReturnType<typeof useFilasALaVista>['cuadricula']
+
+type ArgsDelCierre = {
+  edicion: EdicionConReferencias
+  cuadricula: Cuadricula
+  enfocar: () => void
+  ops: OperacionesDeFila
+  paneles: PanelesDeLaPlanilla
+  calculo: CalculoDeLaPlanilla
+}
+
+// Aplicar (y, si entró, mover la activa como Enter o Tab) y descartar, con el foco de vuelta en la grilla; el tipo de celda y la banda nueva del menú de una fila.
+function useCierreYMenu({ edicion, cuadricula, enfocar, ops, paneles, calculo }: ArgsDelCierre) {
   return {
-    tonos: tonos.estado,
-    alReintentarTonos: tonos.reintentar,
-    tiposDeCambio,
-    conModos,
-    miembros,
-    candidatas,
-    tipoDeCambioDe: (bucket) => {
-      const id =
-        c.delModo === undefined
-          ? Object.hasOwn(deOmision, bucket)
-            ? deOmision[bucket]
-            : undefined
-          : c.delModo.buckets.find((b) => b.bucket === bucket)?.nodo
-      return id === undefined ? bucket : (c.dicho.nodos.get(id)?.etiqueta ?? id)
+    aplicarYSeguir: (tecla: 'Enter' | 'Tab' | null, shift = false, confirmaPisar = false) => {
+      if (!edicion.aplicar(confirmaPisar)) return
+      if (tecla !== null) cuadricula.moverCon(tecla, shift)
+      enfocar()
     },
-    puedeCambiarTiposDeCambio: p.puedeCambiarTiposDeCambio,
-    enCeros: enCeros(p.unidad),
-    alVolverACeros: () => {
-      p.alCambiarUnidad(UNIDAD_EN_CEROS)
+    descartar: () => {
+      edicion.descartar()
+      enfocar()
+    },
+    elegirTipo: (fila: FilaDeLaHoja, tipo: TipoDeCelda) => {
+      elegirTipo(fila, tipo, {
+        ops,
+        edicion,
+        paneles,
+        cifra: calculo.cifras.get(fila.id),
+        elegir: cuadricula.elegir,
+      })
+    },
+    abrirNuevaBanda: (id: string) => {
+      paneles.nuevaBanda.abrir({ con: id })
     },
   }
 }
 
-// Lo que dibuja la planilla de la fórmula, armado sobre la fórmula de trabajo de la sesión: las bandas, «de dónde sale», el cálculo de la unidad, «Totales» y la fila
-// elegida para la barra de fórmula.
+// Lo que dibuja la planilla de la fórmula (D1–D21 del cambio de la planilla), armado sobre la fórmula de trabajo de la sesión: la hoja numerada, el cálculo con la
+// unidad de ejemplo, la celda activa, la edición con referencias, las operaciones de fila y de banda, y los paneles.
 export function usePlanilla(p: PropsDeLaPlanilla) {
   const { editor } = p
-  const idDelMotivo = useId()
-  const [busqueda, setBusqueda] = useState('')
-  const c = useCalculoDeLaPlanilla(p)
-  const nodos = c.dicho.nodos
-  const eleccion = useEleccion(editor, nodos)
-  const { visibles, bandas, numeros } = useBandas(editor, busqueda, eleccion.deLaBarra)
-  const acciones = useAccionesDeLaUnidad(p.alCambiarUnidad)
-  const deLasBandas = useDeLasBandas(p, c)
-  const motivo = motivoDeEspera(editor)
-  const faltan = useCamposQueFaltan(p.origen.id, editor.trabajo.definicion.nodos)
-  const ctx: ContextoDeLasFilas = {
+  const calculo = useCalculoDeLaPlanilla({
     editor,
-    nodos,
-    elegida: eleccion.deLaBarra,
-    cifras: c.cifras,
-    dichas: c.dichas,
-    vista: c.vista,
+    diseno: p.diseno,
     unidad: p.unidad,
-    motivo,
-    idDelMotivo,
-    alElegir: eleccion.alElegir,
-    acciones,
-    faltan,
+    modo: p.modo,
+  })
+  const hoja = useMemo(() => hojaDeLaPlanilla(editor.trabajo), [editor.trabajo])
+  const [menuAbierto, setMenuAbierto] = useState(false)
+  const [anuncio, setAnuncio] = useState('')
+  const tarjeta = nombradoPor(p.tarjeta)
+  const usos = useMemo(() => ({ diseno: p.diseno, tarjeta }), [p.diseno, tarjeta])
+  const alCambiarUnidad = (cambio: CambioDeLaUnidad) => {
+    p.alCambiarUnidad((u) => unidadConElCambio(u, cambio))
   }
+  const ed = useEdicionDeLaPlanilla({ editor, hoja, calculo, unidad: p.unidad, alCambiarUnidad })
+  const { edicion } = ed
+  const filas = useFilasALaVista(hoja, edicion.edicion?.id ?? null)
+  const { cuadricula } = filas
+  // Por su id y no por un ref: la planilla viaja entera a sus piezas y un ref adentro no se lee al dibujar.
+  const enfocar = () => {
+    document.getElementById(idDeLaGrilla(filas.prefijo))?.focus()
+  }
+  const ops = useOperacionesDeFila({
+    editor,
+    hoja,
+    usos,
+    alCrear: (id, insertada) => {
+      cuadricula.elegir({ id, col: insertada ? 'A' : 'C' })
+      if (insertada)
+        edicion.abrir(
+          { id, col: 'A' },
+          { en: 'celda', tipeado: ETIQUETA_DE_FILA_NUEVA, elegirTodo: true },
+        )
+    },
+  })
+  const acciones = useAccionesDeLaCuadricula({
+    hoja,
+    trabajo: editor.trabajo,
+    unidad: p.unidad,
+    edicion,
+    ops,
+    elegir: cuadricula.elegir,
+    alCambiarUnidad,
+    abrirMenu: () => {
+      setMenuAbierto(true)
+    },
+    enfocar,
+    anunciar: setAnuncio,
+  })
   const cabecera = p.diseno?.cabecera
+  const paneles = usePanelesDeLaPlanilla()
+  const cierre = useCierreYMenu({ edicion, cuadricula, enfocar, ops, paneles, calculo })
   return {
-    busqueda,
-    setBusqueda,
-    visibles,
-    bandas,
-    ctx,
-    deLasBandas,
-    vista: c.vista,
-    lineas: c.lineas,
-    modos: c.modos,
+    ...filas,
+    ...ed,
+    editor,
+    unidad: p.unidad,
+    hoja,
+    calculo,
+    ops,
+    acciones,
+    bandas: useBandasDeLaPlanilla({ editor, conModos: calculo.modos.length > 0, tarjeta }),
+    paneles,
+    faltan: useCamposQueFaltan(p.origen.id, editor.trabajo.definicion.nodos),
+    menu: { abierto: menuAbierto, alCambiar: setMenuAbierto },
+    anuncio,
+    enfocar,
+    alCambiarUnidad,
+    ...cierre,
+    tipoDeCambioDe: tipoDeCambioDeLa(editor, calculo),
+    enCeros: enCeros(p.unidad),
+    volverACeros: () => {
+      p.alCambiarUnidad(UNIDAD_EN_CEROS)
+    },
     verTotalBs: (cabecera?.ver_total_bs ?? false) && (cabecera?.ver_total_bs_por_defecto ?? false),
-    barra: barraDe(editor, eleccion, { numeros, dichas: c.dichas, motivo }),
   }
 }
 
-// Lo que la barra de fórmula muestra de la fila elegida.
-function barraDe(
-  editor: PropsDeLaPlanilla['editor'],
-  eleccion: ReturnType<typeof useEleccion>,
-  de: {
-    numeros: ReadonlyMap<string, number>
-    dichas: ReadonlyMap<string, string>
-    motivo: string | null
-  },
-) {
-  const { deLaBarra } = eleccion
-  const fila = deLaBarra === null ? null : (editor.filas.find((f) => f.id === deLaBarra) ?? null)
-  const id = fila?.id ?? ''
-  return {
-    fila,
-    numero: de.numeros.get(id) ?? null,
-    abierta: editor.abierta?.id === id ? editor.abierta : null,
-    motivo: de.motivo,
-    aviso: eleccion.aviso,
-    enfocar: eleccion.enfocar,
-    deDondeSale: de.dichas.get(id) ?? '',
-    soltados: editor.aplicada?.id === id ? editor.aplicada.soltados : [],
-  }
-}
+export type Planilla = ReturnType<typeof usePlanilla>

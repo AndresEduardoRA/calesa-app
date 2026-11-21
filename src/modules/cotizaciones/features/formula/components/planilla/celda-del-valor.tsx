@@ -3,7 +3,7 @@
 import { textoDelFaltante } from '../../../../entities/textos-de-faltantes'
 import type { CifraDeLaFila } from '../../../../entities/formula/vista-previa'
 import { formatoDe } from '../../../../entities/nodos'
-import { ValorDeConstante } from '../editor/valor-de-constante'
+import { ValorDeConstante } from './comunes/valor-de-constante'
 
 // Las cifras de la planilla llevan 2 decimales (los montos, los de `<Monto>`).
 const DECIMALES = 2

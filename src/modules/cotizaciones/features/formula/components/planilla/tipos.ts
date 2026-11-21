@@ -8,6 +8,9 @@ import type {
 } from '../../../../entities/tarjeta-en-vivo'
 import type { EditorDeLaFormula } from '../../hooks/use-editor-de-la-formula'
 
+// Un tipo de cambio de la empresa (`getTiposCambio()`): lo que ofrece «Tipo de celda › Tipo de cambio».
+export type TipoDeCambioDeLaEmpresa = { readonly clave: string; readonly nombre: string }
+
 export type PropsDeLaPlanilla = {
   editor: EditorDeLaFormula
   // El diseño de la versión leída: los modos de tipo de cambio y «Ver total» por defecto.
@@ -17,15 +20,15 @@ export type PropsDeLaPlanilla = {
   formulaDelOrigenId: string
   // «Sobre el borrador de <persona>.» o «Sobre la versión N publicada.»
   sobre: string
-  // La unidad de ejemplo y el modo elegido viven en la sesión: sobreviven al ir y volver del Modo avanzado y se pierden al recargar.
+  // La unidad de ejemplo y el modo elegido viven en la sesión: se pierden al recargar.
   unidad: UnidadDeEjemplo
   alCambiarUnidad: Dispatch<SetStateAction<UnidadDeEjemplo>>
   modo: string | null
   alElegirModo: (clave: string) => void
-  alAbrirAvanzado: () => void
   recargando: boolean
   alRecargar: () => void
   tarjeta: LecturaDeLaTarjetaEnVivo
   TarjetaEnVivo: ComponentType<PropsDeLaTarjetaEnVivo>
   puedeCambiarTiposDeCambio: boolean
+  tiposDeCambio: readonly TipoDeCambioDeLaEmpresa[]
 }

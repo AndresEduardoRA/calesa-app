@@ -1,0 +1,128 @@
+'use client'
+
+import { Button } from '@/shared/ui/button'
+import { useLive } from '@/shared/ui/live'
+import { filaDe } from '../../../../../entities/formula/hoja-de-la-planilla'
+import type { Planilla } from '../../../hooks/use-planilla'
+import { idsDeLaEdicion } from '../ids-de-la-edicion'
+import { esMontoQueSeEscribe } from '../monto-secreto'
+import { DebajoDeLaBarra } from './debajo-de-la-barra'
+import { ErrorBajoLaBarra } from './error-bajo-la-barra'
+import { LeyendaDeReferencias } from './leyenda-de-referencias'
+import { ListaDeSugerencias } from './lista-de-sugerencias'
+import { TextoDeLaBarra } from './texto-de-la-barra'
+
+type Props = { planilla: Planilla; puedeCambiarTiposDeCambio: boolean }
+
+const CAJA_QUIETA =
+  'min-h-[44px] min-w-0 rounded-(--radius-md) border border-dashed border-(--color-line) px-3 py-2.5 text-(length:--text-sm) text-(--color-ink-soft) break-words md:pointer-fine:min-h-9 md:pointer-fine:py-1.5'
+const BOTON = 'min-h-[44px] md:pointer-fine:min-h-9'
+
+// Lo que la barra muestra de la celda activa: su texto si se escribe; si no, por qué (D, «de dónde sale», o un monto con el Modo Live).
+function textoDeLaCelda(planilla: Planilla, live: boolean) {
+  const { cuadricula, edicion, hoja } = planilla
+  const celda = edicion.edicion ?? cuadricula.activa
+  if (celda === null) return null
+  const fila = filaDe(hoja, hoja.numeroDe.get(celda.id) ?? 0)
+  if (fila === undefined) return null
+  const nombre = `${celda.col}${String(fila.numero)}, ${fila.nodo.etiqueta}`
+  const t = planilla.textoDe(celda)
+  const quieto =
+    live && esMontoQueSeEscribe(fila.nodo, celda.col)
+      ? 'Con el Modo Live, el monto se escribe en la celda.'
+      : celda.col === 'D'
+        ? (planilla.calculo.dichas.get(fila.id) ?? '')
+        : t.editable
+          ? null
+          : t.motivo
+  return {
+    celda,
+    fila,
+    nombre,
+    texto: t.editable ? t.texto : '',
+    quieto,
+    motivo: t.editable ? null : t.motivo,
+  }
+}
+
+// La barra de fórmula (D15, D16): la celda activa («C5»), `fx` y lo que se escribe con sus referencias de color, su leyenda, el autocompletar y el error con su
+// salida; escribiendo, «Aplicar» y «Descartar». Va pegada arriba (también en el celular).
+export function BarraDeFormula({ planilla, puedeCambiarTiposDeCambio }: Props) {
+  const { live } = useLive()
+  const e = planilla.edicion.edicion
+  const ids = idsDeLaEdicion(planilla.prefijo)
+  const activa = textoDeLaCelda(planilla, live)
+  return (
+    <section
+      aria-label="Barra de fórmula"
+      data-barra-de-formula=""
+      className="sticky top-0 z-20 grid min-w-0 gap-1.5 border-b border-(--color-line) bg-(--color-surface) py-2"
+    >
+      <div className="flex min-w-0 flex-wrap items-start gap-2 sm:flex-nowrap">
+        <span
+          data-celda-de-la-barra=""
+          className="flex min-h-[44px] w-14 shrink-0 items-center justify-center rounded-(--radius-md) border border-(--color-line) font-mono text-(length:--text-sm) md:pointer-fine:min-h-9"
+        >
+          {activa === null ? '—' : `${activa.celda.col}${String(activa.fila.numero)}`}
+        </span>
+        <span
+          aria-hidden
+          className="flex min-h-[44px] items-center font-serif text-(--color-ink-soft) italic md:pointer-fine:min-h-9"
+        >
+          fx
+        </span>
+        <div className="min-w-0 flex-1 basis-60">
+          {activa === null ? (
+            <p className={CAJA_QUIETA}>Elige una celda.</p>
+          ) : activa.quieto !== null && e === null ? (
+            <p className={CAJA_QUIETA}>{activa.quieto}</p>
+          ) : (
+            <TextoDeLaBarra
+              planilla={planilla}
+              celda={activa.celda}
+              nombre={activa.nombre}
+              texto={activa.texto}
+            />
+          )}
+        </div>
+        {e === null ? null : (
+          <div className="flex shrink-0 flex-wrap gap-2">
+            <Button
+              type="button"
+              className={BOTON}
+              onClick={() => {
+                planilla.aplicarYSeguir(null)
+              }}
+            >
+              Aplicar
+            </Button>
+            <Button type="button" variant="outline" className={BOTON} onClick={planilla.descartar}>
+              Descartar
+            </Button>
+          </div>
+        )}
+      </div>
+      <LeyendaDeReferencias leyenda={planilla.leyenda} anuncio={planilla.anuncio} />
+      <ListaDeSugerencias sugerencias={planilla.sugerencias} ids={ids} />
+      {e?.error == null ? null : (
+        <ErrorBajoLaBarra
+          id={ids.error}
+          error={e.error}
+          nodos={planilla.calculo.dicho.nodos}
+          alMover={planilla.edicion.moverYAplicar}
+          alPisar={() => {
+            planilla.aplicarYSeguir(null, false, true)
+          }}
+        />
+      )}
+      {e === null && activa !== null ? (
+        <DebajoDeLaBarra
+          planilla={planilla}
+          fila={activa.fila}
+          motivo={activa.motivo}
+          puedeCambiarTiposDeCambio={puedeCambiarTiposDeCambio}
+        />
+      ) : null}
+    </section>
+  )
+}

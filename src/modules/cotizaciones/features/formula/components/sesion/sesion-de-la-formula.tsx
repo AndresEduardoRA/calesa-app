@@ -14,9 +14,8 @@ import type {
 } from '../../../../entities/tarjeta-en-vivo'
 import { useEditorDeLaFormula } from '../../hooks/use-editor-de-la-formula'
 import { useLecturaDeLaDefinicion } from '../../hooks/use-lectura-de-la-definicion'
-import { EditorDeLaFormula } from '../editor/editor-de-la-formula'
 import { PlanillaDiferida } from '../planilla/diferidos'
-import { ListaDeFilasDiferida } from './diferidos'
+import type { TipoDeCambioDeLaEmpresa } from '../planilla/tipos'
 import { EstadoDeLaLectura } from './estado-de-la-lectura'
 
 export type PropsDeLaSesion = {
@@ -27,11 +26,6 @@ export type PropsDeLaSesion = {
   formulaId: string
   // «Sobre el borrador de <persona>.» o «Sobre la versión N publicada.»
   sobre: string
-  // El Modo avanzado (`?panel=editar-formula`): el editor en texto. Si no, la planilla.
-  avanzado: boolean
-  alAbrirAvanzado: () => void
-  // «Volver a la planilla»: cierra el Modo avanzado.
-  alVolver: () => void
   // Tras un conflicto al guardar: trae la pestaña de nuevo y vuelve a montar la sesión sobre lo que haya.
   recargando: boolean
   alRecargar: () => void
@@ -43,10 +37,11 @@ export type PropsDeLaSesion = {
   tablas: CatalogoDeTablas
   TarjetaEnVivo: ComponentType<PropsDeLaTarjetaEnVivo>
   puedeCambiarTiposDeCambio: boolean
+  // Los tipos de cambio de la empresa: «Tipo de celda › Tipo de cambio».
+  tiposDeCambio: readonly TipoDeCambioDeLaEmpresa[]
 }
 
-// Con la versión leída: la fórmula de trabajo, una sola para los dos modos, y la unidad de ejemplo y el modo elegido de la planilla (sobreviven al ir y volver del
-// Modo avanzado; recargar vuelve a ceros).
+// Con la versión leída: la fórmula de trabajo, y la unidad de ejemplo y el modo elegido de la planilla (recargar vuelve a ceros).
 function SesionLista({ leida, ...p }: PropsDeLaSesion & { leida: FormulaParaEditar }) {
   const editor = useEditorDeLaFormula({ origenId: p.origen.id, leida, tablas: p.tablas })
   const [unidad, setUnidad] = useState<UnidadDeEjemplo>(UNIDAD_EN_CEROS)
@@ -69,19 +64,6 @@ function SesionLista({ leida, ...p }: PropsDeLaSesion & { leida: FormulaParaEdit
     },
     [alCambiarPendientes],
   )
-  if (p.avanzado) {
-    return (
-      <EditorDeLaFormula nombreDelOrigen={p.origen.nombre} sobre={p.sobre} alVolver={p.alVolver}>
-        <ListaDeFilasDiferida
-          editor={editor}
-          nombreDelOrigen={p.origen.nombre}
-          diseno={leida.diseno}
-          recargando={p.recargando}
-          alRecargar={p.alRecargar}
-        />
-      </EditorDeLaFormula>
-    )
-  }
   return (
     <PlanillaDiferida
       editor={editor}
@@ -93,42 +75,30 @@ function SesionLista({ leida, ...p }: PropsDeLaSesion & { leida: FormulaParaEdit
       alCambiarUnidad={setUnidad}
       modo={modo}
       alElegirModo={setModo}
-      alAbrirAvanzado={p.alAbrirAvanzado}
       recargando={p.recargando}
       alRecargar={p.alRecargar}
       tarjeta={p.tarjeta}
       TarjetaEnVivo={p.TarjetaEnVivo}
       puedeCambiarTiposDeCambio={p.puedeCambiarTiposDeCambio}
+      tiposDeCambio={p.tiposDeCambio}
     />
   )
 }
 
 // La sesión de edición de la fórmula de un origen: lee la versión desde el navegador al montarse y tiene **la** fórmula de trabajo (`useEditorDeLaFormula`, una sola
-// vez): la planilla y el Modo avanzado la comparten, así que lo aplicado en uno se ve en el otro sin reponer nada. Lo aplicado vive en la pestaña hasta «Guardar el
-// borrador» (4.21-3b-1). Lee la versión con la que abrió y no otra (C8): guardar sobre la publicada crea el borrador y la pestaña cambia de versión, pero la sesión
+// vez), que la planilla edita. Lo aplicado vive en la pestaña hasta «Guardar el borrador» (4.21-3b-1). Lee la versión con la que abrió y no otra (C8): guardar sobre la publicada crea el borrador y la pestaña cambia de versión, pero la sesión
 // sigue sobre lo suyo; sólo «Recargar» la vuelve a montar.
 export function SesionDeLaFormula(props: PropsDeLaSesion) {
   const [formulaId] = useState(props.formulaId)
   const { estado, reintentar } = useLecturaDeLaDefinicion(formulaId)
   if (estado.tipo === 'lista') return <SesionLista {...props} leida={estado.leida} />
-  const cuerpo = (
-    <EstadoDeLaLectura
-      estado={estado}
-      nombreDelOrigen={props.origen.nombre}
-      alReintentar={reintentar}
-    />
-  )
-  return props.avanzado ? (
-    <EditorDeLaFormula
-      nombreDelOrigen={props.origen.nombre}
-      sobre={props.sobre}
-      alVolver={props.alVolver}
-    >
-      {cuerpo}
-    </EditorDeLaFormula>
-  ) : (
+  return (
     <section aria-label="Planilla de la fórmula" className="grid min-w-0 gap-3">
-      {cuerpo}
+      <EstadoDeLaLectura
+        estado={estado}
+        nombreDelOrigen={props.origen.nombre}
+        alReintentar={reintentar}
+      />
     </section>
   )
 }

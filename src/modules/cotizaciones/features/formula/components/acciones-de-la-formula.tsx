@@ -29,7 +29,7 @@ const idsDeLoLeido = (formula: LecturaDeLaFormula) => ({
 // con el borrador que nombró al abrir.
 export function AccionesDeLaFormula({ panel, origen, formula }: Props) {
   const { apertura, publicando, revirtiendo, aRevertir, descartando, aDescartar } =
-    useAperturaDeLaFormula(panel, formula, origen.nombre)
+    useAperturaDeLaFormula(panel, formula)
   const { publicadaId, formulaDelOrigenId } = idsDeLoLeido(formula)
   const montarPublicar = useAbiertoAlgunaVez(publicando)
   const montarRevertir = useAbiertoAlgunaVez(revirtiendo)

@@ -7,6 +7,7 @@ import type * as ModuloDeValidar from '../../../entities/validar'
 import { conElAjuste, formulaDePrueba } from '../../../entities/formula/fila-de-prueba.soporte'
 import { textoVigente } from '../../../entities/formula/texto-vigente'
 import { validarFormula } from '../../../entities/validar'
+import { aplicarEnLaFila } from './aplicar-en-la-fila.soporte'
 import { useEditorDeLaFormula } from './use-editor-de-la-formula'
 
 // «Guardar el borrador» (4.21-3b-1): la action no llega aquí (su composición es del servidor).
@@ -76,55 +77,29 @@ beforeEach(() => {
   vi.mocked(textoVigente).mockClear()
 })
 
-describe('useEditorDeLaFormula: aplicar (T3)', () => {
-  it('aplicar un texto que compila cambia la fórmula de trabajo y cierra la fila', () => {
+describe('useEditorDeLaFormula: cambiar la fórmula de trabajo (T3)', () => {
+  it('lo aplicado cambia la fórmula de trabajo, sus filas y lo que se aplicó', () => {
     const { result } = montar()
-    act(() => {
-      result.current.abrir('base')
-    })
-    expect(result.current.abierta).toEqual({ id: 'base', error: null })
-    act(() => {
-      result.current.aplicar('=remate+flete')
-    })
-    expect(result.current.abierta).toBeNull()
+    const { entro } = aplicarEnLaFila(result, 'base', '=remate+flete')
+    expect(entro).toBe(true)
     expect(textoDe(result, 'base')).toEqual({ modo: 'texto', texto: '=remate+flete' })
     expect(result.current.aplicada).toEqual({ id: 'base', soltados: [] })
   })
 
-  it('un error del compilador deja la fila abierta con su error y la fórmula igual', () => {
+  it('abrir una fila la marca (nada libre) y cerrar la suelta sin cambiar la fórmula', () => {
     const { result } = montar()
+    expect(result.current.libre).toBe(true)
     act(() => {
       result.current.abrir('base')
     })
+    expect(result.current.abierta).toBe('base')
+    expect(result.current.libre).toBe(false)
     act(() => {
-      result.current.aplicar('=remate+nada')
-    })
-    expect(result.current.abierta?.error?.mensaje).toBeTruthy()
-    expect(textoDe(result, 'base')).toEqual({ modo: 'texto', texto: '=remate+fees' })
-  })
-
-  it('4-6: 2.001 caracteres dan el error en la fila sin llamar a validarFormula() ni recalcular las filas; con 2.000 aplica', () => {
-    const { result } = montar()
-    act(() => {
-      result.current.abrir('base')
-    })
-    vi.mocked(validarFormula).mockClear()
-    vi.mocked(textoVigente).mockClear()
-    act(() => {
-      result.current.aplicar('=remate'.padEnd(2001, ' '))
-    })
-    expect(result.current.abierta?.error).toMatchObject({
-      codigo: 'texto_demasiado_largo',
-      mensaje: 'El texto de la fila pasa de 2.000 caracteres.',
-    })
-    expect(validarFormula).not.toHaveBeenCalled()
-    expect(textoVigente).not.toHaveBeenCalled()
-    expect(textoDe(result, 'base')).toEqual({ modo: 'texto', texto: '=remate+fees' })
-    act(() => {
-      result.current.aplicar('=remate'.padEnd(2000, ' '))
+      result.current.cerrar()
     })
     expect(result.current.abierta).toBeNull()
-    expect(validarFormula).toHaveBeenCalledTimes(1)
+    expect(result.current.libre).toBe(true)
+    expect(textoDe(result, 'base')).toEqual({ modo: 'texto', texto: '=remate+fees' })
   })
 
   it('volver a dibujar sin cambiar la fórmula (abrir una fila, tipear en ella) no recalcula las filas ni valida', () => {
@@ -146,67 +121,35 @@ describe('useEditorDeLaFormula: pisar un ⚙ y validar (T3)', () => {
   it('4-5: con el texto que ya no manda, recompilar no pisa el ⚙ hasta «Pisar el valor»', () => {
     const { result } = montar(leidaDe(conElAjuste(formula(), 'total__2', -0.03)))
     expect(textoDe(result, 'total')).toMatchObject({ modo: 'no_manda' })
-    act(() => {
-      result.current.abrir('total')
-    })
-    act(() => {
-      result.current.aplicar('=(remate+fees)*4%')
-    })
-    expect(result.current.abierta?.error).toMatchObject({
-      codigo: 'pisa_un_valor',
-      cambios: [{ id: 'total__2', guardado: -0.03, nuevo: 0.04 }],
+    const sinPisar = aplicarEnLaFila(result, 'total', '=(remate+fees)*4%')
+    expect(sinPisar.r).toMatchObject({
+      ok: false,
+      error: {
+        codigo: 'pisa_un_valor',
+        cambios: [{ id: 'total__2', guardado: -0.03, nuevo: 0.04 }],
+      },
     })
     expect(textoDe(result, 'total')).toMatchObject({ modo: 'no_manda' })
-    act(() => {
-      result.current.aplicar('=(remate+fees)*4%', true)
-    })
-    expect(result.current.abierta).toBeNull()
+    aplicarEnLaFila(result, 'total', '=(remate+fees)*4%', true)
     expect(textoDe(result, 'total')).toEqual({ modo: 'texto', texto: '=(remate+fees)*4%' })
   })
 
   it('un texto que compila y deja la fórmula inválida aplica y pone el rechazo en su fila', () => {
     const { result } = montar()
     expect(result.current.rechazo).toBeNull()
-    act(() => {
-      result.current.abrir('total')
-    })
-    act(() => {
-      result.current.aplicar('SI(b; remate)')
-    })
-    expect(result.current.abierta).toBeNull()
+    aplicarEnLaFila(result, 'total', 'SI(b; remate)')
     expect(result.current.rechazo).toEqual({
       mensaje: expect.stringContaining('El total «total» no puede depender') as unknown as string,
       filaId: 'total',
       grupoId: null,
     })
   })
-
-  it('una fila abierta: abrir otra no la cambia; cancelar la cierra sin cambiar nada', () => {
-    const { result } = montar()
-    act(() => {
-      result.current.abrir('base')
-    })
-    act(() => {
-      result.current.abrir('total')
-    })
-    expect(result.current.abierta?.id).toBe('base')
-    act(() => {
-      result.current.cancelar()
-    })
-    expect(result.current.abierta).toBeNull()
-    expect(textoDe(result, 'base')).toEqual({ modo: 'texto', texto: '=remate+fees' })
-  })
 })
 
 describe('useEditorDeLaFormula: el borrador local (T3)', () => {
   it('lo aplicado se repone al volver a abrir la misma versión, con «Descartar»; otra versión no', () => {
     const primero = montar()
-    act(() => {
-      primero.result.current.abrir('base')
-    })
-    act(() => {
-      primero.result.current.aplicar('=remate+flete')
-    })
+    aplicarEnLaFila(primero.result, 'base', '=remate+flete')
     primero.unmount()
 
     const segundo = montar()
@@ -220,12 +163,7 @@ describe('useEditorDeLaFormula: el borrador local (T3)', () => {
     segundo.unmount()
 
     const tercero = montar()
-    act(() => {
-      tercero.result.current.abrir('base')
-    })
-    act(() => {
-      tercero.result.current.aplicar('=remate+flete')
-    })
+    aplicarEnLaFila(tercero.result, 'base', '=remate+flete')
     tercero.unmount()
     const otra = montar(leidaDe(formula(), '2026-11-07T16:00:00.000001+00:00'))
     expect(textoDe(otra.result, 'base')).toEqual({ modo: 'texto', texto: '=remate+fees' })

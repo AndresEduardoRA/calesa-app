@@ -14,4 +14,25 @@ export const DRAWERS_DE_LA_FORMULA: Record<string, RegistroDeDrawer> = {
       'src/modules/cotizaciones/features/formula/components/hoja/cuerpo-del-ajuste-de-la-cabecera.tsx',
     mecanismo: 'contexto',
   },
+  // Los paneles de la planilla (D20): cada formulario pide `preguntaAlCerrar` y su pie es `<PieDelPanel>`.
+  'src/modules/cotizaciones/features/formula/components/planilla/paneles/panel-de-la-banda.tsx': {
+    formulario:
+      'src/modules/cotizaciones/features/formula/components/planilla/comunes/formulario-del-grupo.tsx',
+    mecanismo: 'contexto',
+  },
+  'src/modules/cotizaciones/features/formula/components/planilla/paneles/panel-del-total.tsx': {
+    formulario:
+      'src/modules/cotizaciones/features/formula/components/planilla/paneles/formulario-del-total.tsx',
+    mecanismo: 'contexto',
+  },
+  'src/modules/cotizaciones/features/formula/components/planilla/paneles/panel-del-tipo-de-celda.tsx':
+    {
+      formulario:
+        'src/modules/cotizaciones/features/formula/components/planilla/paneles/marco-del-tipo.tsx',
+      mecanismo: 'contexto',
+    },
+  'src/modules/cotizaciones/features/formula/components/planilla/paneles/panel-como-se-escribe.tsx':
+    {
+      sinFormulario: 'La ayuda de cómo se escribe una fórmula: sólo lectura.',
+    },
 }

@@ -1,5 +1,5 @@
-// El catálogo de colores (tabla `tonos`) del editor de la fórmula, desde el navegador y con la sesión de quien edita: la sección «Grupos» del Modo avanzado (4.21-3c)
-// y las bandas de la planilla, que se pintan con sus colores (claro y oscuro, por `<EstiloDeTonos>`). Una lectura al montarse. La policy `tonos: leer` la abre a todo
+// El catálogo de colores (tabla `tonos`) del editor de la fórmula, desde el navegador y con la sesión de quien edita: el color de una banda en su panel y las
+// bandas de la planilla, que se pintan con sus colores (claro y oscuro, por `<EstiloDeTonos>`). Una lectura al montarse. La policy `tonos: leer` la abre a todo
 // `authenticated`; el catálogo no pasa de 48 (`_tonos_tope()`).
 import { z } from 'zod'
 import { errorDePostgrest, fallo, ok, type Resultado } from '@/shared/lib/errores'

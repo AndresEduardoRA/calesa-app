@@ -1,35 +1,28 @@
 'use client'
 
-import { Button } from '@/shared/ui/button'
 import { EstiloDeTonos } from '@/shared/ui/xcell'
-import { usePlanilla } from '../../hooks/use-planilla'
-import { GuardarBorrador } from '../editor/guardar-borrador'
-import { RechazoDeArriba } from '../editor/rechazo-de-arriba'
-import { BarraDeFormula } from './barra-de-formula'
-import { TablaDeLaPlanilla } from './tabla-de-la-planilla'
+import { usePlanilla, type Planilla } from '../../hooks/use-planilla'
+import { BarraDeFormula } from './barra/barra-de-formula'
+import { GuardarBorrador } from './comunes/guardar-borrador'
+import { RechazoDeArriba } from './comunes/rechazo-de-arriba'
+import { CuadriculaDeLaPlanilla } from './cuadricula'
+import { LeyendaDeTipos } from './menu/leyenda-de-tipos'
+import { MenuDeLaPlanilla } from './menu/menu-de-la-planilla'
+import { PanelesDeLaPlanilla } from './paneles/paneles-de-la-planilla'
 import { TarjetaDeLaUnidad } from './tarjeta-de-la-unidad'
 import type { PropsDeLaPlanilla } from './tipos'
 import { TotalesDeLaUnidad } from './totales-de-la-unidad'
 
 const SIN_TONOS: never[] = []
 
-// Arriba de la planilla: sobre qué versión se edita, «Modo avanzado», «Guardar el borrador», la frase de V1 y, si las celdas de la fórmula esperan, por qué.
-function CabeceraDeLaPlanilla(
-  p: PropsDeLaPlanilla & { motivo: string | null; idDelMotivo: string },
-) {
+// Arriba de la planilla: sobre qué versión se edita, su «⋯», «Guardar el borrador» y cómo se escribe en ella.
+function CabeceraDeLaPlanilla({ p, planilla }: { p: PropsDeLaPlanilla; planilla: Planilla }) {
   const { guardado } = p.editor
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">{p.sobre}</p>
-        <Button
-          type="button"
-          variant="outline"
-          className="min-h-11 md:min-h-9"
-          onClick={p.alAbrirAvanzado}
-        >
-          Modo avanzado
-        </Button>
+        <MenuDeLaPlanilla planilla={planilla} />
       </div>
       <GuardarBorrador
         nombreDelOrigen={p.origen.nombre}
@@ -44,60 +37,40 @@ function CabeceraDeLaPlanilla(
         alRecargar={p.alRecargar}
       />
       <p className="text-(length:--text-sm) text-(--color-ink)">
-        Las celdas que se editan están marcadas. Todo lo demás se calcula, igual que en la planilla.
-      </p>
-      <p
-        id={p.idDelMotivo}
-        className={
-          p.motivo === null ? 'sr-only' : 'text-(length:--text-sm) text-(--color-ink-soft)'
-        }
-      >
-        {p.motivo === null ? '' : `Las celdas de la fórmula esperan: ${p.motivo}`}
+        Elige una celda y escribe, como en una hoja de cálculo: un número es un valor fijo y lo que
+        empieza con «=» es un cálculo.
       </p>
     </>
   )
 }
 
-// La planilla de la fórmula (glosario: «Planilla de la fórmula»; la vista por defecto de la pestaña): la fórmula de trabajo como la planilla de V1, con filas numeradas
-// en bandas (A · concepto, B · %, C · valor, D · de dónde sale), las celdas que se editan marcadas y la barra de fórmula arriba; al costado (cuando la planilla
-// mide 72 rem o más; si no, debajo), «Totales» y la tarjeta en vivo con la unidad de ejemplo. Hace lo que el Modo avanzado sobre la misma fórmula de trabajo: lo aplicado en uno
-// se ve en el otro. «Guardar el borrador» arriba, como en el Modo avanzado.
+// La planilla de la fórmula (glosario: «Planilla de la fórmula»; la única forma de editarla): la fórmula de trabajo como una hoja de cálculo, con la leyenda de los
+// tipos de celda y la barra de fórmula arriba, la cuadrícula (# · A concepto · B % · C valor · D de dónde sale) en bandas y, al costado cuando hay lugar (si no,
+// debajo), «Totales» y la tarjeta en vivo con la unidad de ejemplo. Los paneles (bandas, total, tipo de celda, ayuda) viven en la URL.
 export function PlanillaDeLaFormula(p: PropsDeLaPlanilla) {
   const { editor } = p
   const planilla = usePlanilla(p)
-  const tonos = planilla.deLasBandas.tonos
-  const motivo = planilla.ctx.motivo
+  const tonos = planilla.bandas.tonos.estado
   return (
     <section aria-label="Planilla de la fórmula" className="@container/formula grid min-w-0 gap-3">
       <EstiloDeTonos tonos={tonos.tipo === 'listo' ? tonos.tonos : SIN_TONOS} />
-      <CabeceraDeLaPlanilla {...p} motivo={motivo} idDelMotivo={planilla.ctx.idDelMotivo} />
+      <CabeceraDeLaPlanilla p={p} planilla={planilla} />
       <RechazoDeArriba rechazo={editor.rechazo} />
-      {/* Al costado sólo si la planilla tiene lugar (un contenedor, no la pantalla: con el texto al 200 % o la columna de Configuración, la tabla no se aprieta). */}
+      {/* Al costado sólo si la planilla tiene lugar (un contenedor, no la pantalla: con el texto al 200 % o la columna de Configuración, la cuadrícula no se aprieta). */}
       <div className="grid min-w-0 gap-4 @6xl/formula:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
         <div className="grid min-w-0 content-start gap-3">
+          <LeyendaDeTipos />
           <BarraDeFormula
-            {...planilla.barra}
-            alAbrir={editor.abrir}
-            alAplicar={editor.aplicar}
-            alCancelar={editor.cancelar}
-            alSumarDebajo={editor.sumarDebajo}
+            planilla={planilla}
+            puedeCambiarTiposDeCambio={p.puedeCambiarTiposDeCambio}
           />
-          <TablaDeLaPlanilla
-            nombreDelOrigen={p.origen.nombre}
-            bandas={planilla.bandas}
-            ctx={planilla.ctx}
-            deLasBandas={planilla.deLasBandas}
-            busqueda={planilla.busqueda}
-            alBuscar={planilla.setBusqueda}
-            sinCoincidencias={planilla.visibles.sinCoincidencias}
-            hayMas={planilla.visibles.hayMas}
-          />
+          <CuadriculaDeLaPlanilla planilla={planilla} nombreDelOrigen={p.origen.nombre} />
         </div>
         <aside aria-label="Totales y tarjeta" className="grid min-w-0 content-start gap-4">
           <TotalesDeLaUnidad
             lectura={editor.lectura}
-            vista={planilla.vista}
-            lineas={planilla.lineas}
+            vista={planilla.calculo.vista}
+            lineas={planilla.calculo.lineas}
             rechazo={editor.rechazo}
             nombreDelOrigen={p.origen.nombre}
             alReintentar={editor.reintentarLaLectura}
@@ -107,14 +80,15 @@ export function PlanillaDeLaFormula(p: PropsDeLaPlanilla) {
             formulaDelOrigenId={p.formulaDelOrigenId}
             tarjeta={p.tarjeta}
             TarjetaEnVivo={p.TarjetaEnVivo}
-            vista={planilla.vista}
-            modos={planilla.modos}
+            vista={planilla.calculo.vista}
+            modos={planilla.calculo.modos}
             modo={p.modo}
             alElegirModo={p.alElegirModo}
             verTotalBs={planilla.verTotalBs}
           />
         </aside>
       </div>
+      <PanelesDeLaPlanilla planilla={planilla} origen={p.origen} tiposDeCambio={p.tiposDeCambio} />
     </section>
   )
 }

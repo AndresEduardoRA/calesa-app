@@ -9,19 +9,9 @@ import { motivoParaNoAbrirRevertir, versionParaRevertir } from '../../../entitie
 import type { LecturaDeLaFormula } from '../../../entities/formula/versiones'
 import type { PanelDeLaFormula } from './use-panel-de-la-formula'
 
-type Modo = 'publicar' | 'revertir' | 'descartar' | 'editar' | null
+type Modo = 'publicar' | 'revertir' | 'descartar' | null
 
-function motivoDe(
-  modo: Modo,
-  panel: PanelDeLaFormula,
-  formula: LecturaDeLaFormula,
-  origen: string,
-) {
-  if (modo === 'editar') {
-    return formula.borrador || formula.publicada
-      ? null
-      : `No hay una fórmula para editar en ${origen}.`
-  }
+function motivoDe(modo: Modo, panel: PanelDeLaFormula, formula: LecturaDeLaFormula) {
   if (modo === 'publicar') {
     return motivoParaNoAbrirPublicar(formula)
   }
@@ -45,26 +35,19 @@ function modoDe(panel: PanelDeLaFormula): Modo {
   if (panel.revirtiendo) {
     return 'revertir'
   }
-  if (panel.editando) {
-    return 'editar'
-  }
   return panel.descartando ? 'descartar' : null
 }
 
 // Qué modal de la pestaña «Fórmula» abre según la URL. Se revisa una vez, al llegar: lo que no se puede abrir (publicar sin borrador o con uno atrasado; revertir sin
-// publicada, la publicada o una versión que no está en la lista; descartar sin borrador; editar sin borrador ni publicada) no abre, se avisa y la URL se limpia. La versión que se revierte se fija al
+// publicada, la publicada o una versión que no está en la lista; descartar sin borrador) no abre, se avisa y la URL se limpia. La versión que se revierte se fija al
 // abrir (`useUltimo`): tras «Recargar» sigue siendo la misma aunque la lista ya no la traiga. El borrador que se descarta, igual: tras descartarlo, el diálogo que se
 // va sigue nombrándolo.
-export function useAperturaDeLaFormula(
-  panel: PanelDeLaFormula,
-  formula: LecturaDeLaFormula,
-  origen: string,
-) {
+export function useAperturaDeLaFormula(panel: PanelDeLaFormula, formula: LecturaDeLaFormula) {
   const modo = modoDe(panel)
   const apertura = useApertura(modo !== null)
   const rechazada = useRevisionAlAbrir(
     modo === null ? null : `${String(apertura)}:${modo}:${panel.versionPedida ?? ''}`,
-    motivoDe(modo, panel, formula, origen),
+    motivoDe(modo, panel, formula),
     panel.cerrar,
   )
   const aRevertir = useUltimo(
