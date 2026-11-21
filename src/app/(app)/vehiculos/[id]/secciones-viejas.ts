@@ -1,5 +1,5 @@
 // Los enlaces de siempre a un bloque que dejó la derecha de la ficha del vehículo (`docs/UX.md` › «Vehículo»): `?seccion=fotos` abre el visor,
-// `?seccion=ficha` la ficha completa, y `documentos`, `fase` y `repuestos` llevan a su página si quien mira la ve (si no, la ficha se queda arriba).
+// `?seccion=ficha` la ficha completa, `?seccion=vitrina` el panel «Publicar en la web…» (`?panel=vitrina`), y `documentos`, `fase` y `repuestos` llevan a su página si quien mira la ve (si no, la ficha se queda arriba).
 // Puro: la página lee los permisos y arma las rutas de otros módulos; acá sólo se decide. Cada destino reemplaza la entrada del historial (`redirigir()`).
 import { z } from 'zod'
 import { CLAVE_DE_SECCION } from './bloques'
@@ -8,9 +8,11 @@ type Parametros = Readonly<Record<string, string | string[] | undefined>>
 
 const CLAVE_DEL_VISOR = 'visor'
 const CLAVE_DE_LA_FOTO = 'foto'
+const CLAVE_DEL_PANEL = 'panel'
+const PANEL_DE_VITRINA = 'vitrina'
 
 // Las secciones que redirigen sin leer nada y las que piden el permiso de su destino.
-const SIN_LEER = ['fotos', 'ficha'] as const
+const SIN_LEER = ['fotos', 'ficha', 'vitrina'] as const
 const CON_PERMISOS = ['documentos', 'fase', 'repuestos'] as const
 export type SeccionConPermisos = (typeof CON_PERMISOS)[number]
 
@@ -46,8 +48,8 @@ function mismaFichaCon(
 }
 
 /**
- * A dónde redirige `?seccion=fotos|ficha` antes de leer el vehículo, o null: `fotos`, a la misma ficha con el visor en la primera foto
- * (`?visor=<id>&foto=1`); `ficha`, a la misma ficha con la ficha completa abierta (`?ver=ficha`). Conserva los demás parámetros. Si el vehículo no
+ * A dónde redirige `?seccion=fotos|ficha|vitrina` antes de leer el vehículo, o null: `fotos`, a la misma ficha con el visor en la primera foto
+ * (`?visor=<id>&foto=1`); `ficha`, a la misma ficha con la ficha completa abierta (`?ver=ficha`); `vitrina`, con el panel de la vitrina (`?panel=vitrina`). Conserva los demás parámetros. Si el vehículo no
  * existe o no se ve, la página dice «No existe o no tienes acceso» después de la redirección, como en cualquier ficha.
  */
 export function destinoSinLeer(
@@ -65,6 +67,9 @@ export function destinoSinLeer(
       [CLAVE_DEL_VISOR]: vehiculoId,
       [CLAVE_DE_LA_FOTO]: '1',
     })
+  }
+  if (seccion === 'vitrina') {
+    return mismaFichaCon(vehiculoId, parametros, { [CLAVE_DEL_PANEL]: PANEL_DE_VITRINA })
   }
   return seccion === 'ficha'
     ? mismaFichaCon(vehiculoId, parametros, { [fichaCompleta.clave]: fichaCompleta.valor })

@@ -14,10 +14,8 @@ Inventario de vehículos por origen con atributos dinámicos: listado con filtro
   sólo si la superficie la ofrece); `DatosPrincipalesDelVehiculo` (los datos clave del origen con `entities/datos-clave-del-vehiculo.ts`, y «Ver más»: la ficha completa,
   `features/ficha/components/ficha-completa/`, diferida, en `?ver=ficha`, que lee las fotos y `useLayoutActivo` de `origenes` al abrirse). A la derecha el
   índice y sólo lo de ventas, por permiso, que compone `src/app` con `cotizaciones` y `actividad`: «Cotizaciones de este vehículo», «Relacionados»,
-  «Actividad reciente» y `BloqueDeVitrina` (`features/vitrina/components/bloque-de-vitrina.tsx`, siempre: con `previa`, el permiso, los nombres del motivo
-  y sólo los campos públicos de la tarjeta; «Editar» o «Publicar en la web…» abren `?panel=vitrina`, sin `vehiculos.vitrina` no hay botón; la vista previa
-  plegada en un `<details>`). `?seccion=<bloque>` lleva a su bloque si quien mira lo ve —si no, se queda arriba—; las de lo que se fue redirigen
-  (`secciones-viejas.ts` de la ruta: `fotos` al visor, `ficha` a `?ver=ficha` —`CLAVE_DE_FICHA_COMPLETA` y `FICHA_COMPLETA` salen por `index.ts`—,
+  «Actividad reciente» (la vitrina no es un bloque: se publica en el panel `?panel=vitrina` y se ve en el botón de la foto y en la insignia). `?seccion=<bloque>` lleva a su bloque si quien mira lo ve —si no, se queda arriba—; las de lo que se fue redirigen
+  (`secciones-viejas.ts` de la ruta: `fotos` al visor, `vitrina` a `?panel=vitrina`, `ficha` a `?ver=ficha` —`CLAVE_DE_FICHA_COMPLETA` y `FICHA_COMPLETA` salen por `index.ts`—,
   `documentos`/`fase` a logística y `repuestos` al proyecto, con su permiso); los paneles de «Relacionados» y `?relacionados=` llevan a «Relacionados»). Paneles: `?panel=nuevo`, `?editar=<id>`,
   `?panel=vitrina`, `?panel=imagenes`, `?panel=actualizar-datos`, `?panel=desvincular` (con `&luego=papelera`, desde el aviso «Quitar el vínculo»: el aviso de desvinculado ofrece la papelera),
   `?panel=purgar&lote=`. Layout, categorías y orígenes (`origenes`), fases (`flujos`) y vistas guardadas

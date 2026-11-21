@@ -18,33 +18,37 @@ const anclas = (permisos: Permisos) => bloquesDeQuienMira(permisos, ORIGEN).map(
 const TODOS: Permisos = [de('cotizaciones.ver', ORIGEN), de('leads.ver'), de('actividad.ver')]
 
 describe('los bloques de la ficha de un vehículo', () => {
-  it('con todo, los cuatro de ventas en el orden del índice', () => {
-    expect(anclas(TODOS)).toEqual(['cotizaciones', 'relacionados', 'actividad', 'vitrina'])
+  it('con todo, los tres de ventas en el orden del índice', () => {
+    expect(anclas(TODOS)).toEqual(['cotizaciones', 'relacionados', 'actividad'])
     expect(BLOQUES_DE_LA_FICHA.map((b) => b.ancla)).toEqual(anclas(TODOS))
     expect(BLOQUES_DE_LA_FICHA.map((b) => b.etiqueta)).toEqual([
       'Cotizaciones',
       'Relacionados',
       'Actividad',
-      'Vitrina',
     ])
   })
 
-  it('sin nada, «Vitrina»: el índice nunca queda vacío', () => {
-    expect(anclas([])).toEqual(['vitrina'])
+  it('«Vitrina» ya no es un bloque: ni con todos los permisos', () => {
+    expect(anclas([...TODOS, de('vehiculos.vitrina', ORIGEN)])).not.toContain('vitrina')
+    expect(BLOQUES_DE_LA_FICHA.map((b) => b.ancla)).not.toContain('vitrina')
+  })
+
+  it('sin nada, ninguno (sin índice)', () => {
+    expect(anclas([])).toEqual([])
   })
 
   it('cada bloque por su permiso, solo', () => {
-    expect(anclas([de('cotizaciones.ver', ORIGEN)])).toEqual(['cotizaciones', 'vitrina'])
-    expect(anclas([de('leads.ver')])).toEqual(['relacionados', 'vitrina'])
-    expect(anclas([de('actividad.ver')])).toEqual(['actividad', 'vitrina'])
+    expect(anclas([de('cotizaciones.ver', ORIGEN)])).toEqual(['cotizaciones'])
+    expect(anclas([de('leads.ver')])).toEqual(['relacionados'])
+    expect(anclas([de('actividad.ver')])).toEqual(['actividad'])
   })
 
   it('`cotizaciones.ver` cuenta sólo en el origen del vehículo', () => {
-    expect(anclas([de('cotizaciones.ver', OTRO)])).toEqual(['vitrina'])
+    expect(anclas([de('cotizaciones.ver', OTRO)])).toEqual([])
   })
 
   it('lo de logística y repuestos ya no abre ningún bloque', () => {
-    expect(anclas([de('logistica.ver', ORIGEN), de('repuestos.ver')])).toEqual(['vitrina'])
+    expect(anclas([de('logistica.ver', ORIGEN), de('repuestos.ver')])).toEqual([])
   })
 
   it('«Actividad reciente» lee en el servidor con su archivo', () => {
@@ -62,13 +66,20 @@ describe('a qué bloque lleva la URL', () => {
   })
 
   it('cada `?seccion=` de un bloque, a su bloque', () => {
-    for (const seccion of ['cotizaciones', 'relacionados', 'actividad', 'vitrina']) {
+    for (const seccion of ['cotizaciones', 'relacionados', 'actividad']) {
       expect(anclaDeLaUrl(url({ seccion }), visibles)).toBe(seccion)
     }
   })
 
   it('las secciones que se fueron no llevan a ningún ancla', () => {
-    expect(SECCIONES_QUE_SE_FUERON).toEqual(['fotos', 'ficha', 'documentos', 'fase', 'repuestos'])
+    expect(SECCIONES_QUE_SE_FUERON).toEqual([
+      'fotos',
+      'ficha',
+      'vitrina',
+      'documentos',
+      'fase',
+      'repuestos',
+    ])
     for (const seccion of SECCIONES_QUE_SE_FUERON) {
       expect(anclaDeLaUrl(url({ seccion }), visibles), seccion).toBeNull()
     }
@@ -92,8 +103,8 @@ describe('a qué bloque lleva la URL', () => {
   })
 
   it('`seccion` gana a `panel`', () => {
-    expect(anclaDeLaUrl(url({ seccion: 'vitrina', panel: 'desvincular' }), visibles)).toBe(
-      'vitrina',
+    expect(anclaDeLaUrl(url({ seccion: 'actividad', panel: 'desvincular' }), visibles)).toBe(
+      'actividad',
     )
   })
 })

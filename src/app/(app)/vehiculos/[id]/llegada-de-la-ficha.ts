@@ -19,7 +19,7 @@ type Parametros = Awaited<PageProps<'/vehiculos/[id]'>['searchParams']>
 // La llegada a la ficha del vehículo por un enlace viejo a un bloque que se fue (`secciones-viejas.ts`). Cada redirección reemplaza la entrada del
 // historial y corta la página (`redirigir()`: nunca dentro de un `try`).
 
-/** `?seccion=fotos|ficha`: antes de leer el vehículo, al visor o a la ficha completa de la misma ficha. */
+/** `?seccion=fotos|ficha|vitrina`: antes de leer el vehículo, al visor, a la ficha completa o al panel de la vitrina de la misma ficha. */
 export function redirigirSinLeer(vehiculoId: string, parametros: Parametros): void {
   const destino = destinoSinLeer(vehiculoId, parametros, {
     clave: CLAVE_DE_FICHA_COMPLETA,

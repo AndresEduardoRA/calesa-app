@@ -103,14 +103,6 @@ function costoDe(
   return puede(permisos, 'cotizaciones.ver', origenId) ? { cotizar } : null
 }
 
-// Los campos públicos que trae la tarjeta de la vitrina: lo único del layout que necesita «Vitrina» (el layout entero ya viaja con el panel).
-function camposPublicosDe(
-  campos: Awaited<ReturnType<typeof lecturasDeLaFicha>>['suLayout']['campos'],
-  previa: Awaited<ReturnType<typeof lecturasDeLaFicha>>['previa'],
-) {
-  return previa === null ? [] : campos.filter((campo) => campo.clave in previa.tarjeta.atributos)
-}
-
 type Sesion = Awaited<ReturnType<typeof requerirSesion>>
 
 // La cabecera de la columna izquierda, con lo que la página resolvió: la vitrina y el «⋯» sobre la foto y los enlaces cortos.
@@ -161,9 +153,8 @@ function ResumenDeLaFicha({
 }
 
 // La ficha de un vehículo en dos columnas (docs/UX.md › Vehículo): a la izquierda lo que lo identifica (cabecera, subasta y costo, y datos
-// principales); a la derecha, el índice y sólo lo de ventas que quien mira ve (`bloques.ts`): cotizaciones, relacionados, actividad y
-// vitrina. `?seccion=` de un bloque y los paneles de «Relacionados» llevan a su bloque; los de un bloque que se fue redirigen (`llegada-de-la-ficha.ts`:
-// `fotos` y `ficha` antes de leer, `documentos`, `fase` y `repuestos` con el permiso de su página); `?editar=`, `?panel=vitrina`,
+// principales); a la derecha, el índice y sólo lo de ventas que quien mira ve (`bloques.ts`): cotizaciones, relacionados y actividad. `?seccion=` de un bloque y los paneles de «Relacionados» llevan a su bloque; los de un bloque que se fue redirigen (`llegada-de-la-ficha.ts`:
+// `fotos`, `ficha` y `vitrina` antes de leer, `documentos`, `fase` y `repuestos` con el permiso de su página); `?editar=`, `?panel=vitrina`,
 // `?panel=fechas-de-subasta`, `?ver=ficha` y `?visor=` abren lo suyo.
 export default async function PaginaVehiculo({
   params,
@@ -209,15 +200,10 @@ export default async function PaginaVehiculo({
         <BloquesDeLaFicha
           visibles={visibles}
           vehiculo={encontrado}
-          origen={origen}
           permisos={sesion.permisos}
           ofrecerPapelera={lectura.ofrecerPapelera}
           avisos={avisos}
           cotizar={cotizar}
-          previa={previa}
-          publicar={publicar}
-          fase={fase}
-          camposPublicos={camposPublicosDe(suLayout.campos, previa)}
         />
       </FichaEnDosColumnas>
       <LlegarAlBloque ancla={anclaDe(parametros, visibles)} />
