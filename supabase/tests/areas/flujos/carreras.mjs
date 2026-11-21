@@ -3,7 +3,9 @@
 // configurar el flujo recibe 42501 sin esperar (el permiso va antes del candado, `_flujo_para_editar`). K3: ese candado (`for no key update`)
 // no frena el key share de las FK de un cambio de fase. K4 (5.01-2): `fase_eliminar` toma la fase `for update` y espera a un cambio de fase que
 // entra en ella; cuenta lo que dejó y jubila (sin el candado contaría cero y caería con el 23503 crudo de la FK). Terreno con el prefijo «Carreras»: el origen
-// (con su flujo y sus fases en cascada) y el rol los borra `limpiar()` de `scripts/carreras/terreno.mjs`. Las corre `scripts/carreras.mjs` (`pnpm db:carreras`).
+// (con su flujo y sus fases en cascada) y el rol los borra `limpiar()` de `scripts/carreras/terreno.mjs`. K5: dos `flujo_copiar_fases` al mismo destino
+// vacío con la misma versión; B espera el candado del destino y recibe PT409: las fases quedan una sola vez. K6: A→B y B→A a la vez (A con fases, B
+// vacío); los candados van en orden de id, así que B espera y recibe 23514 (su destino ya tiene fases), nunca 40P01. Las corre `scripts/carreras.mjs` (`pnpm db:carreras`).
 import { PERSONAS, PREFIJO, comoPersona } from '../../../../scripts/carreras/terreno.mjs'
 
 const { duena, supervision } = PERSONAS
@@ -53,6 +55,31 @@ async function terrenoDeFases(db) {
   ])
   return { flujo: flujo.id, fase: fase.id }
 }
+
+// Un origen más de las carreras, con su flujo vacío (sin fases: lo que `flujo_copiar_fases` acepta como destino).
+async function flujoVacio(db, clave) {
+  const {
+    rows: [origen],
+  } = await db.query(`insert into public.origenes (clave, nombre) values ($1, $2) returning id`, [
+    `carreras_flujos_${clave}`,
+    `${PREFIJO} flujos ${clave}`,
+  ])
+  return (await db.query(`select id from public.flujos where origen_id = $1`, [origen.id])).rows[0]
+    .id
+}
+
+const copiar = (persona, destino, version, desde) => ({
+  persona,
+  sql: 'public.flujo_copiar_fases($1, $2, $3)::text',
+  args: [destino, version, desde],
+})
+
+const fasesDe = async (db, flujo) =>
+  (
+    await db.query(`select nombre from public.fases where flujo_id = $1 order by orden, nombre`, [
+      flujo,
+    ])
+  ).rows.map((f) => f.nombre)
 
 const nombreDe = async (db, fase) =>
   (await db.query(`select nombre from public.fases where id = $1`, [fase])).rows[0].nombre
@@ -205,5 +232,44 @@ export async function carrerasDeFases({ orquesta, carrera, espero, conectar }) {
       await orquesta.query(`delete from public.historial_fases where vehiculo_id = $1`, [veh.id])
       await orquesta.query(`delete from public.vehiculos where id = $1`, [veh.id])
     }
+  }
+
+  console.log('Dos copias de fases al mismo destino vacío con la misma versión')
+  {
+    const destino = await flujoVacio(orquesta, 'k5')
+    const v = await versionDelFlujo(orquesta, destino)
+    const r = await carrera(orquesta, {
+      a: copiar(duena, destino, v, flujo),
+      b: copiar(duena, destino, v, flujo),
+    })
+    const activas = (
+      await orquesta.query(
+        `select nombre from public.fases where flujo_id = $1 and activa order by orden, nombre`,
+        [flujo],
+      )
+    ).rows.map((f) => f.nombre)
+    const copiadas = await fasesDe(orquesta, destino)
+    espero(
+      'K5: A copia; B esperó el candado del destino y recibe PT409; las fases quedan una sola vez; sin 40P01',
+      r.a.ok &&
+        r.b.codigo === 'PT409' &&
+        r.b.mensaje === CONFLICTO &&
+        JSON.stringify(copiadas) === JSON.stringify(activas),
+      { r, copiadas, activas },
+    )
+  }
+
+  console.log('Dos copias cruzadas a la vez: A→B y B→A')
+  {
+    const vacio = await flujoVacio(orquesta, 'k6')
+    const r = await carrera(orquesta, {
+      a: copiar(duena, vacio, await versionDelFlujo(orquesta, vacio), flujo),
+      b: copiar(duena, flujo, await versionDelFlujo(orquesta, flujo), vacio),
+    })
+    espero(
+      'K6: A copia; B esperó en el orden de id y recibe 23514 (su destino ya tiene fases), ninguna termina en 40P01',
+      r.a.ok && r.b.codigo === '23514' && r.b.hint === 'destino',
+      r,
+    )
   }
 }
