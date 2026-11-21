@@ -340,8 +340,10 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
   tope de 40 ítems, `demasiados_items`, primero tras la forma); juegos `casos-de-{formula,diseno}.json` (regla nueva = su caso).
 - La plantilla: `validar_plantilla()` (`docs/COTIZADOR.md` › «Plantilla de tarjeta (PDF)»), espejo `entities/plantilla/validar-plantilla.ts` (code points,
   `btrim`, orden C, tope en bytes del texto jsonb, sin prototipo) con su juego `casos-de-plantilla.json`; dos formas: la de grupos (`forma-de-plantilla.ts`,
-  `nodos-de-plantilla.ts`) y la cuadrícula (`forma-de-cuadricula.ts`, `celdas-de-cuadricula.ts`, `reglas-de-la-grilla.ts`, `nodos-de-cuadricula.ts`; tipos y
-  topes en el núcleo, `entities/cuadricula-de-la-tarjeta.ts`). La conversión de la forma 1 (`convertir-plantilla.ts`, `armado-de-la-conversion.ts`,
+  `nodos-de-plantilla.ts`) y la cuadrícula (`forma-de-cuadricula.ts`, `celdas-de-cuadricula.ts`, `condiciones-de-cuadricula.ts` —la forma de la lista de
+  respaldo y de las condiciones—, `reglas-de-la-grilla.ts`, `nodos-de-cuadricula.ts`; todo dato que nombra, aplanado, en `datos-de-la-cuadricula.ts`
+  (`datosNombrados()`, espejo `_plantilla_cuadricula_datos()`); tipos y topes en el núcleo, `entities/cuadricula-de-la-tarjeta.ts`). Lo que se dibuja de una
+  lista o unas condiciones lo resuelve `entities/tarjeta/condiciones-de-la-celda.ts` (`resolverElContenido()`, sobre `valor-del-dato.ts`) antes de la geometría. La conversión de la forma 1 (`convertir-plantilla.ts`, `armado-de-la-conversion.ts`,
   `grupos-de-la-conversion.ts`, `ids-de-la-conversion.ts`, `altos-de-la-conversion.ts`), espejo `_plantilla_convertir()`, con su juego `casos-de-conversion.json`
   (lo genera `casos-de-conversion.test.ts` con `ACTUALIZAR_CASOS=1`; Prettier no lo toca). **Lo que va a un `jsonb` o `text` pasa por
   `revisarTextoParaLaBase()`** (un `\u0000`, un surrogate suelto o más de 8 niveles no los lee la base). Los dos ayudantes de un validador espejo están en el
@@ -349,6 +351,8 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
   `entities/texto-de-la-base.ts` (`revisarTextoParaLaBase(valor, { raiz })`).
 - El editor de la tarjeta (área `plantilla`): sus operaciones puras en `entities/plantilla/edicion/` (mapa de la grilla, selección, contenido, estilo,
   combinar, insertar, eliminar, portapapeles, topes medidos, ids, historial, atajos, disposición de la capa y el reductor que las une, cada una con su test).
+  Las condiciones: `condiciones.ts` (la condición a medio armar, sus motivos y topes), `borradores-de-la-celda.ts` (la lista y las ramas en borrador, y
+  completarlas), `frases-de-las-condiciones.ts` («Remate es mayor que 1.000»); el borrador del panel, `features/plantilla/hooks/use-borrador-de-la-regla.ts`.
 - Los retoques de la tarjeta: `validar_retoques()` y su espejo `entities/tarjeta/retoques/validar-retoques.ts` con el juego `casos-de-retoques.json`
   (lo corren Vitest y `supabase/tests/areas/tarjeta/retoques.sql`); `aplicar-retoques.ts` (la cuadrícula retocada, las combinaciones reparadas y los que no
   aplican), `para-guardar.ts` (lo que se manda: sólo lo que aplica y cambió), `borrador-de-retoques.ts` (el reductor del modo), `modo-de-la-tarjeta.ts`
@@ -459,11 +463,15 @@ la pide: la base de su ETag), `comprobante_emitir|anular`, `comprobantes_serie_c
 - **La tarjeta** (`cotizacion_tarjeta(p_formula)`) dibuja la plantilla publicada de la fórmula del origen de esa versión como cuadrícula (la de la forma 1, convertida) **validada otra vez
   contra la versión de esa cotización**: si no le sirve, `sin_plantilla` sin motivo. Sólo sale lo que la cuadrícula nombra y del nivel «todos» (nodos, grupos,
   tipos de cambio por su nombre y su nodo, variante, colores); ningún id ni texto de un nodo de un nivel, para nadie (K4 de `cotizacion-tarjeta.sql`, en las dos
-  formas). La geometría toma valores, estados y totales por id de nodo (`CalculoDeLaTarjeta`), nunca de la hoja de quien mira. En una guardada dibuja **lo guardado** (`calculoDeLoGuardado()`: el
+  formas). **Lo que nombra incluye sus listas de respaldo y sus condiciones** (`_plantilla_cuadricula_datos()`, espejo `datosNombrados()`): un lugar nuevo de
+  la forma 2 que nombre un dato entra a ese aplanado, o quedaría fuera de las reglas y de K4. La geometría **resuelve cada celda antes de dibujar**
+  (`resolverElContenido()`): los dibujos sólo ven un contenido simple y un cambio en cómo se resuelve sube `VERSION_DEL_DIBUJO`. La geometría toma valores, estados y totales por id de nodo (`CalculoDeLaTarjeta`), nunca de la hoja de quien mira. En una guardada dibuja **lo guardado** (`calculoDeLoGuardado()`: el
   snapshot, con los estados del primer recálculo) y lo que difiere se dice fuera.
 - **El editor de la plantilla** (la pestaña «Tarjeta»: `/configuracion/origenes/<id>/formulas/<fórmula>/tarjeta`) escribe **sólo la forma 2**: una forma 1 se convierte
   al abrirla (`cuadriculaParaEditar()`) y no se guarda sola. Al navegador llega sólo el contexto reducido (`contextoParaElNavegador(contexto, cuadricula)`:
-  los nodos del nivel «todos» y los restringidos que la cuadrícula nombra, nunca el cuerpo de un nodo) y nada se importa del área `formula`. Los modales de
+  los nodos del nivel «todos» y los restringidos que la cuadrícula nombra, nunca el cuerpo de un nodo) y nada se importa del área `formula`. **Lo
+  incompleto no sale del panel:** una lista o unas condiciones a medio armar viven en el borrador del panel (`useBorradorDeLaRegla()`) y al reductor llegan
+  sólo enteras. Los modales de
   publicar y descartar (`?panel=publicar-tarjeta|descartar-plantilla`) **viven fuera de la `key` del editor** para que «Recargar» tras un PT409 no pierda
   la nota; esa `key` cambia sólo con una versión que no es la que el editor acaba de guardar (`useClaveDelEditor()`): guardar no lo remonta y el historial sigue. El lienzo es un hueco: los tipos sin código de `entities/vista-previa-de-la-plantilla.ts` (`PropsDelLienzoDeLaPlantilla`,
   `GeometriaParaEditar`), que llena el área `tarjeta` (`LienzoDeLaPlantillaDiferido` por `pantallas/tarjeta-plantilla.ts`: dibuja con

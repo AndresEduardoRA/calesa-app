@@ -15,6 +15,7 @@ describe('REGLAS_DE_PLANTILLA', () => {
       'celda_fuera_de_la_grilla',
       'celdas_se_pisan',
       'variable_inexistente',
+      'respaldo_vacio',
       'grupo_inexistente',
       'grupo_repetido',
       'grupo_faltante',
@@ -25,6 +26,7 @@ describe('REGLAS_DE_PLANTILLA', () => {
       'nodo_sin_lugar',
       'nodo_restringido',
       'tipo_de_cambio_restringido',
+      'condicion_invalida',
     ])
   })
 })
@@ -64,6 +66,11 @@ describe('rechazoDePlantilla', () => {
     ['celda_fuera_de_la_grilla', 'celdas.x', 'La celda «x» se sale de la cuadrícula.'],
     ['celdas_se_pisan', 'celdas.y', 'La celda «y» pisa otra celda.'],
     ['variable_inexistente', 'celdas.fecha', 'La celda «fecha» muestra un dato que no existe.'],
+    [
+      'respaldo_vacio',
+      'celdas.x',
+      'La celda «x» necesita al menos dos datos para mostrar el primero con valor.',
+    ],
     ['tono_inexistente', 'celdas.x', 'La celda «x» usa un color que no está en el catálogo.'],
     [
       'nodo_de_fila_inexistente',
@@ -81,6 +88,11 @@ describe('rechazoDePlantilla', () => {
       'tipo_de_cambio_restringido',
       'celdas.tc',
       'La tarjeta no puede nombrar el tipo de cambio de la celda «tc»: no es del nivel «todos».',
+    ],
+    [
+      'condicion_invalida',
+      'filas.f',
+      'La fila «f» tiene una condición que esta fórmula no puede responder.',
     ],
   ] as const)('%s', (regla, donde, mensaje) => {
     expect(rechazoDePlantilla(regla, donde)).toEqual({ regla, donde, mensaje })
