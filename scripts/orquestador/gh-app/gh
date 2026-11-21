@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# El `gh` que ven el bucle y las sesiones en modo app (app.sh › entrar_como_app lo pone primero en el PATH): el entorno de `claude -p`
+# queda fijo hasta 5 h y un token de instalación vence a la hora, así que cada llamada pide su token fresco a token-app.sh (con la
+# caché, milisegundos). Sólo renueva un GH_TOKEN vacío o de instalación (`ghs_`): uno de persona puesto a propósito (`gho_`, `ghp_`,
+# `github_pat_`: dep_rama, contratos.md) se respeta. `gh auth …` no se toca (con un GH_TOKEN, `gh auth token` lo imprimiría). Si la
+# renovación falla con un `ghs_`, lo quita y gh usa la sesión de la máquina.
+yo="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+IFS=: read -ra partes <<<"$PATH"
+nuevo=""
+for p in "${partes[@]}"; do
+  [ "$p" = "$yo" ] && continue
+  nuevo="${nuevo:+$nuevo:}$p"
+done
+export PATH="$nuevo"
+if [ "${1:-}" != auth ]; then
+  case "${GH_TOKEN:-}" in
+    '' | ghs_*)
+      if t=$(bash "$yo/../token-app.sh" 2>/dev/null) && [ -n "$t" ]; then
+        export GH_TOKEN="$t"
+      elif [[ "${GH_TOKEN:-}" == ghs_* ]]; then
+        unset GH_TOKEN
+      fi
+      ;;
+  esac
+fi
+exec gh "$@"

@@ -1,8 +1,9 @@
 // Un `gh` falso para las pruebas del orquestador (cola-github.test.ts) y del aviso de la noche (scripts/flujo/noche-gh.test.ts): lo que
 // le piden a GitHub, contra un «GitHub»
 // que vive en `$GH_FALSO/estado.json`. Cada llamada queda en `$GH_FALSO/llamadas.log` (una línea JSON con sus argumentos y el
-// GH_TOKEN con que se hizo). Con `sinRed` falla como sin red; con `limite`, como el límite de la API; con `issueEditFalla`,
-// `gh issue edit` falla como en los repos donde GraphQL choca con los proyectos clásicos (y el orquestador cae a la API REST).
+// GH_TOKEN con que se hizo). Con `sinRed` falla como sin red; con `limite`, como el límite de la API; con `sinPermisoApp` (comienzos
+// de argumentos), como un permiso que le falta a la app; con `issueEditFalla`, `gh issue edit` falla como en los repos donde GraphQL
+// choca con los proyectos clásicos (y el orquestador cae a la API REST).
 // Lo de una tarea con `al_integrar` (al-integrar.test.ts) y del guion del cierre (scripts/flujo/cierre.mjs): un PR de `prs` puede
 // traer `sha` (su squash), `padre`, `titulo` y `cuerpo`; las etiquetas viven en `refs` (`{ ref, sha }`), y con `refsFalla` crearlas
 // falla con ese texto. Un PR puede traer `archivos` (los de `pulls/<n>/files`). Un repo nombrado explícitamente que está en `git` (el
@@ -51,6 +52,7 @@ const issueDeApi = (i) => ({
   state_reason: i.state_reason ?? null,
   author_association: i.autor ?? 'OWNER',
   user: { login: i.login ?? 'persona', type: i.tipo ?? 'User' },
+  performed_via_github_app: i.app ? { id: i.app } : null,
   created_at: i.created_at ?? ahora(),
   labels: i.labels.map((/** @type {string} */ name) => ({ name })),
 })
@@ -66,6 +68,9 @@ if (args[0] === 'auth' && args[1] === 'token') {
 }
 if (e.sinRed) salir(1, 'error connecting to api.github.com')
 if (e.limite) salir(1, 'HTTP 403: API rate limit exceeded for user ID 1.')
+// A la app le falta el permiso de lo que empieza con alguno de `sinPermisoApp` (app.test.ts).
+if ((e.sinPermisoApp ?? []).some((/** @type {string} */ p) => args.join(' ').startsWith(p)))
+  salir(1, 'HTTP 403: Resource not accessible by integration (https://api.github.com/x)')
 
 if (args[0] === 'api') {
   let metodo = 'GET'

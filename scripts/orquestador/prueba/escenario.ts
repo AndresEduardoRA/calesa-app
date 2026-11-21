@@ -75,6 +75,8 @@ type Issue = {
   autor?: string
   login?: string
   tipo?: string
+  // El id de la app que lo abrió (`performed_via_github_app.id`).
+  app?: number
   created_at?: string
   comentarios: {
     id: number
@@ -130,6 +132,8 @@ type Gh = {
   // Los issues que la lista de abiertos todavía no trae (gh-falso.mjs).
   listaAtrasada?: number[]
   issueEditFalla?: boolean
+  // Los comienzos de argumentos de gh que fallan como un permiso que le falta a la app (gh-falso.mjs).
+  sinPermisoApp?: string[]
   // Los repos nombrados explícitamente (el kit), que atiende gh-falso-git.mjs.
   git?: Record<
     string,
@@ -171,9 +175,10 @@ function prepararRepo(local: string, conOrigen: boolean, conKit?: ConKit) {
   mkdirSync(join(datos, 'cola'), { recursive: true })
   // Lo que entra solo a la cola, apagado: la tarea de dependencias crearía un issue en cada escenario, las del kit lo llamarían y el
   // cierre de la tanda miraría el CI (dependencias.test.ts, kit-semanal.test.ts, kit-aviso.test.ts y cierre-tanda.test.ts las encienden).
+  // Sin la app del orquestador: config.env trae sus ids reales y el HOME temporal no tiene clave (app.test.ts la enciende).
   writeFileSync(
     join(datos, 'config.local.env'),
-    `DEPS_MENSUAL="no"\nKIT_SEMANAL="no"\nKIT_AVISAR="no"\nCIERRE_TANDA="no"\n${local}`,
+    `DEPS_MENSUAL="no"\nKIT_SEMANAL="no"\nKIT_AVISAR="no"\nCIERRE_TANDA="no"\nAPP_ID=""\n${local}`,
   )
   if (conKit) traerElKit(repo, conKit)
   const falso = join(repo, '.gh-falso')
