@@ -46,7 +46,10 @@ export function useIrAlLlegar(ancla: string | null) {
       bloque.scrollIntoView({ block: 'start' })
     })
     observador.observe(raiz)
-    observador.observe(bloque)
+    // Cada bloque de su columna: uno de arriba que llega o se acomoda (una isla que reemplaza su esqueleto) mueve al bloque, y el propio crece.
+    for (const hermano of bloque.parentElement?.children ?? [bloque]) {
+      observador.observe(hermano)
+    }
     const opciones = { passive: true } as const
     window.addEventListener('wheel', marcar, opciones)
     window.addEventListener('touchstart', marcar, opciones)
