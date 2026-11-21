@@ -492,14 +492,17 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   (estados propios)»): maestro-detalle; menciones `#` de vehículo/lead/cotización, `/tarea`, `/evento`; widget flotante fuera de `/chat`.
 - **Notificaciones** — `/notificaciones` (todos): lista; la campana trae las que piden acción. Arriba, «Preferencias de avisos» a
   `/perfil#notificaciones`.
-- **Perfil** — `/perfil` (todos): nombre, foto, preferencias (tema, densidad, ítems por página) y:
-  - «Turnos de la web»: «Disponible para recibir turnos» (apagado, la ruleta no le reparte; el pegajoso sí); si su rol no recibe turnos,
-    deshabilitado con el motivo.
-  - «Tu ficha en la web» (plegable; el formulario se pide al abrirlo): WhatsApp, identificador, cargo, bio, especialidades y «Aparecer en la
-    web», con versión.
-  - **Notificaciones:** push en este navegador, un interruptor por tipo del catálogo (sólo apagan el push, no la campana) y «Tus
-    navegadores» con «Quitar». Con el interruptor a la vista y deshabilitado, dice por qué: el rol no recibe push, la empresa no lo activó
-    (y dónde), falta la clave pública, el navegador no lo admite o lo bloqueó; mientras revisa, «Revisando este navegador…».
+- **Perfil** — `/perfil` (todos): cinco tarjetas de ajustes (`<TarjetasDeAjustes>`: una columna en el celular, dos y tres según el ancho de la página) con lo guardado a la vista;
+  lo que se edita abre su modal (`?panel=`), sin plegables y sin desplazar a 1440×900. Cada una lleva «Editar» a la vista y como primera línea de su «⋯».
+  - **Tú** (`?panel=tu`): la foto, el nombre y el correo; el modal edita foto y nombre (con versión: un cambio ajeno dice «Recargar» y conserva lo tipeado). El correo no se cambia desde acá.
+  - **Preferencias** (`?panel=preferencias`): tema, densidad, ítems por página, zona horaria de las subastas y «Marcar lo que abrí» (con cuánto lo recuerda y si marca el último) como texto; el modal
+    las ofrece, se aplican y se guardan al elegirlas (sin «Guardar»; «Listo» lo cierra).
+  - **Turnos de la web:** «Disponible para recibir turnos» a la vista en la tarjeta (apagado, la ruleta no le reparte; el pegajoso sí); si su rol no recibe turnos, deshabilitado con el motivo.
+  - **Tu ficha en la web** (`?panel=ficha`): WhatsApp, cargo, identificador, especialidades, la presentación y si está visible; dice «Se usa en lo que compartes» (la tarjeta de la cotización lleva estos datos). El modal edita todo
+    eso y «Aparecer en la web», con versión. Mirando como otro rol, «Editar» queda apagado con el motivo.
+  - **Notificaciones** (`?panel=notificaciones`; `/perfil#notificaciones` también lo abre y quita el ancla): el push de este navegador a la vista como interruptor y cuántos avisos por tipo y navegadores hay;
+    el modal trae un interruptor por tipo del catálogo (sólo apagan el push, no la campana) y «Tus navegadores» con «Quitar». Con el interruptor a la vista y deshabilitado, dice por qué: el rol no recibe push, la empresa no lo activó
+    (y dónde), falta la clave pública, el navegador no lo admite o lo bloqueó; mientras revisa, «Revisando este navegador…». Si no se pueden leer los avisos, la tarjeta dice «No se pudieron cargar tus avisos» con «Reintentar».
 - **Actividad** — `/actividad` (`actividad.ver`): cada cambio como una frase con su icono por tipo de registro, agrupada por día en la zona de
   la empresa: «Ana cambió Precio de [Toyota Hilux #12]: 10.000 → 12.000» (con varios campos, «Precio y 2 más», sin valores; un alta o una baja,
   sin antes → después; el registro enlaza a su página si existe y se ve; montos con `<Monto>`). Una fila que quien mira no ve dice sólo
