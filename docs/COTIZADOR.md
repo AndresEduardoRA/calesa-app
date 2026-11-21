@@ -350,7 +350,9 @@ fórmula de trabajo.
   se crea uno con su clave (`bucketPara()`). Con modos en la hoja no se crea ninguno, porque los modos llenan exactamente los buckets de la
   fórmula; sin modos, los que quedan sin uso se limpian (`sinBucketsSueltos()`). «Total y tipos de cambio» edita `total_en`, la fila del
   total (`salida: 'total'`) y el tipo de cambio de cada bucket. Mover una fila a otro bucket cambia el total en Bs en su USD × (tc nuevo −
-  tc viejo); el doble conteo lo dice la validación.
+  tc viejo); el doble conteo lo dice la validación. `SUMA(<banda>)`, `MAX` y `MIN` guardan las filas que la banda tenía al compilarse: lo que pone o
+  saca filas de una banda vuelve a compilar las filas que la nombran (`sumasDeBandaAlDia()`), con el texto reescrito si un ⚙ lo cambió; si una no
+  se puede (su texto ya no manda o una fila de la banda quedaría debajo de ella), el cambio no entra y dice por qué.
 - **De dónde sale** (`deDondeSale()`): cada fila en palabras con las etiquetas (nunca ids): una frase por tipo de nodo y por operación, las
   auxiliares en línea (una constante con su valor, un cálculo entre paréntesis, una comparación auxiliar sin ellos, una búsqueda como «de la
   tabla `<clave>` por …», con la clave de la tabla y no su nombre); nunca lanza y es lineal. `cambiarValorDeConstante()`

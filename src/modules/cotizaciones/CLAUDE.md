@@ -356,8 +356,8 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
   `referencias-tipeadas.ts` (colores, leyenda y bordes de lo tipeado), `autocompletar.ts` y `ayuda-de-funciones.ts`, `texto-de-la-celda.ts` y
   `escrito-en-la-celda.ts` (qué abre y qué hace lo escrito en cada columna), `teclas-de-la-cuadricula.ts`, `filas-a-la-vista.ts` (buscar y el tope sin
   renumerar), las operaciones de fila (`insertar-fila.ts`, `mover-fila.ts` y `eliminar-fila.ts` sobre `usos-de-la-fila.ts`), `tipo-de-celda.ts` y
-  `tipo-de-celda-nodos.ts`, `opciones-de-la-variante.ts`, las bandas (`bandas.ts`, `buckets.ts`, `total-de-la-formula.ts`), `mensaje-en-a1.ts` y
-  `params-para-validar.ts`; en el núcleo, `entities/nodos-del-diseno.ts` (lo que la hoja muestra: la planilla no lo borra).
+  `tipo-de-celda-nodos.ts`, `opciones-de-la-variante.ts`, las bandas (`bandas.ts`, `buckets.ts`, `total-de-la-formula.ts`, `sumas-de-banda.ts`),
+  `mensaje-en-a1.ts` y `params-para-validar.ts`; en el núcleo, `entities/nodos-del-diseno.ts` (lo que la hoja muestra: la planilla no lo borra).
 - La plantilla: `validar_plantilla()` (`docs/COTIZADOR.md` › «Plantilla de tarjeta (PDF)»), espejo `entities/plantilla/validar-plantilla.ts` (code points,
   `btrim`, orden C, tope en bytes del texto jsonb, sin prototipo) con su juego `casos-de-plantilla.json`; dos formas: la de grupos (`forma-de-plantilla.ts`,
   `nodos-de-plantilla.ts`) y la cuadrícula (`forma-de-cuadricula.ts`, `celdas-de-cuadricula.ts`, `condiciones-de-cuadricula.ts` —la forma de la lista de

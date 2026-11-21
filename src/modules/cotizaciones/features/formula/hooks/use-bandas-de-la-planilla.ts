@@ -5,6 +5,7 @@ import { avisar } from '@/shared/ui/toasts'
 import type { Formula } from '../../../entities/formula'
 import { crearBanda, quitarBanda } from '../../../entities/formula/bandas'
 import { opcionesDeTipoDeCambio } from '../../../entities/formula/buckets'
+import { sumasDeBandaAlDia } from '../../../entities/formula/sumas-de-banda'
 import {
   aplicarGrupo,
   type CambiosDelGrupo,
@@ -38,8 +39,9 @@ const ESPERA: ErrorDelGrupo[] = [{ campo: 'grupo', mensaje: ESPERA_A_LA_FILA }]
 
 // Las bandas de la planilla (D13 y D14): crear (con el tipo de cambio del total si la fórmula no lo tiene: el de la banda), editar (etiqueta, color, plazo, tipo de
 // cambio y filas), quitar (sus filas quedan sin banda, con «Deshacer») y el total y los tipos de cambio. Los errores de un panel vuelven por campo; nada cambia.
+// Crear o editar las filas de una banda pone al día las filas que la suman (`sumasDeBandaAlDia()`).
 export function useBandasDeLaPlanilla({ editor, conModos, tarjeta }: Args) {
-  const { trabajo, cambiar, libre } = editor
+  const { trabajo, cambiar, libre, tablas } = editor
   const tonos = useTonos()
   const conDeshacer = useDeshacer(editor)
   const tiposDeCambio = useMemo(
@@ -50,7 +52,9 @@ export function useBandasDeLaPlanilla({ editor, conModos, tarjeta }: Args) {
   const candidatas = useMemo(() => candidatasDe(trabajo), [trabajo])
   const entrar = (r: { ok: true; formula: Formula } | { ok: false; errores: ErrorDelGrupo[] }) => {
     if (!r.ok) return r.errores
-    return cambiar(r.formula) ? null : ESPERA
+    const alDia = sumasDeBandaAlDia(trabajo, r.formula, tablas ?? undefined)
+    if (!alDia.ok) return [{ campo: 'miembros' as const, mensaje: alDia.mensaje }]
+    return cambiar(alDia.formula) ? null : ESPERA
   }
   return {
     tonos,

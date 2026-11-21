@@ -13,6 +13,7 @@ import {
   type LadoDeInsertar,
 } from '../../../entities/formula/insertar-fila'
 import { moverFila, type DestinoDeMover } from '../../../entities/formula/mover-fila'
+import { sumasDeBandaAlDia } from '../../../entities/formula/sumas-de-banda'
 import { cambiarTipo, type PedidoDeTipo } from '../../../entities/formula/tipo-de-celda'
 import {
   indiceDeUsos,
@@ -34,9 +35,16 @@ type Args = {
 }
 
 // Insertar, duplicar, eliminar (con «Deshacer»), mover, poner en una banda, cambiar el tipo y vaciar una fila de la fórmula de trabajo (D7, D8, D10, D12, D13).
-// Nada con una celda en edición ni mientras se guarda: lo dice un aviso. Un rechazo se dice con su motivo y la fórmula no cambia.
+// Nada con una celda en edición ni mientras se guarda: lo dice un aviso. Un rechazo se dice con su motivo y la fórmula no cambia. Lo que cambia las filas de una
+// banda pone al día las filas que la suman (`sumasDeBandaAlDia()`).
 export function useOperacionesDeFila({ editor, hoja, usos, alCrear }: Args) {
-  const { trabajo, cambiar, libre, tablas } = editor
+  const { trabajo, libre, tablas } = editor
+  const cambiar = (formula: Formula): boolean => {
+    const r = sumasDeBandaAlDia(trabajo, formula, tablas ?? undefined)
+    if (r.ok) return editor.cambiar(r.formula)
+    avisar(r.mensaje)
+    return false
+  }
   const indice = useMemo(() => indiceDeUsos(trabajo, hoja), [trabajo, hoja])
   const conDeshacer = useDeshacer(editor)
   const puede = (): boolean => {
@@ -87,7 +95,9 @@ export function useOperacionesDeFila({ editor, hoja, usos, alCrear }: Args) {
       if (!libre) return ESPERA_A_LA_FILA
       const r = cambiarTipo(trabajo, numero, pedido, hoja)
       if (!r.ok) return r.mensaje
-      return cambiar(r.formula) ? null : ESPERA_A_LA_FILA
+      const alDia = sumasDeBandaAlDia(trabajo, r.formula, tablas ?? undefined)
+      if (!alDia.ok) return alDia.mensaje
+      return editor.cambiar(alDia.formula) ? null : ESPERA_A_LA_FILA
     },
     // Supr en un valor fijo o en un %: lo pone en 0 (la fila no se borra).
     vaciar: (id: string) => puede() && conResultado(cambiarValorDeConstante(trabajo, id, 0)),
