@@ -149,7 +149,7 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
 - **La configuración** vive en la página de cada origen (la arma `src/app/(app)/configuracion/origenes/[id]/`): la pestaña Fórmulas (la lista, área
   `formulas-del-origen`, su ficha en `areas/formulas-del-origen/CLAUDE.md`), el editor de cada fórmula con Planilla · Hoja · Tarjeta
   (`formulas/[formula]/planilla|hoja|tarjeta`, bajo un layout que lee la fórmula por PK con `leerLaFormulaDelOrigen()`, `cache()`, y dibuja su cabeza:
-  nombre, estado, «⋯» y «Empezar desde una plantilla») y la pestaña Tablas. Cada sección del módulo recibe el **origen abierto** (`{ id, nombre, activo }`)
+  nombre, estado y «⋯») y la pestaña Tablas. Cada sección del módulo recibe el **origen abierto** (`{ id, nombre, activo }`)
   que `src/app` ya validó, sin selector propio; las URL las arman `rutaDeLasFormulas(origenId, consulta?)`, `rutaDeLaFormula(origenId, formulaId, parte,
 consulta?)` y, para quien no conoce la fórmula, la ruta corta `rutaDeConfiguracionDeCotizacion(origenId, 'formula'|'hoja'|'tarjeta'|'tablas', consulta?)`
   (`/configuracion/origenes/<id>/formula|formula/hoja|formula/tarjeta`: un `route.ts` que responde 308 a la fórmula de trabajo, o a la lista si no hay),
@@ -163,13 +163,6 @@ consulta?)` y, para quien no conoce la fórmula, la ruta corta `rutaDeConfigurac
   dibuja la planilla. La pestaña Tarjeta va a ancho completo y su página pide la referencia del lienzo sin esperarla
   (`origenes/[id]/formulas/[formula]/tarjeta/referencia.ts`, con `leerListadoDeCotizaciones()` y `UNA` del área `listado`, `leerHojaDeUnaGuardada()`, y `referenciaPlana()` y
   `calculoDeLoGuardado()` del núcleo).
-- **Empezar desde una plantilla** (área `plantilla`; `docs/COTIZADOR.md` › «Plantillas de V1»): la cabeza del editor de una fórmula del origen pone
-  `EmpezarDesdeUnaPlantilla` (`pantallas/plantilla-de-v1.ts`, a la derecha de Planilla · Hoja · Tarjeta, con el hueco `Lienzo` lleno con
-  `LienzoDeLaPlantillaDiferido`). El modal (`?panel=plantillas-de-v1`, diferido, una `key` por apertura) pide al abrirse `GET [origen]/plantillas-de-v1` (la
-  ruta de `src/app` compone `getTiposCambio()` y `leerLayout()` con `leerPlantillasDeV1()` de `index.ts`; la lee `areas/plantilla/composicion-plantillas-de-v1.client.ts`,
-  que sólo importa el modal) y la action `aplicarLaPlantillaDeV1` (`features/plantilla/actions/`) elige los colores, reescribe sus claves y llama a
-  `cotizacion_paquete_aplicar()` con la clave del paquete, las versiones de los borradores y el id de esa fórmula (`p_formula_del_origen`). Los paquetes (`entities/plantillas-de-v1/`) nunca viajan al
-  navegador (`solo-del-servidor.test.ts`: una Server Action corta el camino).
 - Niveles: `/configuracion/catalogos/niveles` (`equipo.roles.ver|gestionar`; `?panel=nuevo-nivel|renombrar-nivel|eliminar-nivel&nivel=<id>`).
 - Con Live, las cifras de la ayuda de una celda de dinero pasan por `<Monto>`; las de otra celda quedan a la vista.
 - Los `loading.tsx` de la hoja importan `pantallas/esqueleto-de-hoja.ts`, nunca el barril de su pantalla (con él, el HTML en frío baja dos chunks casi
@@ -199,8 +192,8 @@ consulta?)` y, para quien no conoce la fórmula, la ruta corta `rutaDeConfigurac
   el error con su tramo), el «⋯» y el clic derecho de cada fila y banda (`menu/`) y los paneles por URL (`paneles/`: banda, «Total y tipos de cambio», «Tipo
   de celda» y «¿Cómo se escribe?»). Lo guardado sigue en ids: A1 es sólo del navegador (`entities/formula/referencias-a1.ts` sobre la hoja numerada de
   `hoja-de-la-planilla.ts`); las operaciones de fila (`insertar-fila.ts`, `mover-fila.ts`, `eliminar-fila.ts`, `tipo-de-celda.ts`) y de banda (`bandas.ts`)
-  son puras y devuelven la fórmula nueva o el motivo. `?panel=editar-formula` (el Modo avanzado, que ya no existe) responde 308 a la misma planilla desde
-  el proxy (`destinoSinElModoAvanzado()`, `src/shared/lib/sin-el-modo-avanzado.ts`). El
+  son puras y devuelven la fórmula nueva o el motivo. `?panel=editar-formula` (el Modo avanzado) y `?panel=plantillas-de-v1` («Empezar desde una plantilla»), que ya no existen,
+  responden 308 a la misma parte de la fórmula, sin ese panel, desde el proxy (`destinoSinLosPanelesQueYaNoExisten()`, `src/shared/lib/paneles-que-ya-no-existen.ts`). El
   catálogo de tablas del origen (`leerCatalogoDeTablas()`: clave y columnas de las `tablas_referencia` activas del origen y las compartidas, la del origen
   gana; tope 100; nulo si falla) lo lee la sección en paralelo con la fórmula y llega a la sesión para revisar BUSCARV al compilar. La unidad
   de ejemplo y el modo viven en la sesión; «Publicar…» espera con cambios aplicados sin guardar (`alCambiarPendientes`, en `useLayoutEffect`). La `key` de la
@@ -262,7 +255,7 @@ no-cache`; con «Ver como» (sin leer la huella), sin el primer recálculo o inc
 El módulo se parte por **área**: `listado`, `tarjeta`, `plantilla`, `formula`, `formulas-del-origen`, `diseno`, `tablas`, `papelera`, `final`, `comprobantes`,
 `comentarios`.
 Lo demás es el **núcleo** (la hoja, guardar, encima, revisiones, historial, la fila de tarjetas de las fichas (`features/fichas/`), niveles, el motor, el compilador, los validadores, el diseño, la apertura, la
-ruta, y las plantillas de V1 de `entities/plantillas-de-v1/`): lo que comparten. La lista y las carpetas del núcleo están en `scripts/guardas/areas-de-cotizaciones.ts`.
+ruta): lo que comparten. La lista y las carpetas del núcleo están en `scripts/guardas/areas-de-cotizaciones.ts`.
 
 - **Dónde va:** `features/<área>/`, `entities/<área>/`, `infra/<área>/` y sus entradas `areas/<área>/{index,client,composicion}.ts` (la composición empieza
   con `import 'server-only'`). Su pantalla es `pantallas/<área>.ts`; otra, `pantallas/<área>-<pantalla>.ts` (una pantalla paga lo que reexporta su archivo).
@@ -411,8 +404,7 @@ trabajo; el ⚙ escribe en la activa), `tabla_referencia_publicar` (reemplaza la
 contra la plantilla publicada de hoy), `cotizaciones_listado`, `cotizaciones_listado_por_vehiculo` (la lista agrupada, invocadora, con su lote
 `_cotizaciones_lote_del_listado`), `cotizaciones_modos_de` (el nombre del modo de hasta 100), `cotizaciones_buscar` (la búsqueda del listado, invocadora; el título por
 `_cotizaciones_ids_por_titulo`), `plantilla_guardar_borrador|publicar|descartar_borrador` (versión esperada y candado por origen; esperada
-nula al guardar = crear), `cotizacion_paquete_aplicar` (una plantilla de V1, todo o nada: invocadora sobre las dos de guardar el borrador y `tono_crear`, con el
-candado del catálogo en el ayudante definer `_paquete_colores_preparar`), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizaciones_aprobadas_de_vehiculos` (el «Costo estimado» de `/vehiculos`, invocadora), `cotizacion_moderar` (con la versión),
+nula al guardar = crear), `cotizacion_marcar_final`, `cotizacion_aprobar` (con la versión de la que se aprueba), `cotizaciones_de_este_vehiculo` (el bloque «De este vehículo», invocadora), `cotizaciones_aprobadas_de_vehiculos` (el «Costo estimado» de `/vehiculos`, invocadora), `cotizacion_moderar` (con la versión),
 `cotizacion_comentarios|comentario_respuestas|comentar|comentario_editar|comentario_borrar`, `cotizacion_adjuntar|adjunto_quitar`,
 `cotizacion_reportar|reporte_retirar`, `cotizacion_favorito_poner`, `cotizacion_imagen_huella` (la huella de la imagen de la tarjeta para quien
 la pide: la base de su ETag), `comprobante_emitir|anular`, `comprobantes_serie_cambiar`, `margen_vehiculo`.

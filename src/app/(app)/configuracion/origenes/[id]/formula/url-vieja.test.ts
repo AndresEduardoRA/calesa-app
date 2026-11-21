@@ -35,6 +35,17 @@ describe('destinoDeLaFormulaVieja', () => {
     ).toBe(`${BASE}/formulas/${TRABAJO}/planilla?panel=publicar`)
   })
 
+  it('el panel «Empezar desde una plantilla», que ya no existe, tampoco sigue', () => {
+    expect(
+      destinoDeLaFormulaVieja(ORIGEN, 'hoja', TRABAJO, { panel: 'plantillas-de-v1', vista: '412' }),
+    ).toBe(`${BASE}/formulas/${TRABAJO}/hoja?vista=412`)
+    expect(
+      destinoDeLaFormulaVieja(ORIGEN, 'tarjeta', TRABAJO, {
+        panel: ['plantillas-de-v1', 'publicar-tarjeta'],
+      }),
+    ).toBe(`${BASE}/formulas/${TRABAJO}/tarjeta?panel=publicar-tarjeta`)
+  })
+
   it('sin fórmula de trabajo, cada parte va a la lista, sin consulta', () => {
     for (const [parte, parametros] of [
       ['planilla', {}],

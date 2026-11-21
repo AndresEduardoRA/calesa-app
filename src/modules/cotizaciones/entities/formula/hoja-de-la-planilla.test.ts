@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import type { Formula } from '../formula'
 import type { Nodo } from '../nodos'
 import { referenciasDe } from '../nodos-referencias'
-import { PLANTILLAS_DE_V1 } from '../plantillas-de-v1'
 import { formulaDePrueba } from './fila-de-prueba.soporte'
 import { bDe, celdaDe, hojaDeLaPlanilla, numeroDeLaCelda } from './hoja-de-la-planilla'
 
@@ -144,39 +143,27 @@ describe('hojaDeLaPlanilla', () => {
   })
 })
 
-describe('hojaDeLaPlanilla › las plantillas de V1', () => {
-  it.each(PLANTILLAS_DE_V1.map((p) => [p.clave, p.formula] as const))(
-    '%s: ninguna fila nombra otra de más abajo en el orden dibujado',
-    (_clave, formula) => {
-      const hoja = hojaDeLaPlanilla(formula)
-      const porId = new Map(formula.definicion.nodos.map((n) => [n.id, n]))
-      const haciaAbajo: string[] = []
-      for (const fila of hoja.filas) {
-        const propios = [
-          fila.id,
-          ...fila.auxiliares,
-          ...(fila.pctAbsorbida ? [fila.pctAbsorbida] : []),
-        ]
-        for (const id of propios) {
-          const nodo = porId.get(id)
-          for (const r of nodo === undefined ? [] : referenciasDe(nodo)) {
-            const n = numeroDeLaCelda(hoja, r.id)
-            if (n !== null && n > fila.numero) haciaAbajo.push(`${fila.id} → ${r.id}`)
-            if (n === fila.numero && r.id !== fila.pctAbsorbida)
-              haciaAbajo.push(`${fila.id} ↺ ${r.id}`)
-          }
+describe('hojaDeLaPlanilla › el orden dibujado', () => {
+  it('ninguna fila nombra otra de más abajo', () => {
+    const hoja = hojaDeLaPlanilla(FORMULA)
+    const porId = new Map(NODOS.map((n) => [n.id, n]))
+    const haciaAbajo: string[] = []
+    for (const fila of hoja.filas) {
+      const propios = [
+        fila.id,
+        ...fila.auxiliares,
+        ...(fila.pctAbsorbida ? [fila.pctAbsorbida] : []),
+      ]
+      for (const id of propios) {
+        const nodo = porId.get(id)
+        for (const r of nodo === undefined ? [] : referenciasDe(nodo)) {
+          const n = numeroDeLaCelda(hoja, r.id)
+          if (n !== null && n > fila.numero) haciaAbajo.push(`${fila.id} → ${r.id}`)
+          if (n === fila.numero && r.id !== fila.pctAbsorbida)
+            haciaAbajo.push(`${fila.id} ↺ ${r.id}`)
         }
       }
-      expect(haciaAbajo).toEqual([])
-    },
-  )
-
-  it('china: la B de la transferencia absorbe su %', () => {
-    const china = PLANTILLAS_DE_V1.find((p) => p.clave === 'china')
-    if (china === undefined) throw new Error('falta china')
-    const hoja = hojaDeLaPlanilla(china.formula)
-    const n = hoja.numeroDe.get('transferencia') ?? 0
-    expect(bDe(hoja, n)).toEqual({ id: 'transferencia_pct', como: 'absorbida' })
-    expect(hoja.numeroDe.has('transferencia_pct')).toBe(false)
+    }
+    expect(haciaAbajo).toEqual([])
   })
 })

@@ -29,7 +29,7 @@ import { literal, sql } from './soporte/sql'
 
 // La fórmula como hoja de cálculo, de punta a punta (`docs/COTIZADOR.md` › «El editor»): referencias A1 con el clic, la fila insertada que corre las referencias,
 // el tipo de celda, una banda nueva, las funciones con sugerencias (SI, MAX con un rango, BUSCARV con su tabla y columna), la referencia hacia abajo con «Mover
-// esta fila debajo de la N», guardar y publicar (lo guardado nombra ids) y la URL vieja del Modo avanzado. La fórmula es la de prueba con texto
+// esta fila debajo de la N», guardar y publicar (lo guardado nombra ids) y las URL viejas del Modo avanzado y de las plantillas. La fórmula es la de prueba con texto
 // (`formula-editor.ts`): `pub` («Pública») lo escribe el asesor, `con_ayuda` es un valor fijo de 5 y `comision` un cálculo; `fletes` es una tabla viva del origen.
 
 let duena = ''
@@ -233,4 +233,9 @@ test('la fórmula como excel: referencias con el clic, filas, tipos, bandas, fun
   await page.goto(urlDeLaFormula(origen.id, 'planilla', '?panel=editar-formula'))
   await expect(page).toHaveURL(/\/planilla$/)
   await expect(grilla(page)).toBeVisible()
+
+  // (9) «Empezar desde una plantilla» ya no existe: su URL vieja termina igual y la cabeza no ofrece el botón.
+  await page.goto(urlDeLaFormula(origen.id, 'planilla', '?panel=plantillas-de-v1'))
+  await expect(page).toHaveURL(/\/planilla$/)
+  await expect(page.getByRole('button', { name: 'Empezar desde una plantilla' })).toHaveCount(0)
 })

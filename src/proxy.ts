@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { decidirAcceso } from '@/shared/lib/rutas'
-import { destinoSinElModoAvanzado } from '@/shared/lib/sin-el-modo-avanzado'
+import { destinoSinLosPanelesQueYaNoExisten } from '@/shared/lib/paneles-que-ya-no-existen'
 import { actualizarSesion } from '@/shared/lib/supabase/proxy'
 
 // Next 16: `proxy.ts` (antes `middleware.ts`) va al nivel de `app/`, no adentro.
@@ -23,13 +23,13 @@ export async function proxy(request: NextRequest) {
     esAccion: request.headers.has('next-action'),
   })
   if (decision.tipo === 'seguir') {
-    // El Modo avanzado de la planilla de la fórmula ya no existe: 308 a la misma planilla (una action sigue: repetiría el POST).
-    const sinElModoAvanzado = request.headers.has('next-action')
+    // El Modo avanzado y «Empezar desde una plantilla» de la fórmula ya no existen: 308 a la misma parte, sin el panel (una action sigue: repetiría el POST).
+    const sinElPanel = request.headers.has('next-action')
       ? null
-      : destinoSinElModoAvanzado(request.nextUrl.pathname, busqueda)
-    if (sinElModoAvanzado !== null) {
+      : destinoSinLosPanelesQueYaNoExisten(request.nextUrl.pathname, busqueda)
+    if (sinElPanel !== null) {
       return conLasCookies(
-        NextResponse.redirect(new URL(sinElModoAvanzado, request.nextUrl.origin), 308),
+        NextResponse.redirect(new URL(sinElPanel, request.nextUrl.origin), 308),
         respuesta,
       )
     }
