@@ -132,6 +132,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Suelta el aviso de guardado o el cierre de panel al terminar el envío (`useTrasElEnvio`) y encola lo que sale al desmontarse: el refresco remonta el panel antes de que `isPending` baje.
 - Responde una redirección permanente (308) desde `src/proxy.ts` o un route handler, nunca desde una página: bajo el `<Suspense>` del layout y con
   `loading.tsx`, `permanentRedirect()` llega ya mandado el esqueleto y sale 200 con un meta refresh. Pruébala con `page.request.get(…, { maxRedirects: 0 })`.
+- Un test que comprueba que una ruta existe mirando `src/app` atraviesa los grupos de rutas (`(pestanas)`): la URL no los nombra y un `existsSync` del
+  camino literal da falso en cuanto una carpeta pasa a un grupo (`existeLaRuta()` de `src/app/(app)/configuracion/origenes/existe-la-ruta.ts`).
 - Mide el peor caso de lo que manda una Server Action: el tope es 1 MB por pedido y una fórmula de 2.000 nodos pesa ≈ 400 KB.
 - En un route handler, `await connection()` va antes de cualquier rama (también el 503 sin secreto): con `cacheComponents`, `next build` lo prerenderiza y lo sirve fijo.
 - Renueva el id idempotente del navegador por intento (tras el éxito o al reabrir, `key` = la apertura): la pantalla conserva su estado y el mismo id devolvería lo ya creado.

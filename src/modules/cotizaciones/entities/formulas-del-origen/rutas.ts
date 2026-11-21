@@ -11,3 +11,6 @@ export const PANEL_ELIMINAR_FORMULA = 'eliminar-formula'
 export const CLAVE_DE_LA_FORMULA = 'formula'
 // La fórmula de la que se copia (`?panel=nueva-formula&copia=<id>`).
 export const CLAVE_DE_LA_COPIA = 'copia'
+// Cómo empieza la fórmula nueva que abre la puesta en marcha (`?panel=nueva-formula&como=blanco|otro`).
+export const CLAVE_DEL_COMO = 'como'
+export const COMO_DESDE_LA_URL = ['blanco', 'otro'] as const

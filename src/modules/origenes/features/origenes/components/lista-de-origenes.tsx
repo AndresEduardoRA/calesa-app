@@ -2,20 +2,17 @@
 
 import { PlusIcon } from 'lucide-react'
 import type { Route } from 'next'
-import { useRouter } from 'next/navigation'
-import { parseAsString, useQueryStates } from 'nuqs'
+import Link from 'next/link'
 import { textoDelTope } from '@/shared/lib/conteo'
 import { TOPE_DE_LA_LISTA_DE_ORIGENES } from '@/shared/lib/paginacion'
-import { rutaDeParteDelOrigen } from '@/shared/lib/rutas'
+import { RUTAS } from '@/shared/lib/rutas'
 import { Aviso } from '@/shared/ui/aviso'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
-import { Button } from '@/shared/ui/button'
+import { Button, buttonVariants } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { MOTIVO_SIN_PERMISO_ORIGENES } from '../../../entities/motivos'
 import type { OrigenConUso } from '../../../entities/origen'
 import { faltasDeLaTarjeta } from '../../../entities/pasos'
-import { useOrigenes } from '../hooks/use-origenes'
-import { PanelNuevoOrigen } from './panel-nuevo-origen'
 import { TarjetaDeOrigen } from './tarjeta-de-origen'
 
 type Props = {
@@ -27,25 +24,28 @@ type Props = {
   apibaraActiva: boolean
 }
 
-const PANEL_NUEVO = 'nuevo'
-
-function BotonNuevo({ puedeGestionar, alCrear }: { puedeGestionar: boolean; alCrear: () => void }) {
+// «Nuevo origen» lleva a la página del primer paso de la puesta en marcha. Sin `origenes.gestionar` va apagado (no es un enlace) y el motivo se dice
+// arriba de la lista.
+function BotonNuevo({ puedeGestionar }: { puedeGestionar: boolean }) {
+  if (!puedeGestionar) {
+    return (
+      <Button className="h-11 md:h-8" disabled>
+        <PlusIcon aria-hidden />
+        Nuevo origen
+      </Button>
+    )
+  }
   return (
-    <Button className="h-11 md:h-8" onClick={alCrear} disabled={!puedeGestionar}>
+    <Link href={RUTAS.nuevoOrigen as Route} className={`${buttonVariants()} h-11 md:h-8`}>
       <PlusIcon aria-hidden />
       Nuevo origen
-    </Button>
+    </Link>
   )
 }
 
 // Los orígenes que la persona abre como tarjetas, también los desactivados, con su estado y lo que les falta. Abrir uno lleva a su página;
-// crear abre un panel con su URL (`?panel=nuevo`). Son decenas: se dibujan hasta el tope, con su aviso.
+// crear lleva a `/configuracion/origenes/nuevo` (`?panel=nuevo`, el enlace de antes, responde 308 ahí). Son decenas: se dibujan hasta el tope, con su aviso.
 export function ListaDeOrigenes({ origenes, hayMas, puedeGestionar, apibaraActiva }: Props) {
-  const router = useRouter()
-  const ediciones = useOrigenes()
-  const [{ panel }, setParametros] = useQueryStates({ panel: parseAsString }, { shallow: false })
-  const cerrar = () => void setParametros({ panel: null })
-
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -55,10 +55,7 @@ export function ListaDeOrigenes({ origenes, hayMas, puedeGestionar, apibaraActiv
             De dónde vienen los vehículos: sus datos, sus campos y sus categorías.
           </p>
         </div>
-        <BotonNuevo
-          puedeGestionar={puedeGestionar}
-          alCrear={() => void setParametros({ panel: PANEL_NUEVO })}
-        />
+        <BotonNuevo puedeGestionar={puedeGestionar} />
       </div>
       {puedeGestionar ? null : <Aviso>{MOTIVO_SIN_PERMISO_ORIGENES}</Aviso>}
       {origenes.length === 0 && !puedeGestionar ? (
@@ -69,9 +66,9 @@ export function ListaDeOrigenes({ origenes, hayMas, puedeGestionar, apibaraActiv
           descripcion="Un origen es de dónde vienen los vehículos. Al crearlo nacen su flujo de logística y sus campos."
           accion={
             puedeGestionar ? (
-              <Button onClick={() => void setParametros({ panel: PANEL_NUEVO })}>
+              <Link href={RUTAS.nuevoOrigen as Route} className={buttonVariants()}>
                 Crear el primer origen
-              </Button>
+              </Link>
             ) : undefined
           }
         />
@@ -89,16 +86,6 @@ export function ListaDeOrigenes({ origenes, hayMas, puedeGestionar, apibaraActiv
       {hayMas ? (
         <AvisoDeTope texto={textoDelTope(TOPE_DE_LA_LISTA_DE_ORIGENES, { orden: 'primeros' })} />
       ) : null}
-      <PanelNuevoOrigen
-        abierto={panel === PANEL_NUEVO && puedeGestionar}
-        ediciones={ediciones}
-        alCerrar={cerrar}
-        alCrear={(id) => {
-          // Sin `cerrar()` antes: el cambio de `?panel=` y la navegación se pisarían, y gana el
-          // último en llegar. La pantalla del origen no trae el panel.
-          router.push(rutaDeParteDelOrigen(id, 'datos') as Route)
-        }}
-      />
     </div>
   )
 }

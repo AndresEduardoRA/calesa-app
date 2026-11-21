@@ -22,6 +22,8 @@ export const RUTAS = {
   integracionesDeEmpresa: '/configuracion/empresa/integraciones',
   comprobantesDeEmpresa: '/configuracion/empresa/comprobantes',
   origenes: '/configuracion/origenes',
+  // El primer paso de la puesta en marcha de un origen: sus datos. Al crearlo sigue en `rutaDeLaPuestaEnMarcha()`.
+  nuevoOrigen: '/configuracion/origenes/nuevo',
   configuracionDeLeads: '/configuracion/leads',
   camposDeLeads: '/configuracion/leads/campos',
   // Catálogos: lo global de la empresa (los colores, los niveles, quién crea y quién ve y la vigencia de la cotización; los puertos, las
@@ -143,6 +145,28 @@ export function rutaDeLaFormula(
     `${RUTAS.origenes}/${encodeURIComponent(origenId)}/formulas/${encodeURIComponent(formulaId)}/${parte}`,
     consulta,
   )
+}
+
+// Los pasos de la puesta en marcha de un origen nuevo (docs/GLOSARIO.md › «Puesta en marcha»), en su orden, después de crearlo: cada uno es una sub-ruta
+// `…/origenes/<id>/puesta-en-marcha/<paso>`, y al final `listo`. Viven acá porque los nombran el módulo `origenes` (qué paso falta) y `src/app` (las rutas).
+export const PASOS_DE_LA_PUESTA_EN_MARCHA = [
+  'datos',
+  'campos',
+  'flujo',
+  'formula',
+  'tarjeta',
+  'publicar',
+] as const
+
+export type PasoDeLaPuestaEnMarcha = (typeof PASOS_DE_LA_PUESTA_EN_MARCHA)[number]
+
+// Un paso de la puesta en marcha (o `listo`); sin paso, la raíz, que lleva al que falta.
+export function rutaDeLaPuestaEnMarcha(
+  origenId: string,
+  paso?: PasoDeLaPuestaEnMarcha | 'listo',
+): Route {
+  const raiz = `${RUTAS.origenes}/${encodeURIComponent(origenId)}/puesta-en-marcha`
+  return (paso === undefined ? raiz : `${raiz}/${paso}`) as Route
 }
 
 // Quien ya tiene sesión no tiene nada que hacer acá.

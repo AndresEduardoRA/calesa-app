@@ -51,6 +51,13 @@ const nextConfig: NextConfig = {
   redirects() {
     return Promise.resolve([
       { source: '/configuracion', destination: '/configuracion/inicio', permanent: true },
+      // «Nuevo origen» era un panel de la lista (`?panel=nuevo`): ahora es la página del primer paso de la puesta en marcha (308, con su consulta).
+      {
+        source: '/configuracion/origenes',
+        has: [{ type: 'query', key: 'panel', value: 'nuevo' }],
+        destination: '/configuracion/origenes/nuevo',
+        permanent: true,
+      },
       // Una fórmula del origen sin parte abre su planilla (308, con su consulta).
       {
         source: `/configuracion/origenes/:id(${ID})/formulas/:formula(${ID})`,

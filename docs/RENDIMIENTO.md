@@ -652,6 +652,10 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   «Ver todos»): no cruzan como código, son enlaces del mismo menú.
 - Configuración › Empresa (tarjetas de ajustes, cada modal con `diferido()` al abrirse por primera vez): JS en frío (KB gz, `.next-e2e`) `/empresa` 228,4, `/empresa/integraciones` 228,4, `/empresa/comprobantes` 358,9 (sin tope propio).
 - Configuración › Leads (seis tarjetas, cada modal con `diferido()` al abrirse por primera vez; sin tope propio): JS en frío (KB gz, `.next-e2e`, 2026-11-20) `/configuracion/leads` 405,1 contra 458,9 de `/configuracion/empresa` medida en la misma corrida.
+- La puesta en marcha de un origen (topes en `e2e/soporte/presupuestos.ts`, 2026-11-21): `/configuracion/origenes/nuevo` 389,7 (tope 420: el formulario de
+  Datos y el paso a paso; sin el marco del origen) y `/configuracion/origenes/<id>/puesta-en-marcha/formula` 452 (tope 460: la planilla del paso, por el mismo
+  `diferido()` de la pestaña; «Empezar en blanco» y «Copiar la de otro origen», por `pantallas/formulas-del-origen-empezar`). Los otros pasos reusan el
+  editor de su pestaña y no llevan tope propio.
 - La página de un origen y Catálogos: cada pestaña y cada catálogo carga sólo su pantalla (`pantallas/origen-*`, `formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
   JS en frío (KB gz, `medirJsEnFrio()` sobre `.next-e2e`): `/configuracion/origenes/<id>/datos` 390,1, `/campos` 392,4, `/categorias` 390,4, `/formulas` 393,6
   (la lista y el «⋯» de cada fila en frío; los paneles de nueva, renombrar, activar, archivar y eliminar, y las archivadas, por `diferido()`), y el editor de
@@ -748,8 +752,9 @@ fallar.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
   pedido por envío y relee la primera página.
 - Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros y la cuadrícula más grande que admite la forma 2 (16 × 120 y
-  las celdas de texto que entran en 24 KiB: 193; 1.000 no caben, manda el tope en bytes), primer HTML ≤ 267.400 B y ≤ 5.000 nodos (medido 254.607 B y 4.000
-  nodos: 193 celdas dibujadas, 1.727 casillas vacías de un nodo sin hijos cada una, 120 filas con su asa, las cabeceras y el panel). Crece contra el editor de
+  las celdas de texto que entran en 24 KiB: 193; 1.000 no caben, manda el tope en bytes), primer HTML ≤ 280.700 B y ≤ 5.000 nodos (medido 267.903 B y 4.135
+  nodos: 193 celdas dibujadas, 1.727 casillas vacías de un nodo sin hijos cada una, 120 filas con su asa, las cabeceras y el panel; la puesta en marcha suma
+  un chunk que nombra cada referencia de cliente del payload, y el grupo `(pestanas)`). Crece contra el editor de
   bloques (183.947 B) porque el contexto reducido lleva todos los nodos del nivel «todos» con su descripción (los ofrece «Dato») y la cuadrícula viaja entera;
   y por el marco de la página del origen (encabezado, «Para cotizar y mover», pestañas, sub-pestañas y el esqueleto de cada nivel, que el payload lleva dos
   veces): ≈ 40 KB fijos, que no crecen con los miembros ni con la cuadrícula (el editor con sus datos es una sola fila de 104 KB);

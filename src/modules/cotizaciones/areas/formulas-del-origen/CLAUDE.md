@@ -21,7 +21,10 @@ tarjeta sirve. Acá se lee, se dibuja y se pide.
   Cada action pide `puede(ctx.permisos, 'cotizaciones.configurar', origenId)` antes de llamar y **no revalida**: la pantalla vuelve a leer con
   `router.refresh()` (crear abre la planilla nueva).
 - `client.ts` vacío. Las pantallas: `pantallas/formulas-del-origen.ts` (`SeccionDeLasFormulas`, recibe el origen, los orígenes y los permisos de `src/app`) y
-  `pantallas/formulas-del-origen-cabeza.ts` (`CabezaDeLaFormulaDelOrigen`).
+  `pantallas/formulas-del-origen-cabeza.ts` (`CabezaDeLaFormulaDelOrigen`). La puesta en marcha del origen (glosario) usa dos más, con los mismos modales
+  (`components/puesta-en-marcha/`, su propio `diferidos.tsx`): `pantallas/formulas-del-origen-empezar.ts` (`EmpezarLaFormula`: «Empezar en blanco» o «Copiar la
+  de otro origen», que abren «Nueva fórmula» con `&como=blanco|otro`, el nombre del origen propuesto y `alCrear`, que se queda en el paso) y
+  `pantallas/formulas-del-origen-publicar.ts` (`PublicarLaFormula`: «Qué se publica» y «Publicar…», que abre «Activar» con `alActivar`, que lleva a «Listo»).
 
 ## La pantalla
 

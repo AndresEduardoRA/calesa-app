@@ -19,6 +19,11 @@ type Args = {
   origen: { id: string; nombre: string }
   // `?copia=<id>`: «Copiar» desde el «⋯» de una fórmula de este origen (también una archivada).
   copiaInicial: string | null
+  comoInicial?: ComoEmpieza | null
+  // El nombre con el que abre (la puesta en marcha propone el del origen); se puede cambiar.
+  nombreInicial?: string
+  // Con la fórmula ya creada; sin él, abre su planilla.
+  alCrear?: (id: string) => void
 }
 
 // Los avisos de la copia esperan a la planilla en la pestaña (`avisos-de-la-copia.tsx` los lee una vez).
@@ -31,14 +36,45 @@ function guardarLosAvisos(creada: FormulaCreada) {
   }
 }
 
+// Elegir otra fuente borra los motivos que dejan de valer.
+function eleccionesQueLimpian(
+  fuente: ReturnType<typeof useFuenteDeLaCopia>,
+  quitar: (...claves: string[]) => void,
+) {
+  return {
+    elegirComo: (valor: ComoEmpieza) => {
+      fuente.elegirComo(valor)
+      quitar('origen', 'copia', 'pieza')
+    },
+    elegirOtroOrigen: (id: string | null) => {
+      fuente.elegirOtroOrigen(id)
+      quitar('origen', 'copia')
+    },
+    elegirCopia: (id: string | null) => {
+      fuente.elegirCopia(id)
+      quitar('copia', 'pieza')
+    },
+    elegirPieza: (valor: Pieza) => {
+      fuente.elegirPieza(valor)
+      quitar('pieza')
+    },
+  }
+}
+
 // El estado del modal «Nueva fórmula»: qué copia (`useFuenteDeLaCopia`) y el nombre (el de la copia con « (copia)» hasta que se escribe otro). El id del intento
 // vive con el modal (cada apertura, uno; un reintento no crea dos). Al crear, guarda los avisos de la copia y abre su planilla.
-export function useNuevaFormula({ origen, copiaInicial }: Args) {
+export function useNuevaFormula({
+  origen,
+  copiaInicial,
+  comoInicial = null,
+  nombreInicial = '',
+  alCrear,
+}: Args) {
   const router = useRouter()
   const [intento] = useState(() => crypto.randomUUID())
-  const fuente = useFuenteDeLaCopia(origen.id, copiaInicial)
-  const [nombre, setNombre] = useState('')
-  const [nombreEscrito, setNombreEscrito] = useState(false)
+  const fuente = useFuenteDeLaCopia(origen.id, copiaInicial, comoInicial)
+  const [nombre, setNombre] = useState(nombreInicial)
+  const [nombreEscrito, setNombreEscrito] = useState(nombreInicial !== '')
   const [rechazo, setRechazo] = useState<ErrorApp | null>(null)
   const crear = useAction(crearFormulaDelOrigen)
   const { copia } = fuente
@@ -46,7 +82,7 @@ export function useNuevaFormula({ origen, copiaInicial }: Args) {
 
   const envio = useEnvioDeModal<FormulaCreada>({
     abierto: true,
-    hayCambios: fuente.como !== 'blanco' || nombre.trim() !== '',
+    hayCambios: fuente.como !== (comoInicial ?? 'blanco') || nombre.trim() !== nombreInicial.trim(),
     validar: () => {
       const elNombre = nombreDeLaFormula(nombreMostrado)
       const motivos = {
@@ -73,6 +109,11 @@ export function useNuevaFormula({ origen, copiaInicial }: Args) {
     alGuardar: (creada) => {
       guardarLosAvisos(creada)
       avisarExito(`Creaste «${nombreMostrado.trim()}».`)
+      // Se navega sin cerrar antes el panel: el cierre por la URL pisaría la navegación (docs/LECCIONES.md › «Interfaz»).
+      if (alCrear) {
+        alCrear(creada.id)
+        return
+      }
       router.push(rutaDeLaFormula(origen.id, creada.id, 'planilla'))
     },
   })
@@ -83,22 +124,7 @@ export function useNuevaFormula({ origen, copiaInicial }: Args) {
   return {
     ...envio,
     ...fuente,
-    elegirComo: (valor: ComoEmpieza) => {
-      fuente.elegirComo(valor)
-      quitar('origen', 'copia', 'pieza')
-    },
-    elegirOtroOrigen: (id: string | null) => {
-      fuente.elegirOtroOrigen(id)
-      quitar('origen', 'copia')
-    },
-    elegirCopia: (id: string | null) => {
-      fuente.elegirCopia(id)
-      quitar('copia', 'pieza')
-    },
-    elegirPieza: (valor: Pieza) => {
-      fuente.elegirPieza(valor)
-      quitar('pieza')
-    },
+    ...eleccionesQueLimpian(fuente, quitar),
     nombre: nombreMostrado,
     escribirNombre: (valor: string) => {
       setNombre(valor)

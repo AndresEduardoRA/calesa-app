@@ -105,10 +105,6 @@ export const DRAWERS_DEL_NUCLEO: Record<string, RegistroDeDrawer> = {
     formulario: 'src/modules/origenes/features/categorias/components/panel-de-categoria.tsx',
     mecanismo: 'contexto',
   },
-  'src/modules/origenes/features/origenes/components/panel-nuevo-origen.tsx': {
-    formulario: 'src/modules/origenes/features/origenes/components/panel-nuevo-origen.tsx',
-    mecanismo: 'contexto',
-  },
   // --- empresa
   'src/modules/empresa/features/tipos-cambio/components/panel-tipo-cambio.tsx': {
     formulario: 'src/modules/empresa/features/tipos-cambio/components/panel-tipo-cambio.tsx',

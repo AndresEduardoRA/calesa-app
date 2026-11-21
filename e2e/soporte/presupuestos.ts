@@ -43,6 +43,10 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
   // «Quién crea y quién ve» (T413), la primera de Configuración con presupuesto: el marco de Catálogos, el cuadro (tabla, `Switch`, `<select>` nativos) y las
   // actions de la matriz de Roles. Provisional hasta su primera medición en el e2e: se fija con lo medido más un 5 %, a la decena.
   '/configuracion/catalogos/quien-crea-y-quien-ve': 420,
+  // La puesta en marcha de un origen (T420): `/nuevo` (el paso a paso y el formulario del alta) y el paso Fórmula con la planilla de la subasta de la semilla (la
+  // planilla y la tarjeta en vivo van con `diferido()`). Provisionales hasta su primera medición en el e2e: lo medido más un 5 %, a la decena.
+  '/configuracion/origenes/nuevo': 420,
+  '/configuracion/origenes/[id]/puesta-en-marcha/formula': 460,
 }
 
 // Lo que aporta la ficha del lead **entera** al documento sobre `/perfil`, en KB (T33: con todo a la vista, `?seccion=` sólo dice a qué bloque

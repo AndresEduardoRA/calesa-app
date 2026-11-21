@@ -12,6 +12,7 @@ import {
   borrarOrigenes,
   camposDelOrigen,
   campoDelOrigen,
+  delAltaASuPagina,
   flujoDelOrigen,
   origenDeLaBase,
   irAParte,
@@ -107,9 +108,9 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
     .click()
   await expect(page.getByRole('heading', { name: 'Orígenes', level: 1 })).toBeVisible()
 
-  // Manual: el género acompaña al sustantivo hasta que la persona lo elige.
-  await page.getByRole('button', { name: 'Nuevo origen' }).click()
-  const panel = page.getByRole('dialog')
+  // Manual: «Nuevo origen» abre la página del primer paso de la puesta en marcha. El género acompaña al sustantivo hasta que la persona lo elige.
+  await page.getByRole('link', { name: 'Nuevo origen' }).click()
+  const panel = page.locator('main')
   await panel.getByLabel('Nombre', { exact: true }).fill(MANUAL)
   await panel.getByLabel('Lo que entra por acá se llama').fill('unidad')
   await expect(panel.getByRole('radio', { name: 'Femenino' })).toBeChecked()
@@ -117,8 +118,8 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
   await panel.getByRole('button', { name: 'Crear origen' }).click()
   await expect(page.getByText(`Origen «${MANUAL}» creado`)).toBeVisible()
 
-  // Cae en la página del origen (su pestaña Datos), con «Para cotizar y mover»: cada paso lleva a su pestaña.
-  await expect(page).toHaveURL(/\/configuracion\/origenes\/[0-9a-f-]{36}\/datos$/)
+  // Sigue en el paso Campos de la puesta en marcha. La página del origen tiene «Para cotizar y mover»: cada paso lleva a su pestaña.
+  await delAltaASuPagina(page)
   await expect(page.getByRole('heading', { name: MANUAL, level: 1 })).toBeVisible()
   const tira = page.getByRole('region', { name: 'Para cotizar y mover' })
   const paso = (titulo: string) => tira.getByRole('listitem').filter({ hasText: titulo })
@@ -149,9 +150,8 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
   expect(await camposDelOrigen(corea.id)).toHaveLength(8)
 
   // Subasta: nace con los campos mapeados a apibara y la regla de aduana.
-  await page.goto('/configuracion/origenes')
-  await page.getByRole('button', { name: 'Nuevo origen' }).click()
-  const otro = page.getByRole('dialog')
+  await page.goto('/configuracion/origenes/nuevo')
+  const otro = page.locator('main')
   await otro.getByLabel('Nombre', { exact: true }).fill(SUBASTA)
   // Las opciones son radios nativos con otra piel: se elige tocando su etiqueta.
   await otro
@@ -160,6 +160,7 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
     .click()
   await otro.getByRole('checkbox', { name: 'Copart' }).check()
   await otro.getByRole('button', { name: 'Crear origen' }).click()
+  await delAltaASuPagina(page)
   await expect(page.getByRole('heading', { name: SUBASTA, level: 1 })).toBeVisible()
 
   const japon = await origenDeLaBase('subasta_japon')
@@ -182,9 +183,8 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
 
 test('un nombre repetido se dice en el campo y lo tipeado queda', async ({ page }) => {
   await entrar(page, duena)
-  await page.goto('/configuracion/origenes')
-  await page.getByRole('button', { name: 'Nuevo origen' }).click()
-  const panel = page.getByRole('dialog')
+  await page.goto('/configuracion/origenes/nuevo')
+  const panel = page.locator('main')
   await panel.getByLabel('Nombre', { exact: true }).fill(' corea ')
   await panel.getByLabel('Lo que entra por acá se llama').fill('lote')
   await panel.getByRole('button', { name: 'Crear origen' }).click()

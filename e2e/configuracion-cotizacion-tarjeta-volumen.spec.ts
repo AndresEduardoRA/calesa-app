@@ -26,10 +26,11 @@ import { abrirLaFormula, urlDeLaFormula } from './soporte/rutas-de-la-formula'
 // posición vacía del lienzo es un solo nodo sin hijos; con 600 miembros, «Dato» dibuja 50 y halla el que falta al escribir.
 test.describe.configure({ mode: 'serial' })
 
-// Lo medido en escritorio con 500 miembros y la cuadrícula más grande (254.607 B y 4.000 nodos con el build de `.next-e2e`), más un 5 %: va a
+// Lo medido en escritorio con 500 miembros y la cuadrícula más grande (267.903 B y 4.135 nodos con el build de `.next-e2e`), con margen: va a
 // docs/RENDIMIENTO.md. Crece contra el editor de bloques (183.947 B): el contexto reducido lleva todos los nodos del nivel «todos» y la cuadrícula viaja entera; y
 // la página del origen suma su marco (encabezado, «Para cotizar y mover», pestañas y sub-pestañas), fijo: no crece con los miembros ni con la cuadrícula.
-const TOPE_DE_BYTES_DEL_HTML = 267_400
+// La puesta en marcha suma un chunk que nombra cada referencia de cliente del payload, y el grupo `(pestanas)`.
+const TOPE_DE_BYTES_DEL_HTML = 280_700
 const TOPE_DE_NODOS_CON_500 = 5_000
 
 let configuradora = ''

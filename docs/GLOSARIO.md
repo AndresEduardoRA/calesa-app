@@ -115,10 +115,16 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   vehículos, en cinco pasos con su estado (✓ listo, ⚠ aviso, ✗ bloquea): Datos (apibara en una subasta), Campos, Flujo (con fases), Fórmula
   (una activa) y Tarjeta (publicada en la activa), cada uno enlazado a su pestaña de la página del origen (Fórmula, a la lista de las fórmulas). Un inactivo dice sólo «Inactivo». Lo accionable se ve
   también en el inicio de Configuración como **lo que falta** (`faltasPorSeccion()`, `<QueFaltaDeLaSeccion>`: una línea por origen en Orígenes,
-  apibara en Empresa). No: «siguientes pasos», «checklist».
+  apibara en Empresa). Mientras el origen no tenga fórmula activa, la tira marca **Pendiente** el paso de la puesta en marcha que falta y ofrece
+  «Seguir la puesta en marcha» (`enMarcha()`). No: «siguientes pasos», «checklist».
 - **Página del origen** — `/configuracion/origenes/<id>/<pestaña>` (`MarcoDelOrigen`, `PESTANAS_DEL_ORIGEN`): todo lo de un origen en un lugar,
   con su encabezado, «Para cotizar y mover» y seis **pestañas**: Datos, Campos, Categorías, Flujo, Fórmulas (la lista de las fórmulas del origen;
   cada una se edita en `/formulas/<fórmula>` con sus pestañas Planilla, Hoja y Tarjeta) y Tablas. Cada pestaña pide su permiso en ese origen; la que no se abre va apagada con su motivo.
+- **Puesta en marcha** — `/configuracion/origenes/nuevo` y `/configuracion/origenes/<id>/puesta-en-marcha/<paso>` (`rutaDeLaPuestaEnMarcha()`,
+  `estadoDeLaPuestaEnMarcha()`, `<PasoAPaso>`): el paso a paso que lleva a quien crea un origen hasta cotizar con él: Datos, Campos, Flujo, Fórmula,
+  Tarjeta, Publicar y **Listo** («Cotizar con <origen>»). El avance se deriva de lo que hay (campos, fases, fórmula de trabajo, fórmula activa), sin
+  guardar un «paso actual»: cada paso guarda con sus botones, «Seguir» va al siguiente y la raíz lleva al que falta. Un paso sin el permiso en ese
+  origen se salta y dice su motivo. Se retoma desde «Para cotizar y mover». No: «asistente», «wizard», «onboarding».
 - **Catálogos (Configuración)** — `SECCION_DE_CATALOGOS`, `/configuracion/catalogos/<clave>`: lo que es de toda la empresa y no de un origen, en
   tres tramos: «Cotizaciones» (Colores, Niveles, Quién crea y quién ve, Vigencia), «Logística» (Puertos, Navieras, Categorías de gasto, Tipos de documento) y las Tablas
   compartidas. No es el catálogo de repuestos ni el de apibara.
@@ -1073,9 +1079,6 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Origen sin uso** — `motivoParaNoEliminar()` / `origen_eliminar()`: sin vehículos (papelera incluida), cotizaciones ni fórmula publicada.
 - **Uso de un origen** — `origenes_resumen()` / `UsoDeOrigen`: vehículos, cotizaciones, campos, categorías, fases, ¿fórmula publicada? y
   concesiones.
-- **Siguientes pasos** — `pasosDe()` / `<SiguientesPasos>`: lo que falta a un origen para funcionar (fases, fórmula, permisos, apibara). Lo
-  accionable se ve también en el inicio de Configuración como **lo que falta** (`faltasPorSeccion()`, `<QueFaltaDeLaSeccion>`).
-- **Fórmula pendiente** — origen sin fila `publicada` en `formulas`: un origen nuevo no se cotiza hasta publicar la primera.
 - **Vehículo** — `vehiculos`: el dato central; recorre el flujo de su origen.
 - **Atributos** — `vehiculos.atributos`, `leads.atributos`: campos del layout que no son columna. En un lead se leen por `leads_vista`, recortados.
 - **Dato común** — `camposComunes()` / columnas de `vehiculos`: lo que tiene todo vehículo y es columna (título, marca, año, VIN, precio…).

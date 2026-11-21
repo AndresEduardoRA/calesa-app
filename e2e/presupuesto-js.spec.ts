@@ -32,6 +32,9 @@ const destinoDe = (ruta: string): string => {
   if (ruta === '/cotizaciones/nuevo') {
     return `${ruta}?origen=${sql("select id from public.origenes where clave = 'subasta_usa'")}`
   }
+  if (ruta === '/configuracion/origenes/[id]/puesta-en-marcha/formula') {
+    return `/configuracion/origenes/${sql("select id from public.origenes where clave = 'subasta_usa'")}/puesta-en-marcha/formula`
+  }
   if (ruta === '/logistica/fase/[fase]') {
     // La lista de la primera fase de logística de la subasta de la semilla, con su origen.
     const origen = sql("select id from public.origenes where clave = 'subasta_usa'")

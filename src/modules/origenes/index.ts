@@ -45,3 +45,22 @@ export {
   type ParaCotizarYMover,
   type PasoParaCotizar,
 } from './entities/pasos'
+
+// La puesta en marcha de un origen nuevo: cada paso con si está hecho y si la persona lo hace en ese origen, el que falta, el siguiente y el anterior
+export {
+  MOTIVO_SIN_GESTIONAR_EL_ORIGEN,
+  PASOS_DE_LA_PUESTA_EN_MARCHA,
+  TITULO_DEL_PASO,
+  enMarcha,
+  estadoDeLaPuestaEnMarcha,
+  estadoDelPaso,
+  pasoAnterior,
+  pasoPendiente,
+  pendienteEnLaTira,
+  pasoSiguiente,
+  type EstadoDeLaPuestaEnMarcha,
+  type EstadoDelPaso,
+  type PasoConEstado,
+  type PasoDeLaPuestaEnMarcha,
+  type PermisosDeLaPuestaEnMarcha,
+} from './entities/puesta-en-marcha'
