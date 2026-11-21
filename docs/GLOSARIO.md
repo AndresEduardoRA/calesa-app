@@ -1032,6 +1032,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Shell** — `shell.ts` y `shell.client.ts` de un módulo, `src/app/(app)/layout.tsx`: marco de toda pantalla.
 - **Pantalla (entrada)** — `pantallas/<pantalla>.ts` de un módulo: entrada por la que `src/app` trae los componentes de una pantalla.
 - **Carril** — un worktree con su propia pila de Supabase (`scripts/worktree/preparar.sh`, `docs/FLUJO.md`).
+- **Cola de integración** — la merge queue de GitHub (`merge_group` en `ci.yml`, `scripts/flujo/cola-de-integracion.sh`,
+  `scripts/orquestador/integracion.sh`): prueba cada PR en verde combinado con `main` y los de delante, y lo integra. Nunca «cola» a
+  secas: la cola es la del orquestador (los issues `cola`).
 - **E2E afectados** — `node scripts/e2e-afectados.mjs [--correr]`: los e2e que una rama puede romper aunque no sean de su módulo (los
   dirigidos, los que nombran un texto visible que cambió o que un texto nuevo vuelve ambiguo, y los de las pantallas de un compartido), con
   tope de 40; se corren en local antes de publicar. No son los **dirigidos** del CI (`scripts/e2e-dirigidos.mjs`), que son un subconjunto.

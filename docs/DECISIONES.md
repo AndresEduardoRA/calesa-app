@@ -18,10 +18,13 @@ las trampas, en `docs/LECCIONES.md`.
 - **Una regla que vive en SQL y en TS se prueba como espejo.** Los mismos casos corren en Vitest y en `db:probar` (fórmula del cotizador y de repuestos, `shared/lib/campos/rango.ts`, `portal-mensaje.ts`, `normalizar_telefono`); decide la base. Cambiar un lado exige cambiar el otro.
 - **Las funciones edge (Deno) no importan de `src/`: llevan una copia exacta.** `importar-csv` con `leer.ts` y `plantillas.ts`; una guarda exige copias idénticas y la misma versión de `papaparse`.
 - **Stack local por variables de entorno.** La CLI lee `SUPABASE_PROJECT_ID` y los puertos del entorno (`.env.carril`); no se genera un `config.toml` por worktree.
-- **`main` no exige la rama al día.** Con varias tareas en paralelo, cada integración obligaría a las demás a otra vuelta entera del CI.
-  Un PR en verde entra aunque `main` haya avanzado; el PR con migraciones nuevas entra al día
-  (sin auto-merge, lo integran `publicar.sh` o el orquestador) y `main` en rojo frena lo nuevo hasta la urgente que lo arregla
-  (`scripts/orquestador/main-en-tanda.sh`). La cola de GitHub (merge queue) lo haría mejor, pero pide un repo de una organización.
+- **Los PR entran por la cola de integración de GitHub.** Un PR en verde entra a la cola con su auto-merge y GitHub lo prueba una vez,
+  combinado con `main` y los PR de delante (`merge_group`), en lugar de una vuelta entera del CI por cada PR que se integraba antes y lo
+  dejaba atrás. Nadie trae `main` a la rama: el orden de migraciones lo valida el CI del grupo contra `HEAD^1` (también entre dos PR de
+  la misma cola), y el grupo corre lo mismo que pidió el PR (los dirigidos de `HEAD^1...HEAD`, o el completo). Un grupo que cae con el
+  PR en verde lo rompe la combinación con lo de delante: cuenta como choque (`MAX_CHOQUES`), no como arreglo. La cola pide squash (por
+  eso `HEAD^1` es la base) y un repo de una organización; sin ella el auto-merge integra sin probar combinado, y `main` en rojo frena lo
+  nuevo hasta la urgente que lo arregla (`scripts/orquestador/main-en-tanda.sh`), que queda de red de seguridad.
 - **Un e2e que cae en `main` y no es de la rama se espera, no se arregla ni se traba.** La sesión de arreglo termina en `RESULTADO: AJENO — <spec>:<línea> [<proyecto>] — <evidencia>`:
   el orquestador crea una sola urgente por `<spec>:<línea>` (`plantillas/e2e-roto-en-main.md`), la tarea que lo encontró la suma a su `depende` y sigue
   `esperando_ci` (sin estado nuevo, sin retener sus llaves de área, sin gastar `MAX_ARREGLOS`), y al integrarse la urgente se pone al día con main sin

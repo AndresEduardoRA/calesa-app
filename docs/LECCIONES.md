@@ -372,6 +372,10 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   eso es la mayor parte de su costo. El tope de compactación va explícito al lanzarla (`--autocompact <tokens>`). (kit)
 - Un e2e que la rama no toca y que también cae en `main` no se arregla ni se rodea en la rama: va en su tarea urgente, y la rama espera
   a que se integre, se pone al día y vuelve a correr el CI. (kit)
+- Un repo de una organización no tiene sesión de `gh`: `gh auth token --user <org>` falla; el token es el de la máquina (`GH_TOKEN` o
+  `gh auth token`). (kit)
+- En `merge_group` no hay `pull_request.base.sha`: lo que trae el PR es `HEAD^1...HEAD` (la cola integra con squash), y la base para
+  comparar migraciones y contratos es `HEAD^1`, con `fetch-depth: 2` (sin el padre, `git ls-tree` falla y la guarda no compara nada). (kit)
 - Lint, typecheck y la suite entera sobre el mismo árbol no verifican nada nuevo: corren una vez, al final y en paralelo; entre commits
   alcanzan los hooks (lefthook y `Stop`) y las pruebas de lo tocado. (kit)
 - Para que el orquestador tome un cambio suyo no reinicies el servicio: al integrarse en `main` se relanza solo con `exec` y las
