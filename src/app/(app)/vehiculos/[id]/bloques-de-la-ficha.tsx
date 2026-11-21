@@ -1,14 +1,7 @@
 import { Suspense } from 'react'
 import { EsqueletoDeActividadReciente } from '@/modules/actividad/pantallas/actividad-reciente'
 import type { Permisos } from '@/modules/equipo'
-import type { LayoutDeOrigen, OrigenResumen } from '@/modules/origenes'
-import type {
-  AvisosDelMenu,
-  PermisoDeVitrina,
-  Vehiculo,
-  VistaPreviaDeVitrina,
-} from '@/modules/vehiculos'
-import { BloqueDeVitrina } from '@/modules/vehiculos/pantallas/ficha'
+import type { AvisosDelMenu, Vehiculo } from '@/modules/vehiculos'
 import { origenesCon } from '@/shared/lib/permisos'
 import { BloqueDeFicha } from '@/shared/ui/ficha-en-bloques'
 import { RelacionadosDeLaFicha } from '../../_relacionados/relacionados-del-vehiculo'
@@ -19,22 +12,16 @@ import type { AnclaDeLaFicha, BloqueDeLaFicha } from './bloques'
 type Props = {
   visibles: readonly BloqueDeLaFicha[]
   vehiculo: Vehiculo
-  origen: OrigenResumen
   permisos: Permisos
   // «Relacionados»: la papelera que ofrece el aviso de desvinculado y lo que ofrece si la base rechaza el envío.
   ofrecerPapelera: boolean
   avisos: AvisosDelMenu
   // «Cotizar» en el título de «Cotizaciones de este vehículo» (la misma ruta de «Cotización aprobada»), o null sin `cotizaciones.crear`.
   cotizar: string | null
-  // «Vitrina»: lo que ya leyó la página para la cabecera y el panel, la fase (el motivo) y sólo los campos públicos de la tarjeta.
-  previa: VistaPreviaDeVitrina | null
-  publicar: PermisoDeVitrina
-  fase: { nombre: string } | null
-  camposPublicos: LayoutDeOrigen['campos']
 }
 
 // Lo de adentro de cada bloque, con su límite de error. Ninguno espera a acercarse en el marco: las islas de las cotizaciones y de la actividad leen al acercarse solas
-// (con su esqueleto) y «Relacionados» y «Vitrina» los abre la URL (sus paneles).
+// (con su esqueleto) y «Relacionados» lo abre la URL (sus paneles).
 function Contenido({
   ancla,
   titulo,
@@ -44,7 +31,7 @@ function Contenido({
   titulo: string
   props: Props
 }) {
-  const { vehiculo, origen, permisos } = props
+  const { vehiculo, permisos } = props
   switch (ancla) {
     case 'cotizaciones':
       return (
@@ -73,18 +60,6 @@ function Contenido({
           <Suspense fallback={<EsqueletoDeActividadReciente />}>
             <BloqueActividad vehiculoId={vehiculo.id} />
           </Suspense>
-        </BloqueDeFicha>
-      )
-    case 'vitrina':
-      return (
-        <BloqueDeFicha ancla={ancla} titulo={titulo}>
-          <BloqueDeVitrina
-            previa={props.previa}
-            permiso={props.publicar}
-            origen={{ nombre: origen.nombre }}
-            fase={props.fase}
-            campos={props.camposPublicos}
-          />
         </BloqueDeFicha>
       )
   }

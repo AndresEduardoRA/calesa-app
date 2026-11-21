@@ -36,6 +36,20 @@ describe('`?seccion=ficha` abre la ficha completa', () => {
   })
 })
 
+describe('`?seccion=vitrina` abre el panel de la vitrina', () => {
+  it('a la misma ficha con `?panel=vitrina`, sin `seccion` y con el resto de la consulta', () => {
+    expect(destinoSinLeer(ID, { seccion: 'vitrina' }, FICHA)).toBe(`/vehiculos/${ID}?panel=vitrina`)
+    expect(
+      destinoSinLeer(ID, { seccion: 'vitrina', visor: ID, foto: '3', panel: 'imagenes' }, FICHA),
+    ).toBe(`/vehiculos/${ID}?visor=${ID}&foto=3&panel=vitrina`)
+  })
+
+  it('una `seccion` repetida o un id que no es un uuid: nada', () => {
+    expect(destinoSinLeer(ID, { seccion: ['vitrina', 'vitrina'] }, FICHA)).toBeNull()
+    expect(destinoSinLeer('../../perfil?x=', { seccion: 'vitrina' }, FICHA)).toBeNull()
+  })
+})
+
 describe('lo que no redirige sin leer', () => {
   it('un id que no es un uuid no se interpola en la ruta', () => {
     expect(destinoSinLeer('../../perfil?x=', { seccion: 'fotos' }, FICHA)).toBeNull()

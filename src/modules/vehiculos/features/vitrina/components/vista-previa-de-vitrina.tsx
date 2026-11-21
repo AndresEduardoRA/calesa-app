@@ -14,8 +14,6 @@ type Props = {
   destacado: boolean
   // El layout del origen: de ahí sale la etiqueta de cada campo público.
   campos: readonly CampoDeVehiculo[]
-  // Su título «Así lo verá el visitante». Sin él (el bloque «Vitrina» de la ficha, donde ya lo dice el `<summary>`), no lo repite.
-  conTitulo?: boolean
 }
 
 function PrecioPublico({ precio, precioHasta, nota }: Props['precio']) {
@@ -43,22 +41,14 @@ function PrecioPublico({ precio, precioHasta, nota }: Props['precio']) {
 
 // «Así lo verá el visitante»: la tarjeta pública de un vehículo, con lo único que sale a la web.
 // La portada, la identidad, el precio público y los campos que el origen marcó como públicos.
-export function VistaPreviaDeVitrina({
-  tarjeta,
-  precio,
-  destacado,
-  campos,
-  conTitulo = true,
-}: Props) {
+export function VistaPreviaDeVitrina({ tarjeta, precio, destacado, campos }: Props) {
   const publicos = campos.filter((campo) => campo.clave in tarjeta.atributos)
   const subtitulo = [tarjeta.marca, tarjeta.modelo, tarjeta.anio].filter(Boolean).join(' · ')
   return (
     <section aria-label="Así lo verá el visitante" className="grid gap-2">
-      {conTitulo ? (
-        <h3 className="text-(length:--text-sm) font-medium text-(--color-ink)">
-          Así lo verá el visitante
-        </h3>
-      ) : null}
+      <h3 className="text-(length:--text-sm) font-medium text-(--color-ink)">
+        Así lo verá el visitante
+      </h3>
       <article className="overflow-hidden rounded-(--radius-card) border border-(--color-line) bg-(--color-surface)">
         <Miniatura ruta={tarjeta.miniatura} className="w-full rounded-none" />
         <div className="grid gap-3 p-3">

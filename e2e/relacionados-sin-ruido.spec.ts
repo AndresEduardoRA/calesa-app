@@ -144,3 +144,29 @@ test('E2E la ficha dibuja el bloque compacto sin leyendas a la vista, sin grupos
   await expect(delLead.getByRole('region', { name: 'Interesado', exact: true })).toHaveCount(0)
   await capturar(page, info, 'ficha-lead-compacta')
 })
+
+test('E2E la ficha, a 1920 px, reparte «Relacionados» sin hueco: los grupos llenan el ancho del bloque', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1920, height: 1080 })
+  await entrar(page, duena, { fresco: true })
+  await page.goto(`/vehiculos/${vehiculo}`)
+  await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeVisible()
+  const vinculado = grupo(page, 'Vinculado')
+  const interesado = grupo(page, 'Interesado')
+  await expect(vinculado).toBeVisible()
+  await expect(interesado).toBeVisible()
+  const [region, uno, otro] = await Promise.all([
+    bloque(page).boundingBox(),
+    vinculado.boundingBox(),
+    interesado.boundingBox(),
+  ])
+  if (!region || !uno || !otro) {
+    throw new Error('no se pudieron medir los grupos')
+  }
+  // Una sola fila (en columnas que caben) y el último llega al borde derecho del bloque: ninguna pista vacía.
+  expect(Math.abs(uno.y - otro.y)).toBeLessThanOrEqual(1)
+  expect(Math.max(uno.x + uno.width, otro.x + otro.width)).toBeGreaterThanOrEqual(
+    region.x + region.width - 2,
+  )
+})

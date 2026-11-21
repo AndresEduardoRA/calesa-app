@@ -18,7 +18,7 @@ import { literal, sql } from './soporte/sql'
 import { sembrarFotos } from './soporte/vehiculos-lista'
 
 // La ficha del vehículo en dos columnas (`docs/UX.md` › Vehículo): a la derecha, sólo lo de ventas —«Cotizaciones de este vehículo», «Relacionados»,
-// «Actividad reciente» y «Vitrina»—, y los enlaces viejos a lo que se fue redirigen (`secciones-viejas.test.ts`). Sobre el vehículo `uno` del terreno de
+// y «Actividad reciente»—, y los enlaces viejos a lo que se fue redirigen (`secciones-viejas.test.ts`). Sobre el vehículo `uno` del terreno de
 // «Qué falta», con un vinculado, dos interesados, dos cotizaciones (la más vieja, la aprobada) y dos fotos. Qué bloque ve quién: `bloques.test.ts`.
 test.describe.configure({ mode: 'serial' })
 
@@ -100,7 +100,7 @@ const costo = (page: Page): Locator => page.getByRole('region', { name: / y cost
 const filas = (page: Page): Locator =>
   page.getByRole('list', { name: 'Cotizaciones de este vehículo' }).locator('article')
 
-const BLOQUES = ['Cotizaciones de este vehículo', 'Relacionados', 'Actividad reciente', 'Vitrina']
+const BLOQUES = ['Cotizaciones de este vehículo', 'Relacionados', 'Actividad reciente']
 
 async function alaFicha(page: Page, busqueda = ''): Promise<void> {
   await page.goto(`/vehiculos/${id}${busqueda}`)
@@ -113,12 +113,11 @@ test('E2E ficha en dos columnas · a la derecha sólo lo de ventas, en su orden'
 }, info) => {
   await entrar(page, duena, { fresco: true })
   await alaFicha(page)
-  // Derecha: el índice y los cuatro bloques, en su orden.
+  // Derecha: el índice y los tres bloques, en su orden.
   await expect(indice(page).getByRole('link')).toHaveText([
     'Cotizaciones',
     'Relacionados',
     'Actividad',
-    'Vitrina',
   ])
   const ys: number[] = []
   for (const nombre of BLOQUES) {
@@ -136,7 +135,7 @@ test('E2E ficha en dos columnas · a la derecha sólo lo de ventas, en su orden'
   await region(page, 'Cotizaciones de este vehículo').scrollIntoViewIfNeeded()
   await expect(filas(page)).toHaveCount(2)
   await expect(filas(page).first()).toContainText('Aprobada')
-  await region(page, 'Vitrina').scrollIntoViewIfNeeded()
+  await region(page, 'Actividad reciente').scrollIntoViewIfNeeded()
   await capturar(page, info, 'ficha-abajo')
 })
 
@@ -179,48 +178,34 @@ test('E2E ficha en dos columnas · «Actividad reciente» lleva a toda la activi
   await expect(actividad.getByRole('listitem').last()).toContainText(`creó ${titulo}`)
 })
 
-test('E2E ficha en dos columnas · «Vitrina» sin publicar y publicada', async ({ page }, info) => {
+test('E2E ficha en dos columnas · la vitrina no es un bloque: `?seccion=vitrina` abre su panel y la insignia dice si se ve', async ({
+  page,
+}, info) => {
   sql(
     `update public.vehiculos set publicado_web = false, precio_web = null, precio_web_hasta = null where id = ${literal(id)}::uuid`,
   )
   await entrar(page, duena)
-  await alaFicha(page, '?seccion=vitrina')
-  const vitrina = region(page, 'Vitrina')
-  await expect(tituloDe(page, 'Vitrina')).toBeFocused()
-  await expect(vitrina.getByText('No está en la web')).toBeVisible()
-  await vitrina.getByRole('button', { name: 'Publicar en la web…' }).click()
-  await expect(page).toHaveURL(/[?&]panel=vitrina/)
+  await alaFicha(page)
+  await expect(region(page, 'Vitrina')).toHaveCount(0)
+  await expect(indice(page).getByRole('link', { name: 'Vitrina' })).toHaveCount(0)
+  // El enlace viejo abre el panel, conserva el resto de la consulta y reemplaza la entrada del historial.
+  await page.goto('/perfil')
+  await page.goto(`/vehiculos/${id}?seccion=vitrina&visor=${id}&foto=1`)
+  await expect(page).toHaveURL(new RegExp(`/vehiculos/${id}\\?visor=${id}&foto=1&panel=vitrina$`))
+  await page.goBack()
+  await expect(page).toHaveURL(/\/perfil$/)
+  await page.goto(`/vehiculos/${id}?seccion=vitrina`)
+  await expect(page).toHaveURL(new RegExp(`/vehiculos/${id}\\?panel=vitrina$`))
   await expect(page.getByRole('dialog', { name: 'Publicar en la web' })).toBeVisible()
 
+  // Publicado, la ficha sigue sin bloque: lo dice la insignia de la izquierda.
   sql(
     `update public.vehiculos set publicado_web = true, precio_web = 15000 where id = ${literal(id)}::uuid`,
   )
-  await alaFicha(page, '?seccion=vitrina')
-  await expect(vitrina.getByText('Precio público')).toBeVisible()
-  await expect(vitrina.getByText('Consultar')).toHaveCount(0)
-  // Se vea o no en la web, lo dice; si no se ve, el motivo va escrito a la vista.
-  const noVisible = vitrina.getByText('Publicado, no visible')
-  if ((await noVisible.count()) > 0) {
-    await expect(
-      vitrina.getByText(
-        /no publica en la web|está desactivado|no está entre los orígenes|web pública está apagada|no entró a ninguna fase/,
-      ),
-    ).toBeVisible()
-  } else {
-    await expect(vitrina.getByText('En vitrina')).toBeVisible()
-  }
-  const previa = vitrina.getByRole('region', { name: 'Así lo verá el visitante' })
-  await expect(previa).toBeHidden()
-  await vitrina.getByText('Así lo verá el visitante').click()
-  await expect(previa).toBeVisible()
+  await alaFicha(page)
+  await expect(region(page, 'Vitrina')).toHaveCount(0)
+  await expect(page.getByText(/En vitrina|Publicado, no visible/).first()).toBeVisible()
   await capturar(page, info, 'vitrina-publicada')
-  await vitrina.getByRole('button', { name: 'Editar' }).click()
-  await expect(page.getByRole('dialog', { name: 'Publicar en la web' })).toBeVisible()
-
-  sql(`update public.vehiculos set precio_web = null where id = ${literal(id)}::uuid`)
-  await alaFicha(page, '?seccion=vitrina')
-  // El del bloque (el primero; la vista previa plegada repite el precio).
-  await expect(vitrina.getByText('Consultar', { exact: true }).first()).toBeVisible()
 })
 
 test('E2E ficha en dos columnas · los enlaces viejos redirigen o llevan a su bloque', async ({
@@ -259,28 +244,27 @@ test('E2E ficha en dos columnas · los enlaces viejos redirigen o llevan a su bl
   }
 })
 
-test('E2E ficha en dos columnas · sin permisos, sólo «Vitrina» y sin sus botones', async ({
+test('E2E ficha en dos columnas · sin permisos, sólo «Relacionados» y sin vitrina a la derecha', async ({
   page,
 }, info) => {
-  // Ve el vehículo y los leads: ni cotizaciones, ni actividad, ni logística, ni la vitrina para editar.
+  // Ve el vehículo y los leads: ni cotizaciones, ni actividad, ni logística.
   await entrar(page, sinLogistica, { fresco: true })
   await alaFicha(page)
-  await expect(indice(page).getByRole('link')).toHaveText(['Relacionados', 'Vitrina'])
+  await expect(indice(page).getByRole('link')).toHaveText(['Relacionados'])
   await expect(region(page, 'Cotizaciones de este vehículo')).toHaveCount(0)
   await expect(region(page, 'Actividad reciente')).toHaveCount(0)
-  const vitrina = region(page, 'Vitrina')
-  await expect(vitrina).toBeVisible()
-  await expect(vitrina.getByRole('button')).toHaveCount(0)
+  await expect(region(page, 'Vitrina')).toHaveCount(0)
   await capturar(page, info, 'sin-permisos')
   // Sin logística, sus enlaces viejos se quedan arriba de la ficha.
   await alaFicha(page, '?seccion=documentos')
   await expect(page).toHaveURL(new RegExp(`/vehiculos/${id}\\?seccion=documentos$`))
   await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeInViewport()
-  // Sólo con logística: «Vitrina» es lo único del índice.
+  // Sólo con logística: ningún bloque de ventas, y la derecha sin índice.
   await page.context().clearCookies()
   await entrar(page, terreno.sinAsignar.correo, { fresco: true })
-  await alaFicha(page)
-  await expect(indice(page).getByRole('link')).toHaveText(['Vitrina'])
+  await page.goto(`/vehiculos/${id}`)
+  await expect(page.getByRole('heading', { name: titulo, level: 1 })).toBeVisible()
+  await expect(indice(page)).toHaveCount(0)
 })
 
 test('E2E ficha en dos columnas · la forma: dos columnas en escritorio, una en el celular y al 200 %', async ({

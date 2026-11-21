@@ -1,5 +1,6 @@
 // Los bloques de la derecha de la ficha de un vehículo (docs/UX.md › Vehículo), en el orden de su índice: sólo lo de ventas. Cada uno se dibuja sólo
-// con su permiso y, si no está, tampoco sale en el índice; «Vitrina» siempre (en sólo lectura sin `vehiculos.vitrina`): el índice nunca queda vacío.
+// con su permiso y, si no está, tampoco sale en el índice (sin ninguno, la derecha queda vacía y sin índice). La vitrina no es un bloque: se publica desde el
+// panel «Publicar en la web…» (`?panel=vitrina`) y se ve en el ícono de la foto; `?seccion=vitrina` redirige a ese panel (`secciones-viejas.ts`).
 // Lo que es de logística y de repuestos va por los enlaces cortos de la cabecera, y sus enlaces viejos (`?seccion=documentos`…) redirigen
 // (`secciones-viejas.ts`). Lo leen el servidor (la página) y el test: nada de cliente acá.
 import { puede, type Permisos } from '@/shared/lib/permisos'
@@ -12,7 +13,6 @@ export const BLOQUES_DE_LA_FICHA = [
   },
   { ancla: 'relacionados', etiqueta: 'Relacionados', titulo: 'Relacionados' },
   { ancla: 'actividad', etiqueta: 'Actividad', titulo: 'Actividad reciente' },
-  { ancla: 'vitrina', etiqueta: 'Vitrina', titulo: 'Vitrina' },
 ] as const
 
 export type AnclaDeLaFicha = (typeof BLOQUES_DE_LA_FICHA)[number]['ancla']
@@ -32,7 +32,7 @@ const PANELES_DE_RELACIONADOS: readonly string[] = [
   'marcar-interesado',
 ]
 
-type Puertas = Record<Exclude<AnclaDeLaFicha, 'vitrina'>, boolean>
+type Puertas = Record<AnclaDeLaFicha, boolean>
 
 // Lo que decide cada bloque: «Cotizaciones de este vehículo», `cotizaciones.ver` del origen; «Relacionados», `leads.ver`; «Actividad reciente»,
 // `actividad.ver` (global).
@@ -47,7 +47,7 @@ function puertasDe(permisos: Permisos, origenId: string): Puertas {
 /** Los bloques que ve quien tiene esos permisos en el origen del vehículo, en el orden del índice. */
 export function bloquesDeQuienMira(permisos: Permisos, origenId: string): BloqueDeLaFicha[] {
   const puertas = puertasDe(permisos, origenId)
-  return BLOQUES_DE_LA_FICHA.filter((bloque) => bloque.ancla === 'vitrina' || puertas[bloque.ancla])
+  return BLOQUES_DE_LA_FICHA.filter((bloque) => puertas[bloque.ancla])
 }
 
 type DeLaUrl = {
