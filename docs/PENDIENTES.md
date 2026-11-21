@@ -31,8 +31,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** En la primera publicación de un origen (las dos esperadas nulas), el borrador puede nacer sobre una v1 que otra persona publicó entre medio — decidir si la esperada nula deja de valer.
 - **[T314]** «Compartir la cotización» sin el asistente de IA de V1 para reescribir el texto («hazlo más corto», «más profesional»…): decidir si vuelve y con qué proveedor.
 - **[T314]** «Compartir la cotización» sin el editor de imagen 9:16 de V1 (la historia de WhatsApp o Instagram con la foto y la cotización): hoy se comparte la imagen de la tarjeta o las fotos tal cual.
-- **[T326]** Plantillas de V1: la `usa_moto` de V1 guarda porcentajes enteros (5 … 30) que su motor multiplica tal cual como factor DP; la plantilla los congela como 5 % … 30 % (0,05 … 0,30): confirmar qué cálculo es el bueno para una moto.
-- **[T326]** Plantillas de V1: Compra dealer USA no cotiza Moto ni USA → Chile (V1 sí): la fórmula admite una sola variante y la suya es el contenedor en par — decidir si hacen falta.
 - **[T417]** Tablas de referencia: reactivar una tabla desactivada (hoy no se deshace y su clave queda tomada) — sin tarea que lo tome.
 - **[T417]** Tablas de referencia: hacer propia una compartida (copiarla al origen con sus filas) — hoy se crea una propia vacía con otra clave.
 - **[T417]** Tablas de referencia: renombrar una tabla (su nombre; la clave no cambia) — sin tarea que lo tome.
@@ -153,8 +151,6 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 - **[T408]** `docs/GLOSARIO.md` tiene una segunda copia, más vieja, de casi todo el glosario (desde el choque con main de #462, a partir de la línea ≈ 1.000):
   borrarla dejando la primera.
-- **[T406]** `chore/quitar-plantillas-de-v1` también borra la ruta `src/app/(app)/configuracion/cotizacion/[origen]/plantillas-de-v1/` (lo único que
-  queda bajo `/configuracion/cotizacion` además de su `route.ts` de URL vieja) y «Empezar desde una plantilla» de `origenes/[id]/formula/cabeza-de-la-formula.tsx`.
 - **[—]** La vista previa del diseño de la hoja (Configuración › Hoja) no dibuja la variante en par (`hojaDeLaVistaPrevia()` no trae `par`); la planilla de la fórmula sí la dice («Se cotiza en par» en «Tipo de celda › Variante»).
 - **[—]** En la vista previa de las hermanas, «Copiar texto» copia sólo el de la tarjeta de la cotización abierta (no une los dos).
 - **[—]** `medir-cotizacion-crear.sql` y `medir-cotizacion-guardar.sql` no tienen un caso en par: crear y guardar en par llaman dos veces a lo que ya miden.
