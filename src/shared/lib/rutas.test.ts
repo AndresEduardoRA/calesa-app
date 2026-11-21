@@ -7,7 +7,9 @@ import {
   rutaDeLaFormula,
   rutaDeLasFormulas,
   rutaDeParteDelOrigen,
+  rutaDeLaPuestaEnMarcha,
   PARTES_DE_LA_FORMULA,
+  PASOS_DE_LA_PUESTA_EN_MARCHA,
   PARTES_DEL_ORIGEN,
   PESTANAS_DE_COTIZACION,
   decidirAcceso,
@@ -268,6 +270,31 @@ describe('rutaDeParteDelOrigen', () => {
     expect(rutaDeParteDelOrigen(O, 'flujo', { fase: 'f', vista: 'lista' })).toBe(
       `/configuracion/origenes/${O}/flujo?fase=f&vista=lista`,
     )
+  })
+})
+
+describe('rutaDeLaPuestaEnMarcha', () => {
+  const O = '11111111-1111-4111-8111-111111111111'
+
+  it('la raíz lleva al paso que falta; cada paso y «listo», a su sub-ruta', () => {
+    const base = `/configuracion/origenes/${O}/puesta-en-marcha`
+    expect(rutaDeLaPuestaEnMarcha(O)).toBe(base)
+    expect(PASOS_DE_LA_PUESTA_EN_MARCHA.map((paso) => rutaDeLaPuestaEnMarcha(O, paso))).toEqual([
+      `${base}/datos`,
+      `${base}/campos`,
+      `${base}/flujo`,
+      `${base}/formula`,
+      `${base}/tarjeta`,
+      `${base}/publicar`,
+    ])
+    expect(rutaDeLaPuestaEnMarcha(O, 'listo')).toBe(`${base}/listo`)
+    expect(rutaDeLaPuestaEnMarcha('a/b', 'campos')).toBe(
+      '/configuracion/origenes/a%2Fb/puesta-en-marcha/campos',
+    )
+  })
+
+  it('el alta es una página, no un panel de la lista', () => {
+    expect(RUTAS.nuevoOrigen).toBe('/configuracion/origenes/nuevo')
   })
 })
 
