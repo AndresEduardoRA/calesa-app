@@ -1,5 +1,5 @@
-import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
+import { EsqueletoTarjetas } from '@/shared/ui/esqueletos'
 
 export default function CargandoPerfil() {
-  return <EsqueletoFormulario bloques={2} campos={2} />
+  return <EsqueletoTarjetas tarjetas={5} />
 }

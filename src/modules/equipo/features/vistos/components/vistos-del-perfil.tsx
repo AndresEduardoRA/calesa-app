@@ -4,7 +4,6 @@ import { useAction } from 'next-safe-action/hooks'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { enviarAccion } from '@/shared/lib/enviar-accion'
-import { Bloque } from '@/shared/ui/bloque'
 import { Opciones } from '@/shared/ui/opciones'
 import { avisarError } from '@/shared/ui/toasts'
 import { CLAVE_DE_VISTOS, DIAS_DE_VISTOS, type PreferenciaDeVistos } from '../../../entities/vistos'
@@ -21,9 +20,9 @@ const OPCIONES_DE_DIAS = DIAS_DE_VISTOS.map((dias) => ({
   etiqueta: dias === 365 ? '1 año' : `${String(dias)} días`,
 }))
 
-// «Vistos» en `/perfil`: si las listas marcan lo que abriste, cuánto se recuerda y si se marca el último. Se aplica al instante (optimista) y
+// «Vistos» en el modal «Preferencias» de `/perfil`: si las listas marcan lo que abriste, cuánto se recuerda y si se marca el último. Se aplica al instante (optimista) y
 // se guarda en `preferencias_usuario.vistos`; si no se guarda, vuelve a lo de antes y lo dice.
-export function VistosDelPerfil() {
+export function ControlesDeVistos() {
   const guardada = usePreferenciaDeVistos()
   const [actual, setActual] = useState<PreferenciaDeVistos>(guardada)
   const { executeAsync, isPending } = useAction(guardarPreferencia)
@@ -46,10 +45,7 @@ export function VistosDelPerfil() {
   }
 
   return (
-    <Bloque
-      titulo="Vistos"
-      descripcion="Las listas marcan lo que abriste en cada módulo, como los enlaces visitados."
-    >
+    <>
       <Opciones
         etiqueta="Marcar lo que abrí"
         opciones={SI_NO}
@@ -74,6 +70,6 @@ export function VistosDelPerfil() {
         deshabilitado={isPending || !actual.activado}
         alCambiar={(valor) => void cambiar({ ultimo: valor === 'si' })}
       />
-    </Bloque>
+    </>
   )
 }

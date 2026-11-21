@@ -1,4 +1,4 @@
-import { Bloque } from '@/shared/ui/bloque'
+import { TarjetaDeAjustes } from '@/shared/ui/tarjetas-de-ajustes'
 import type { Permisos } from '@/shared/lib/permisos'
 import {
   TEXTO_SIN_RUEDA,
@@ -22,12 +22,12 @@ export function EstadoEnLaRueda({
 }) {
   const motivo = motivoSinInterruptor({ permisos, habilitado, miraOtroRol })
   return (
-    <Bloque titulo="Turnos de la web">
+    <TarjetaDeAjustes titulo="Turnos de la web">
       {/* Si el motivo del interruptor ya es esta frase, no se repite. */}
       {motivo === TEXTO_SIN_RUEDA ? null : (
         <p className="text-(length:--text-sm) text-(--color-ink)">{textoDeLaRueda(permisos)}</p>
       )}
       <InterruptorDeDisponibilidad disponible={disponible} motivo={motivo} />
-    </Bloque>
+    </TarjetaDeAjustes>
   )
 }

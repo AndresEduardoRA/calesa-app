@@ -56,6 +56,15 @@ export const MODALES: Record<string, RegistroDeModal> = {
     sinFormulario: 'muestra un enlace generado para pasarlo a mano: de sólo lectura',
     tambien: ['src/modules/equipo/features/equipo/components/enlace-invitacion.tsx'],
   },
+  'src/modules/equipo/features/perfil/components/modal-de-preferencias.tsx': {
+    sinFormulario:
+      '«Preferencias» del perfil: cada opción se aplica y se guarda al elegirla; no hay nada tipeado que se pierda al cerrar («Listo» sólo cierra)',
+  },
+  // --- notificaciones
+  'src/modules/notificaciones/features/push/components/modal-de-notificaciones.tsx': {
+    sinFormulario:
+      '«Notificaciones» del perfil: cada interruptor y cada «Quitar» actúa al instante; no hay nada tipeado que se pierda al cerrar («Listo» sólo cierra)',
+  },
   // --- cotizaciones
   'src/modules/cotizaciones/features/listado/components/grupo/modal-del-grupo.tsx': {
     sinFormulario:

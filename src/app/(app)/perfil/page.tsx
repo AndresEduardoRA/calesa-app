@@ -1,44 +1,49 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { requerirSesion } from '@/modules/equipo'
-import {
-  FormularioPerfil,
-  PreferenciasPerfil,
-  VistosDelPerfil,
-  ZonaDelPerfil,
-} from '@/modules/equipo/pantallas/perfil'
+import { TarjetasDelPerfil } from '@/modules/equipo/pantallas/perfil'
 import { TurnosDelPerfil } from '@/modules/web/pantallas/perfil'
 import { urlPublicaONull } from '@/shared/lib/almacen'
-import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
+import { EsqueletoDeUnaTarjeta } from '@/shared/ui/esqueletos'
+import { TarjetasDeAjustes } from '@/shared/ui/tarjetas-de-ajustes'
 import { NotificacionesSeccion } from './notificaciones-seccion'
 
 export const metadata: Metadata = { title: 'Mi perfil' }
 
-// El perfil propio: cualquiera con sesión lo edita, no pide ningún permiso.
+// El perfil propio: cualquiera con sesión lo edita, no pide ningún permiso. Cinco tarjetas con lo guardado a la vista (Tú, Preferencias, Turnos de la web,
+// Tu ficha en la web y Notificaciones); lo que se edita se abre en un modal (`?panel=`).
 export default async function PaginaPerfil() {
   const sesion = await requerirSesion()
   return (
-    <div className="grid max-w-2xl gap-4">
+    <div className="grid max-w-6xl gap-4">
       <h1 className="text-(length:--text-xl) font-semibold text-(--color-ink)">Mi perfil</h1>
-      {/* La versión del perfil es la `key`: guardar la ficha de la web la cambia y «Tus datos» se vuelve a montar con la nueva. */}
-      <FormularioPerfil
-        key={sesion.perfilActualizadoEn}
-        usuarioId={sesion.usuarioId}
-        nombre={sesion.nombre}
-        email={sesion.email}
-        avatarRuta={sesion.avatarRuta}
-        avatarUrl={urlPublicaONull('avatares', sesion.avatarRuta)}
-        actualizadoEn={sesion.perfilActualizadoEn}
-      />
-      <Suspense fallback={<EsqueletoFormulario bloques={1} campos={1} />}>
-        <TurnosDelPerfil permisos={sesion.permisos} miraOtroRol={sesion.perspectiva.rol !== null} />
-      </Suspense>
-      <PreferenciasPerfil />
-      <VistosDelPerfil />
-      <ZonaDelPerfil elegida={sesion.preferencias.zonaHoraria} />
-      <Suspense fallback={<EsqueletoFormulario bloques={1} campos={3} />}>
-        <NotificacionesSeccion usuarioId={sesion.usuarioId} permisos={sesion.permisos} />
-      </Suspense>
+      <TarjetasDeAjustes etiqueta="Mi perfil">
+        <TarjetasDelPerfil
+          usuarioId={sesion.usuarioId}
+          nombre={sesion.nombre}
+          email={sesion.email}
+          avatarRuta={sesion.avatarRuta}
+          avatarUrl={urlPublicaONull('avatares', sesion.avatarRuta)}
+          actualizadoEn={sesion.perfilActualizadoEn}
+          zonaElegida={sesion.preferencias.zonaHoraria}
+        />
+        <Suspense
+          fallback={
+            <>
+              <EsqueletoDeUnaTarjeta />
+              <EsqueletoDeUnaTarjeta />
+            </>
+          }
+        >
+          <TurnosDelPerfil
+            permisos={sesion.permisos}
+            miraOtroRol={sesion.perspectiva.rol !== null}
+          />
+        </Suspense>
+        <Suspense fallback={<EsqueletoDeUnaTarjeta />}>
+          <NotificacionesSeccion usuarioId={sesion.usuarioId} permisos={sesion.permisos} />
+        </Suspense>
+      </TarjetasDeAjustes>
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { expect, test } from './soporte/prueba'
+import { editarTarjeta } from './soporte/empresa'
 import { entrar } from './soporte/inventario'
 import { sql, literal } from './soporte/sql'
 import { vehiculoPorTitulo } from './soporte/vehiculos'
@@ -114,7 +115,8 @@ test('E2E como un correo: lo no visto en negrita, lo visto en peso normal, y abr
 test('E2E con «Vistos» apagado en el perfil la lista no marca nada', async ({ page }) => {
   await entrar(page, t.lector)
   await page.goto('/perfil')
-  const bloque = page.getByRole('group', { name: 'Marcar lo que abrí' })
+  const preferencias = await editarTarjeta(page, 'Preferencias')
+  const bloque = preferencias.getByRole('group', { name: 'Marcar lo que abrí' })
   await bloque.getByText('No', { exact: true }).click()
   await expect
     .poll(() =>

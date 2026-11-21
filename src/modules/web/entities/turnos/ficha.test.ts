@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { especialidadesDeTexto, esHandle, esWhatsapp, textoDeEspecialidades } from './ficha'
+import {
+  especialidadesDeTexto,
+  esHandle,
+  esWhatsapp,
+  escritoDeFicha,
+  hayCambiosDeFicha,
+  textoDeEspecialidades,
+  type MiFichaEnLaWeb,
+} from './ficha'
 
 describe('esWhatsapp', () => {
   it('pide + y de 7 a 15 dígitos sin empezar en 0', () => {
@@ -54,5 +62,33 @@ describe('especialidadesDeTexto', () => {
       'SUV',
       'Eléctricos',
     ])
+  })
+})
+
+describe('cambios de la ficha', () => {
+  const ficha: MiFichaEnLaWeb = {
+    habilitado: true,
+    disponible: true,
+    handle: 'rosa',
+    cargo: 'Asesora',
+    whatsapp: '+59170000000',
+    presentacion: null,
+    especialidades: ['SUV', 'Eléctricos'],
+    publicoWeb: true,
+    actualizadoEn: '2026-11-12T10:00:00.000Z',
+  }
+
+  it('lo guardado, sin tocar, no es un cambio', () => {
+    expect(hayCambiosDeFicha(ficha, escritoDeFicha(ficha), true)).toBe(false)
+  })
+
+  it('un espacio al borde no es un cambio, un texto distinto sí', () => {
+    const escrito = escritoDeFicha(ficha)
+    expect(hayCambiosDeFicha(ficha, { ...escrito, cargo: ' Asesora ' }, true)).toBe(false)
+    expect(hayCambiosDeFicha(ficha, { ...escrito, cargo: 'Jefa' }, true)).toBe(true)
+  })
+
+  it('aparecer o no en la web es un cambio', () => {
+    expect(hayCambiosDeFicha(ficha, escritoDeFicha(ficha), false)).toBe(true)
   })
 })
