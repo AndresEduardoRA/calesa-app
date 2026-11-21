@@ -234,8 +234,8 @@
     },
     {
       "patron": "public.cotizaciones_buscar",
-      "avisos": 15,
-      "motivo": "RETURN QUERY llena las columnas OUT y plpgsql_check no lo sigue: los 15 avisos son una por columna de salida («maybe unmodified»), como en vehiculos_inventario."
+      "avisos": 16,
+      "motivo": "RETURN QUERY llena las columnas OUT y plpgsql_check no lo sigue: los 16 avisos son una por columna de salida («maybe unmodified»), como en vehiculos_inventario."
     },
     {
       "patron": "public.evaluar_formula",

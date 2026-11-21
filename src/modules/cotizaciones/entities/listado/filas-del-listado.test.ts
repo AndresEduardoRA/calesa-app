@@ -23,6 +23,7 @@ function fila(id: string, resto: Partial<FilaDelListado> = {}): FilaDelListado {
     creadoEn: '2026-11-05T10:00:00+00:00',
     venceEl: '2026-11-12',
     vencida: false,
+    privada: false,
     ...resto,
   }
 }

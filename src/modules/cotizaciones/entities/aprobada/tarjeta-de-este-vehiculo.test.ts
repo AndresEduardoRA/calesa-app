@@ -19,6 +19,7 @@ const fila = (i: number): FilaDeEsteVehiculo => ({
   vencida: false,
   aprobada: false,
   venceEl: '2026-11-28',
+  privada: false,
 })
 
 describe('tarjetaDeEsteVehiculo', () => {
@@ -29,6 +30,11 @@ describe('tarjetaDeEsteVehiculo', () => {
       cliente: null,
       leadId: null,
       venceEl: '2026-11-28',
+      privada: false,
     })
+  })
+
+  it('lleva la marca de privada (la insignia de la tarjeta)', () => {
+    expect(tarjetaDeEsteVehiculo({ ...fila(4), privada: true }, null).privada).toBe(true)
   })
 })

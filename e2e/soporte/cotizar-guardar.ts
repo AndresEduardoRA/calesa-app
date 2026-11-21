@@ -23,6 +23,8 @@ export type PedidoDeGuardadoVisto = {
   modoTc: string | null
   verTotalBs: boolean
   conLaAbierta: boolean
+  // La marca de privada: sólo va encendida.
+  privada?: boolean
 }
 
 export type VigilanteDeGuardados = {

@@ -19,6 +19,7 @@ export const otorgar = actionClient
     const otorgado = await repositorioRoles.otorgar(parsedInput)
     if (otorgado.ok) {
       revalidatePath(RUTAS.roles)
+      revalidatePath(RUTAS.quienCreaYQuienVe)
     }
     return otorgado
   })

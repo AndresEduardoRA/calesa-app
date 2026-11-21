@@ -16,11 +16,14 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
   // La hoja de cotizar con la subasta de la semilla (`?origen=`, el diseño más grande del juego), su presupuesto formal desde el 4.13-4d: medido 429,5 KB en 25 chunks, más un 5 % hacia arriba a la decena.
   // Con la línea «Descargar PDF» y el contexto del «⋯» de la guardada, que viajan con la hoja (T321; el pedido del PDF sin la lectura de la tarjeta), llegó a 460,4 KB en 28
   // chunks: 465 (regla del 5 %). Con la hoja en par (T317: el ítem que dibuja las celdas en par, las piezas del resumen y la opción del recálculo; la hoja en par va con
-  // `diferido()`) midió 462,6 KB en 29 chunks: entra en 465. Con los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, 465,4 KB: 470 (un 1 %).
+  // `diferido()`) midió 462,6 KB en 29 chunks: entra en 465. Con la cotización privada (T413: el interruptor «Privada», «Hacer privada» del «⋯» de la guardada y la
+  // insignia) y los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, 466,6 KB en 29 chunks: 470 (regla del 5 %).
   '/cotizaciones/nuevo': 470,
   // La página de una cotización guardada (4.15-3), con una cotización sembrada en la subasta de la semilla: el mismo marco y la misma hoja, sin las barras del vehículo y del cliente: medido 438,6 KB en 27 chunks, más un 2 % hacia arriba. Con la burbuja del chat en el marco (7.11-1: el botón, el contador y su store; el panel y Realtime van con `diferido()`) pasó de 447,3 a 449,2 KB en 28 chunks: 452. Con las acciones de los avisos (`avisarError` con `<AccionesDelAviso>`, que importa `toasts.ts`) llegó a 452,2: 460 (regla del 5 %). Con el título de la cotización (T307: su proveedor sobre la cabecera y la hoja, y la cáscara de la barra del vehículo, que va con `diferido()`) llegó a 463,7 KB en 30 chunks: 470 (regla del 5 %). Con la cabecera compacta (T321: el «⋯» con su menú de Base UI y las líneas que suman las áreas, en vez de
-  // ocho botones) llegó a 472,0 KB en 29 chunks: 480 (regla del 5 %). Con la hoja en par (T317, la guardada de una hermana va con `diferido()`), 475,0 KB en 30 chunks.
-  '/cotizaciones/[id]': 480,
+  // ocho botones) llegó a 472,0 KB en 29 chunks: 480 (regla del 5 %). Con la hoja en par (T317, la guardada de una hermana va con `diferido()`), 475,0 KB en 30 chunks. Con la
+  // cotización privada (T413: «Hacer privada» del «⋯» y la insignia) y los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, 480,1 KB en 30 chunks: 490
+  // (regla del 5 %).
+  '/cotizaciones/[id]': 490,
   // «Comparar cotizaciones» (T311), con dos cotizaciones de un vehículo de la subasta de la semilla: el marco, la tabla, `<Monto>` y la action de aprobar, sin la hoja.
   // Medido 358,7 KB en 25 chunks, más un 5 % hacia arriba a la decena.
   '/cotizaciones/comparar': 380,
@@ -31,11 +34,15 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
   // El detalle de un vehículo en logística (T20), con el vehículo medido de la subasta de la semilla: medido 438,9 KB en 28 chunks antes de las zonas y 442,3 KB en 27 después, más un 5 % hacia arriba a la decena.
   '/logistica/vehiculo/[id]': 470,
   // La ficha de un vehículo (T34), con el vehículo medido de la subasta de la semilla: medido 504,3 KB en 33 chunks con las pestañas, más un 5 % hacia
-  // arriba a la decena. La ficha en dos columnas tiene que caber en lo mismo.
-  '/vehiculos/[id]': 530,
+  // arriba a la decena. La ficha en dos columnas tiene que caber en lo mismo. Con la cotización privada (T413: la insignia de las tarjetas y la pregunta de «Aprobar
+  // esta») midió 529,6 KB en 35 chunks y, con los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, 530,7: 540 (regla del 5 %).
+  '/vehiculos/[id]': 540,
   // La ficha de un lead (T33), sin tope hasta las dos columnas: medido 548,5 KB en 36 chunks con pestañas y 554,7 KB en 36 con todo a la vista
   // (el marco de bloques, el índice y el resumen de seguimientos), con un lead recién creado; más un 5 % hacia arriba a la decena.
   '/leads/[id]': 590,
+  // «Quién crea y quién ve» (T413), la primera de Configuración con presupuesto: el marco de Catálogos, el cuadro (tabla, `Switch`, `<select>` nativos) y las
+  // actions de la matriz de Roles. Provisional hasta su primera medición en el e2e: se fija con lo medido más un 5 %, a la decena.
+  '/configuracion/catalogos/quien-crea-y-quien-ve': 420,
 }
 
 // Lo que aporta la ficha del lead **entera** al documento sobre `/perfil`, en KB (T33: con todo a la vista, `?seccion=` sólo dice a qué bloque

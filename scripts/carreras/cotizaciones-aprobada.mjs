@@ -1,8 +1,9 @@
 // Las carreras de la cotización aprobada (`cotizacion_aprobar` y el mantenimiento al confirmar), con dos conexiones reales a la base del Supabase LOCAL (el arnés de
 // `scripts/carreras.mjs`: A abre una transacción y actúa, B lanza su llamada, el orquestador espera a que B esté esperando un lock y A confirma; si B no espera, la
 // carrera no se probó y el script falla). En todas, ningún interbloqueo (40P01) ni 23505, y la invariante: una sola aprobada por vehículo y apunta a una activa.
-// El orden que prueban: vehículo `for key share` → la cotización `for share` → el candado de la aprobada (aviso, por vehículo); y al confirmar, el trigger diferido
-// toma ese mismo candado y vuelve a leer (`trg_cotizaciones_aprobadas_al_confirmar`).
+// El orden que prueban: vehículo `for key share` → la cotización y su hermana por id `for no key update` → el candado de la aprobada (aviso, por vehículo); y al
+// confirmar, el trigger diferido toma ese mismo candado y vuelve a leer (`trg_cotizaciones_aprobadas_al_confirmar`). `cotizacion_privada_cambiar()` toma los
+// mismos, en el mismo orden: la aprobada nunca es privada (A4).
 import { PERSONAS } from './terreno.mjs'
 import { insertaCotizacion, terreno } from './cotizaciones.mjs'
 import {
@@ -31,6 +32,13 @@ const aprobar = async (db, id) => ({
   args: [id, await version(db, id)],
 })
 const sinUnique = (...rs) => rs.every((r) => r?.codigo !== '23505')
+const hacerPrivada = async (db, id) => ({
+  persona: duena,
+  sql: 'public.cotizacion_privada_cambiar($1, true, $2::timestamptz)',
+  args: [id, await version(db, id)],
+})
+const privada = async (db, id) =>
+  (await fila(db, 'select privada from public.cotizaciones where id = $1', [id])).privada
 
 // Tres cotizaciones vivas del mismo vehículo, la primera aprobada (la nace el trigger al confirmar cada insert).
 async function conTres(orquesta, etiqueta) {
@@ -68,7 +76,7 @@ export async function carrerasDeAprobada({ orquesta, carrera, espero, conectar }
 
   console.log('Aprobar una cotización mientras otro la manda a la papelera (A2, los dos órdenes)')
   {
-    // La papelera primero: B espera su for share, la cotización ya no está (42501) y la aprobada pasa a la más antigua activa que queda.
+    // La papelera primero: B espera el candado de la cotización, la cotización ya no está (42501) y la aprobada pasa a la más antigua activa que queda.
     const { t, c1, c2 } = await conTres(orquesta, 'ap2a')
     const r = await carrera(orquesta, {
       a: {
@@ -90,7 +98,7 @@ export async function carrerasDeAprobada({ orquesta, carrera, espero, conectar }
     )
   }
   {
-    // Aprobar primero: la papelera espera el for share, y al confirmar la aprobada recién elegida vuelve a la más antigua activa.
+    // Aprobar primero: la papelera espera el candado de la cotización, y al confirmar la aprobada recién elegida vuelve a la más antigua activa.
     const { t, c1, c2 } = await conTres(orquesta, 'ap2b')
     const r = await carrera(orquesta, {
       a: await aprobar(orquesta, c2),
@@ -134,6 +142,93 @@ export async function carrerasDeAprobada({ orquesta, carrera, espero, conectar }
     espero(
       'B espera el candado de la aprobada y, con la papelera de A vista, no deja ninguna aprobada',
       r.a.ok && r.b.ok && r.comoFue === 'esperó' && a.length === 0 && sinInterbloqueo(r.a, r.b),
+      { r, a },
+    )
+  }
+
+  console.log(
+    'Hacer privada una cotización mientras otro la aprueba o reemplaza a la aprobada (A4)',
+  )
+  {
+    // Aprobar primero: hacerla privada espera el candado de la cotización y, ya aprobada, recibe 23514; sigue pública.
+    const { t, c2 } = await conTres(orquesta, 'ap4a')
+    const r = await carrera(orquesta, {
+      a: await aprobar(orquesta, c2),
+      b: await hacerPrivada(orquesta, c2),
+    })
+    const a = await aprobadasDe(orquesta, t.vehiculo)
+    espero(
+      'gana aprobar: hacerla privada espera y recibe 23514; la aprobada es ella y sigue pública',
+      r.a.ok &&
+        r.b.codigo === '23514' &&
+        a.length === 1 &&
+        a[0] === c2 &&
+        !(await privada(orquesta, c2)) &&
+        sinInterbloqueo(r.a, r.b),
+      { r, a },
+    )
+  }
+  {
+    // Hacerla privada primero: aprobar espera el candado de la cotización y su versión ya cambió (PT409); la aprobada no se mueve.
+    const { t, c1, c2 } = await conTres(orquesta, 'ap4b')
+    const r = await carrera(orquesta, {
+      a: await hacerPrivada(orquesta, c2),
+      b: await aprobar(orquesta, c2),
+    })
+    const a = await aprobadasDe(orquesta, t.vehiculo)
+    espero(
+      'gana la privada: aprobar espera y recibe PT409; la aprobada sigue siendo la primera',
+      r.a.ok &&
+        r.b.codigo === 'PT409' &&
+        a.length === 1 &&
+        a[0] === c1 &&
+        (await privada(orquesta, c2)) &&
+        sinInterbloqueo(r.a, r.b),
+      { r, a },
+    )
+  }
+  {
+    // La papelera de la aprobada primero, con el trigger diferido confirmado a mano (como A3): la aprobada pasa a c2 y A retiene su candado; hacerla privada lo
+    // espera y, con c2 ya aprobada, recibe 23514.
+    const { t, c1, c2 } = await conTres(orquesta, 'ap4c')
+    const b = await hacerPrivada(orquesta, c2)
+    const r = await enDosPasos({
+      sub: duena,
+      a1: async (a) => {
+        await a.query(`select public.papelera_enviar('cotizaciones', array[$1::uuid])`, [c1])
+        await a.query('set constraints public.trg_cotizaciones_aprobadas_al_confirmar immediate')
+      },
+      b,
+      a2: async () => {},
+    })
+    const a = await aprobadasDe(orquesta, t.vehiculo)
+    espero(
+      'gana la papelera: c2 pasa a ser la aprobada y hacerla privada espera su candado y recibe 23514',
+      r.a.ok &&
+        r.comoFue === 'esperó' &&
+        r.b.codigo === '23514' &&
+        a.length === 1 &&
+        a[0] === c2 &&
+        !(await privada(orquesta, c2)) &&
+        sinInterbloqueo(r.a, r.b),
+      { r, a },
+    )
+  }
+  {
+    // Hacerla privada primero: la papelera de la aprobada espera su candado y la releva la más antigua de las públicas (c3), no la privada.
+    const { t, c1, c2, c3 } = await conTres(orquesta, 'ap4d')
+    const r = await carrera(orquesta, {
+      a: await hacerPrivada(orquesta, c2),
+      b: {
+        persona: duena,
+        sql: `public.papelera_enviar('cotizaciones', $1::uuid[])`,
+        args: [[c1]],
+      },
+    })
+    const a = await aprobadasDe(orquesta, t.vehiculo)
+    espero(
+      'gana la privada: la papelera espera y la aprobada pasa a c3, la más antigua de las públicas',
+      r.a.ok && r.b.ok && a.length === 1 && a[0] === c3 && sinInterbloqueo(r.a, r.b),
       { r, a },
     )
   }

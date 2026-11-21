@@ -35,6 +35,7 @@ function fila(n: number, extra: Partial<FilaDeEsteVehiculo> = {}): FilaDeEsteVeh
     vencida: false,
     venceEl: '2026-11-27',
     aprobada: false,
+    privada: false,
     ...extra,
   }
 }
@@ -59,6 +60,7 @@ function cruda(n: number, extra: Record<string, unknown> = {}) {
     vence_el: '2026-11-27',
     aprobada: false,
     fijada: false,
+    privada: false,
     ...extra,
   }
 }
@@ -74,6 +76,12 @@ describe('lectura de «De este vehículo»', () => {
     expect(pagina?.filas.map((f) => f.numero)).toEqual([3, 2])
     expect(pagina?.filas[0]?.actualizadoEn).toBe('2026-11-17T10:00:00.654321+00:00')
     expect(pagina?.filas[0]?.modo).toBe('Paralelo')
+  })
+
+  it('trae la marca de privada de cada fila', () => {
+    const pagina = paginaDeEsteVehiculoDesde([cruda(2, { privada: true }), cruda(1)])
+    expect(pagina?.filas.map((f) => f.privada)).toEqual([true, false])
+    expect(paginaDeEsteVehiculoDesde([cruda(1, { privada: undefined })])).toBeNull()
   })
 
   it('una fila con forma mala hace de la lectura un error', () => {

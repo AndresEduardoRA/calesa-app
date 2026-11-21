@@ -28,6 +28,8 @@ export function useBotonesDeGuardar({
   guardado: Guardado | null
   edicion: EdicionDeLaHoja | undefined
   raiz: RefObject<HTMLDivElement | null>
+  // La marca de privada de la nueva (la guardada la cambia por su «⋯»).
+  privada: boolean
 }) {
   const deLaNueva = useGuardarLaHoja(nueva)
   const deLaGuardada = useGuardarLaGuardada({

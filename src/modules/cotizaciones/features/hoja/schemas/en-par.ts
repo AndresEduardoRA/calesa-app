@@ -17,6 +17,7 @@ export const esquemaDeCrearEnPar = z.object({
   conLaAbierta: z.boolean(),
   titulo: esquemaDelTitulo,
   tituloManual: z.boolean(),
+  privada: z.boolean().optional(),
 })
 
 export const esquemaDeGuardarEnPar = z.object({

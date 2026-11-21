@@ -14,6 +14,7 @@ import type {
   RecalculadorAlAbrir,
   RecalculadorAlAbrirEnPar,
 } from '../../entities/repositorios-de-hoja'
+import type { CambiadorDePrivada } from '../../entities/privada'
 import type { LectorDeNiveles, RepositorioDeNiveles } from '../../entities/repositorios-de-niveles'
 import { cotizarEncima, crearCotizacion, guardarCotizacion } from '../../infra/cotizaciones'
 import {
@@ -22,6 +23,7 @@ import {
   guardarCotizacionesEnPar,
 } from '../../infra/cotizaciones-en-par'
 import { nivelesSupabase } from '../../infra/niveles'
+import { cambiarPrivada } from '../../infra/privada'
 import { getHojaParaCotizar } from '../../infra/queries/hoja'
 import { getHojaDeUnaGuardada } from '../../infra/queries/hoja-de-una-guardada'
 import { contarCotizacionesDelVehiculo as contarDeInfra } from '../../infra/queries/historial-del-vehiculo'
@@ -44,3 +46,4 @@ export const cotizadorEncima: CotizadorEncima = cotizarEncima
 export const creadorEnPar: CreadorEnPar = crearCotizacionesEnPar
 export const guardadorEnPar: GuardadorEnPar = guardarCotizacionesEnPar
 export const cotizadorEncimaEnPar: CotizadorEncimaEnPar = cotizarEncimaEnPar
+export const cambiadorDePrivada: CambiadorDePrivada = cambiarPrivada

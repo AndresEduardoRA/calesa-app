@@ -6,6 +6,10 @@
 export const LISTAS_SIN_PATRON: Record<string, string> = {
   'src/modules/equipo/features/roles/components/matriz-de-roles.tsx':
     'es una matriz de permisos (roles contra permisos), no una lista de registros: no tiene resumen ni «⋯» por fila',
+  'src/modules/equipo/features/roles/components/quien-crea-y-quien-ve/quien-crea-y-quien-ve.tsx':
+    'es el cuadro «Quién crea y quién ve» (roles contra tres permisos de cotizaciones), no una lista de registros: no tiene resumen ni «⋯» por fila',
+  'src/modules/equipo/features/roles/components/quien-crea-y-quien-ve/tabla-del-cuadro.tsx':
+    'es el cuadro «Quién crea y quién ve» desde 768 px (un renglón por rol con sus controles), no una lista de registros: no tiene resumen ni «⋯» por fila',
   'src/modules/cotizaciones/features/hoja/components/tabla-de-la-ayuda.tsx':
     'es una tabla de referencia de sólo lectura en un panel, no una lista de registros: no tiene resumen ni «⋯» por fila',
   'src/modules/cotizaciones/features/aprobada/components/comparar/tabla-de-comparar.tsx':

@@ -13,7 +13,7 @@ const h = vi.hoisted(() => ({
 vi.mock('../actions/aprobar', () => ({ aprobarCotizacion: h.aprobar }))
 vi.mock('@/shared/ui/toasts', () => h.toasts)
 
-import { aprobarLaCotizacion } from './aprobar-la-cotizacion'
+import { aprobarHaciendolaPublica, aprobarLaCotizacion } from './aprobar-la-cotizacion'
 
 const ID = '22222222-2222-4222-8222-222222222222'
 const ANTERIOR = '77777777-7777-4777-8777-777777777777'
@@ -149,5 +149,44 @@ describe('aprobarLaCotizacion, lo que sale mal', () => {
       { codigo: 'inesperado', mensaje: 'No sabemos si se aprobó: recarga para verlo.' },
       { acciones: { acciones: [{ tipo: 'recargar', etiqueta: 'Recargar' }], pedido: null } },
     )
+  })
+
+  it('una privada que la pantalla no sabía: la base lo dice y abre la pregunta, sin aviso ni cambio', async () => {
+    h.aprobar.mockResolvedValue({
+      data: {
+        ok: false,
+        error: { codigo: 'regla', mensaje: 'Al aprobarla deja de ser privada.', causa: 'privada' },
+      },
+    })
+    const p = pedido()
+    const alSerPrivada = vi.fn()
+    await aprobarLaCotizacion({ ...p.datos, alSerPrivada })
+    expect(alSerPrivada).toHaveBeenCalledTimes(1)
+    expect(p.cambios).toEqual([])
+    expect(h.toasts.avisarError).not.toHaveBeenCalled()
+  })
+})
+
+describe('aprobarHaciendolaPublica', () => {
+  it('manda hacerlaPublica y avisa que ya no es privada, con «Deshacer» si había otra', async () => {
+    h.aprobar.mockResolvedValue(entra(true))
+    const p = pedido()
+    expect(await aprobarHaciendolaPublica(p.datos)).toBeNull()
+    expect(h.aprobar).toHaveBeenCalledWith({ id: ID, actualizadoEn: VERSION, hacerlaPublica: true })
+    expect(p.cambios).toEqual([true])
+    expect(h.toasts.avisarConDeshacer.mock.calls[0]?.[0]).toBe(
+      'La n.º 7 es la aprobada del vehículo. Ya no es privada.',
+    )
+  })
+
+  it('lo que no entra se devuelve para decirlo en la pregunta, sin aviso suelto', async () => {
+    h.aprobar.mockResolvedValue(falla('conflicto', 'Ana cambió esta cotización hace 2 minutos.'))
+    const p = pedido()
+    expect(await aprobarHaciendolaPublica(p.datos)).toEqual({
+      error: { codigo: 'conflicto', mensaje: 'Ana cambió esta cotización hace 2 minutos.' },
+      recargar: true,
+    })
+    expect(p.cambios).toEqual([])
+    expect(h.toasts.avisarError).not.toHaveBeenCalled()
   })
 })

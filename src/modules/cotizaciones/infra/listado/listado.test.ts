@@ -41,6 +41,7 @@ const fila = (i: number, extra: Record<string, unknown> = {}) => ({
   creado_en: `2026-03-01T12:00:${String(59 - i).padStart(2, '0')}.000001+00:00`,
   vence_el: '2026-03-08',
   vencida: false,
+  privada: false,
   ...extra,
 })
 
@@ -188,6 +189,7 @@ describe('getListadoDeCotizaciones: lo que devuelve', () => {
       creadoEn: fila(1).creado_en,
       venceEl: '2026-03-08',
       vencida: false,
+      privada: false,
     })
     expect(r.data.anterior).toBeNull()
     expect(leerCursor(r.data.siguiente)).toEqual({

@@ -13,6 +13,7 @@ const acciones = (): AccionesDeLaFila => ({
   compartir: vi.fn(),
   aprobar: vi.fn(),
   marcarFinal: vi.fn(),
+  cambiarPrivada: vi.fn(),
   favorita: vi.fn(),
   reportar: vi.fn(),
   moderar: vi.fn(),
@@ -23,6 +24,7 @@ const menu = (extra: Partial<MenuDeUnaFila> = {}): MenuDeUnaFila => ({
   actualizadoEn: '2026-11-14T10:00:00.123456+00:00',
   favorita: false,
   miMotivo: null,
+  privada: false,
   ofertas: {
     compartir: { motivo: null },
     aprobar: { motivo: null },

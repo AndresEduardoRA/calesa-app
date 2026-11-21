@@ -9,6 +9,7 @@ import { useRegional } from '@/shared/ui/regional'
 import type { CadenaDeLaCotizacion } from '../../../entities/hoja-de-una-guardada'
 import { ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
 import { rutaDeLaCotizacion } from '../../../entities/ruta-de-la-hoja'
+import { InsigniaPrivada } from '../../privada/components/insignia-privada'
 import { RevisionesDeLaCotizacion } from '../../revisiones/components/revisiones-de-la-cotizacion'
 import { ContextoDeLaVistaPrevia } from './hueco-de-la-vista-previa'
 import { ContextoDeLaRanura } from './menu-de-la-guardada/contexto'
@@ -38,6 +39,8 @@ type Props = {
   acciones?: ReactNode
   // Lo que un área suma después de la clase y de la vigencia (4.27-4): sus insignias, ya dibujadas por la página.
   insignias?: ReactNode
+  // Si es privada (glosario: «Cotización privada»): su insignia va tras la vigencia, antes de las de las áreas.
+  privada?: boolean
 }
 
 // La cabecera de una cotización guardada: «Cotización n.º N», su clase, hasta cuándo vale (o «Vencida»), las insignias de las áreas («Aprobar» o «Aprobada», «Reportada»…),
@@ -61,6 +64,7 @@ export function CabeceraDeLaGuardada({
   guardable,
   acciones,
   insignias,
+  privada = false,
 }: Props) {
   const { zonaHoraria } = useRegional()
   const compartir = useContext(ContextoDeLaVistaPrevia)?.compartir?.()
@@ -79,6 +83,7 @@ export function CabeceraDeLaGuardada({
             Vale hasta el {formatearFecha(venceEl, { zona: zonaHoraria })}
           </span>
         )}
+        {privada ? <InsigniaPrivada /> : null}
         {insignias}
         <div className="ml-auto md:order-last md:ml-0">
           <MenuDeLaGuardada cotizacionId={id} numero={numero} />

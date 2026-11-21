@@ -20,6 +20,7 @@ import { correoDePrueba, crearPersona } from './soporte/base'
 import { darRolDeLaSemilla } from './soporte/rol-de-la-semilla'
 import { idDe } from './soporte/leads'
 import { formatearMonto } from '../src/shared/lib/formato'
+import { literal, sql } from './soporte/sql'
 
 // Guardar la hoja de cotizar (paso 4.13-3b, `docs/UX.md` › «Cotizar»): `Ctrl/Cmd+S` o «Guardar» crean la cotización con `cotizacion_crear`, con la misma hoja abierta que el
 // último recálculo, y la pantalla muestra lo guardado. Una celda abierta se confirma antes; con lo que no es un número no se guarda. Sin lead no se guarda.
@@ -149,4 +150,31 @@ test('el borrador (4-29): lo tipeado vuelve al recargar, sin la hoja abierta ni 
   await expect(totalDeLaHoja(page)).toBeVisible()
   expect(sinEspacios(await totalDeLaHoja(page).textContent())).toBe(vacio)
   await expect(page.getByText('Recuperamos lo que habías escrito y no guardaste.')).toBeHidden()
+})
+
+// La cotización privada (glosario: «Cotización privada»): el interruptor del resumen vive en la URL (sobrevive a que la hoja se vuelva a montar), la cotización nace
+// privada y, guardada, «Cotizar otra» vuelve con el interruptor apagado.
+test('con «Privada» encendida la cotización nace privada; «Cotizar otra» vuelve apagada', async ({
+  page,
+}) => {
+  const guardados = await vigilarGuardados(page)
+  await entrar(page, duena, { fresco: true })
+  await page.goto(`/cotizaciones/nuevo?origen=${origen.id}&lead=${lead}`)
+  await escribirElTitulo(page)
+  await tipearEnLaHoja(page, 'pub', '1200')
+  const interruptor = page.getByRole('switch', { name: 'Privada' })
+  await expect(interruptor).not.toBeChecked()
+  await interruptor.click()
+  await expect(interruptor).toBeChecked()
+  await expect.poll(() => new URL(page.url()).searchParams.get('privada')).toBe('si')
+  await guardarConElAtajo(page)
+  await expect(tarjetaGuardada(page)).toBeVisible()
+  const intento = guardados.pedidos.at(-1)?.intento ?? ''
+  expect(guardados.pedidos.at(-1)?.privada).toBe(true)
+  expect(
+    sql(`select privada::text from public.cotizaciones where id = ${literal(intento)}::uuid`),
+  ).toBe('true')
+  expect(new URL(page.url()).searchParams.get('privada')).toBeNull()
+  await page.getByRole('button', { name: 'Cotizar otra' }).click()
+  await expect(page.getByRole('switch', { name: 'Privada' })).not.toBeChecked()
 })

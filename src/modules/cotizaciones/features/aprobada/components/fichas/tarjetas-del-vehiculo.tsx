@@ -18,6 +18,7 @@ import type { PropsDeLasTarjetasDeLaFicha } from '../../../fichas/components/tip
 import { useAlCambiarLaAprobada } from '../../hooks/aprobada-del-vehiculo'
 import { useAprobarEsta } from '../../hooks/use-aprobar-esta'
 import { useDeEsteVehiculo } from '../../hooks/use-de-este-vehiculo'
+import { DialogoDeAprobarPrivada } from '../aprobar-privada/dialogo-de-aprobar-privada'
 import { BotonComparar } from '../de-este-vehiculo/boton-comparar'
 import { CasillaDeComparar } from '../de-este-vehiculo/casilla-de-comparar'
 import { AprobarEstaDeLaTarjeta } from './aprobar-esta-de-la-tarjeta'
@@ -42,6 +43,28 @@ function useRanura(id: string): HTMLElement | null {
   return ranura
 }
 
+// La lista (leída al montarse), al día con las otras islas del vehículo, y aprobar una tarjeta (tras aprobar o deshacer relee la primera página y refresca la ficha).
+// `ficha`, no `vehiculo`: con el resumen abierto encima, su «De este vehículo» monta otra pregunta de aprobar una privada y sólo una se dibuja.
+function useIsla(vehiculoId: string, alCambiar: () => void) {
+  const lista = useDeEsteVehiculo(vehiculoId)
+  const fuente = useId()
+  const leerAlMontar = useEffectEvent(lista.leerAlMontar)
+  useEffect(() => {
+    leerAlMontar()
+  }, [])
+  useAlCambiarLaAprobada(vehiculoId, fuente, lista.releer)
+  const aprobacion = useAprobarEsta(
+    vehiculoId,
+    fuente,
+    () => {
+      lista.releer()
+      alCambiar()
+    },
+    'ficha',
+  )
+  return { lista, ...aprobacion }
+}
+
 // Las cotizaciones de la ficha del vehículo: las últimas 10 que quien mira ve, la aprobada primero y marcada, en una fila de tarjetas con «Ver más» a `/cotizaciones?vehiculo=`
 // si hay más. Cada tarjeta, además de abrir el resumen y compartir, lleva «Aprobar esta» (con su permiso y su motivo) y su casilla para «Comparar» 2 o 3, cuyo botón va en el
 // título del bloque. Se lee al montarse desde el navegador; tras aprobar relee su primera página y avisa a las otras islas del vehículo.
@@ -53,21 +76,11 @@ export function TarjetasDelVehiculo({
   Tarjetas,
   alCambiar,
 }: PropsDeLasTarjetasDelVehiculo) {
-  const lista = useDeEsteVehiculo(vehiculo.id)
-  const fuente = useId()
+  const { lista, enCurso, aprobar, pedidoDe } = useIsla(vehiculo.id, alCambiar)
   const idDelAviso = useId()
   const ranura = useRanura(ranuraDeComparar)
   // Las marcadas; las que se ven elegidas son las que siguen a la vista (tras aprobar o releer se sueltan las que ya no están).
   const [marcadas, setMarcadas] = useState<readonly string[]>([])
-  const leerAlMontar = useEffectEvent(lista.leerAlMontar)
-  useEffect(() => {
-    leerAlMontar()
-  }, [])
-  useAlCambiarLaAprobada(vehiculo.id, fuente, lista.releer)
-  const { enCurso, aprobar } = useAprobarEsta(vehiculo.id, fuente, () => {
-    lista.releer()
-    alCambiar()
-  })
   const vista = tarjetasALaVista(lista.aLaVista, lista.siguiente !== null)
   const elegidas = elegidasEnLaLista(marcadas, vista.filas)
   const porTarjeta = (id: string) => {
@@ -119,6 +132,13 @@ export function TarjetasDelVehiculo({
         filas={vista.filas.map((fila) => tarjetaDeEsteVehiculo(fila, vehiculo.titulo))}
         verMas={vista.hayMas ? rutaDelListado({ vehiculo: vehiculo.id }) : null}
         porTarjeta={porTarjeta}
+      />
+      <DialogoDeAprobarPrivada
+        desde="ficha"
+        de={(id) => {
+          const fila = lista.aLaVista.find((f) => f.id === id)
+          return fila === undefined ? null : pedidoDe(fila)
+        }}
       />
     </>
   )

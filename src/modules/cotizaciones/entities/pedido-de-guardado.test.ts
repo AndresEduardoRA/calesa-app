@@ -54,4 +54,10 @@ describe('argumentosDeCrear', () => {
     expect('p_titulo' in automatico).toBe(false)
     expect(automatico.p_titulo_manual).toBe(false)
   })
+
+  it('la privada manda p_privada; pública, o un pendiente de antes sin el campo, no lo manda (la base la deja pública)', () => {
+    expect(argumentosDeCrear({ ...PEDIDO, privada: true }).p_privada).toBe(true)
+    expect('p_privada' in argumentosDeCrear({ ...PEDIDO, privada: false })).toBe(false)
+    expect('p_privada' in argumentosDeCrear(PEDIDO)).toBe(false)
+  })
 })

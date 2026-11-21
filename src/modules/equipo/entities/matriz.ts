@@ -40,6 +40,12 @@ export type GrupoDePermisos = {
 // Lo que la matriz necesita de un origen. El nombre sale de la fila, nunca de un texto fijo.
 export type OrigenDeLaMatriz = { id: string; nombre: string }
 
+// Un cambio en una celda: dar el permiso en un lugar (o cambiarle el alcance) o quitarlo de ahí. Lo arman la matriz y el cuadro «Quién crea y quién ve»
+// (`cuadro-de-cotizaciones.ts`); cada uno es una llamada a `rbac_otorgar` o `rbac_revocar` con la versión del rol.
+export type CambioDeConcesion =
+  | { tipo: 'otorgar'; clave: ClavePermiso; origenId: string | null; alcance: Alcance }
+  | { tipo: 'revocar'; clave: ClavePermiso; origenId: string | null }
+
 export const ETIQUETA_ALCANCE: Record<Alcance, string> = { propios: 'Lo propio', todos: 'Todo' }
 export const TODOS_LOS_ORIGENES = 'Todos los orígenes'
 export const SIN_ORIGENES = 'Sin orígenes todavía'

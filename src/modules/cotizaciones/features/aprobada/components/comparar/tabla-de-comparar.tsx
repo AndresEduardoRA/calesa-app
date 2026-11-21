@@ -11,6 +11,7 @@ import {
 } from '../../../../entities/aprobada/comparar'
 import type { AprobarEn } from '../../../../entities/aprobada/de-este-vehiculo'
 import { useAprobarEsta } from '../../hooks/use-aprobar-esta'
+import { DialogoDeAprobarPrivada } from '../aprobar-privada/dialogo-de-aprobar-privada'
 import { CabeceraDeColumna } from './cabecera-de-columna'
 import { CeldaComparada } from './celda-comparada'
 import { ColumnaConError } from './columna-con-error'
@@ -32,7 +33,12 @@ const COLUMNA = 'min-w-40 max-w-72 px-3 py-3 align-top'
 // la aprobada vive aquí, iniciada con la del servidor (la `key` de la página la reinicia al releer). «Deshacer» la devuelve.
 export function TablaDeComparar({ modelo, aprobarEn }: Props) {
   const [aprobadaId, setAprobadaId] = useState(modelo.aprobadaId)
-  const { enCurso, aprobar } = useAprobarEsta(modelo.vehiculoId, useId(), setAprobadaId)
+  const { enCurso, aprobar, pedidoDe } = useAprobarEsta(
+    modelo.vehiculoId,
+    useId(),
+    setAprobadaId,
+    'comparar',
+  )
   const caja = useRef<HTMLDivElement>(null)
   const desborde = useDesborde(caja)
   const titulo = useId()
@@ -82,28 +88,52 @@ export function TablaDeComparar({ modelo, aprobarEn }: Props) {
               />
             ))}
           </tbody>
-          <tfoot>
-            <tr>
-              <th scope="row" className={`${ETIQUETA} border-t border-(--color-line)`}>
-                <span className="sr-only">Acciones</span>
-              </th>
-              {modelo.columnas.map((columna) => (
-                <td key={columna.id} className={`${COLUMNA} border-t border-(--color-line)`}>
-                  <Pie
-                    columna={columna}
-                    aprobada={columna.id === aprobadaId}
-                    aprobarEn={aprobarEn}
-                    enCurso={enCurso}
-                    alAprobar={aprobar}
-                  />
-                </td>
-              ))}
-            </tr>
-          </tfoot>
+          <PieDeLaTabla
+            columnas={modelo.columnas}
+            aprobadaId={aprobadaId}
+            aprobarEn={aprobarEn}
+            enCurso={enCurso}
+            alAprobar={aprobar}
+          />
         </table>
       </div>
       <PistaDeDesborde {...desborde} />
+      <DialogoDeAprobarPrivada
+        desde="comparar"
+        de={(id) => {
+          const columna = modelo.columnas.find((c) => c.id === id)
+          return columna === undefined || columna.tipo === 'error' ? null : pedidoDe(columna)
+        }}
+      />
     </div>
+  )
+}
+
+// Al pie, «Aprobar esta» y «Abrir» de cada columna.
+function PieDeLaTabla({
+  columnas,
+  aprobadaId,
+  ...pie
+}: {
+  columnas: ModeloDeComparar['columnas']
+  aprobadaId: string | null
+  aprobarEn: AprobarEn
+  enCurso: string | null
+  alAprobar: ReturnType<typeof useAprobarEsta>['aprobar']
+}) {
+  return (
+    <tfoot>
+      <tr>
+        <th scope="row" className={`${ETIQUETA} border-t border-(--color-line)`}>
+          <span className="sr-only">Acciones</span>
+        </th>
+        {columnas.map((columna) => (
+          <td key={columna.id} className={`${COLUMNA} border-t border-(--color-line)`}>
+            <Pie columna={columna} aprobada={columna.id === aprobadaId} {...pie} />
+          </td>
+        ))}
+      </tr>
+    </tfoot>
   )
 }
 

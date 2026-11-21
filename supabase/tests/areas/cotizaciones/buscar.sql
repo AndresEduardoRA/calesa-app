@@ -88,7 +88,7 @@ begin
   if not coalesce(p.proconfig @> array['search_path=""'], false) then raise exception 'B1: search_path: %', p.proconfig; end if;
   v_cols := pg_get_function_result(p.oid);
   if v_cols ~ '(valores|fuentes|totales|tipos_cambio)' then raise exception 'B1: devuelve el snapshot: %', v_cols; end if;
-  if v_cols is distinct from 'TABLE(id uuid, numero bigint, origen_id uuid, lead_id uuid, vehiculo_id uuid, creado_por uuid, clase clase_cotizacion, estado estado_cotizacion, titulo text, total_base numeric, moneda_mostrar character, creado_en timestamp with time zone, vence_el date, vencida boolean, acotada boolean)' then
+  if v_cols is distinct from 'TABLE(id uuid, numero bigint, origen_id uuid, lead_id uuid, vehiculo_id uuid, creado_por uuid, clase clase_cotizacion, estado estado_cotizacion, titulo text, total_base numeric, moneda_mostrar character, creado_en timestamp with time zone, vence_el date, vencida boolean, acotada boolean, privada boolean)' then
     raise exception 'B1: las columnas no son las del listado con acotada: %', v_cols;
   end if;
   if not has_function_privilege('authenticated', p.oid, 'execute') then raise exception 'B1: authenticated no la ejecuta'; end if;

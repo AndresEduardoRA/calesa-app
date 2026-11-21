@@ -41,6 +41,8 @@ const COLUMNAS: readonly [string, (a: unknown) => string | null][] = [
     'ver_total_bs',
     (a) => (a === true ? 'Encendió «Ver total Bs»' : a === false ? 'Apagó «Ver total Bs»' : null),
   ],
+  // La marca de privada (glosario: «Cotización privada»): aprobarla o marcarla final también la hace pública.
+  ['privada', (a) => (a === true ? 'La hizo privada' : a === false ? 'La hizo pública' : null)],
   ['vehiculo_id', () => 'Cambió el vehículo'],
   ['lead_id', () => 'Cambió el cliente'],
   ['titulo', () => 'Cambió el título'],

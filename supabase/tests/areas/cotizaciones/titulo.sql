@@ -139,7 +139,7 @@ begin
     if not has_function_privilege('authenticated', p.oid, 'execute') then raise exception 'T1: authenticated no ejecuta %', p.proname; end if;
     if has_function_privilege('anon', p.oid, 'execute') then raise exception 'T1: anon ejecuta %', p.proname; end if;
     if exists (select 1 from aclexplode((select proacl from pg_proc where oid = p.oid)) a where a.grantee = 0 and a.privilege_type = 'EXECUTE') then raise exception 'T1: PUBLIC ejecuta %', p.proname; end if;
-    if p.proname = 'cotizacion_crear' and p.args not like '%p_ver_total_bs boolean DEFAULT false, p_titulo text DEFAULT NULL::text, p_titulo_manual boolean DEFAULT false' then
+    if p.proname = 'cotizacion_crear' and p.args not like '%p_ver_total_bs boolean DEFAULT false, p_titulo text DEFAULT NULL::text, p_titulo_manual boolean DEFAULT false, p_privada boolean DEFAULT false' then
       raise exception 'T1: la firma de crear: %', p.args;
     end if;
     if p.proname = 'cotizacion_guardar' and p.args not like '%p_vehiculo uuid, p_ver_total_bs boolean, p_titulo_manual boolean DEFAULT NULL::boolean' then

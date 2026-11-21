@@ -162,7 +162,10 @@ declare
     -- Moderar (4.27-1): recibe una cotización, no un lead; pide ver (antes y con la fila tomada), moderar y, en una final, final.gestionar del origen; su matriz, `areas/comentarios/reportar-y-moderar.sql`.
     ('cotizacion_moderar(uuid,timestamp with time zone,estado_cotizacion)', 'X'),
     -- Aprobar (B4): recibe una cotización, no un lead; pide verla (antes y con la fila tomada) y `cotizaciones.aprobar` del origen; sólo copia `lead_id` a `cotizaciones_aprobadas` (la policy que espeja «cotizaciones: leer»); `areas/aprobada/aprobar.sql`.
-    ('cotizacion_aprobar(uuid,timestamp with time zone)', 'X'),
+    ('cotizacion_aprobar(uuid,timestamp with time zone,boolean)', 'X'),
+    -- Hacer privada o pública (T413): recibe una cotización, no un lead; pide verla (antes y con la fila tomada) y ser su autor; no devuelve nada del lead;
+    -- `areas/cotizaciones/privadas.sql`.
+    ('cotizacion_privada_cambiar(uuid,boolean,timestamp with time zone)', 'X'),
     -- Comentarios y adjuntos (4.27-1): reciben una cotización, no un lead, y piden verla (`puede_cotizacion`); sus pruebas, `areas/comentarios/`.
     ('cotizacion_puede_adjuntar(uuid)', 'L'),
     ('cotizacion_comentarios(uuid,timestamp with time zone,uuid,integer,integer)', 'L'),
@@ -202,13 +205,13 @@ declare
     -- Crear una cotización (4.10-2): el lead es obligatorio y se pide visible (`leads.ver`, la regla de la policy de insert que se fue), no de la cartera: una cotización cuelga de un lead que quien
     -- cotiza ve (D3). Lo bloquea `for key share` entre dos comprobaciones, igual para el que no existe y el que no ve (`cotizacion-crear.sql` y `cotizaciones-visibilidad.sql`).
     -- Una final (4.25-1b), como marcar: el lead en la cartera con `leads.editar` antes de tomarlo y con todo tomado, y lo toma `for no key update` (`areas/final/crear.sql`).
-    ('cotizacion_crear(uuid,uuid,uuid,jsonb,text,uuid,jsonb,text,clase_cotizacion,boolean,boolean,text,boolean)', 'X'),
+    ('cotizacion_crear(uuid,uuid,uuid,jsonb,text,uuid,jsonb,text,clase_cotizacion,boolean,boolean,text,boolean,boolean)', 'X'),
     -- Cotizar encima (4.15-2): el lead es el de la anterior y se pide visible como en cotizacion_crear (comprobar, for key share, volver a comprobar), después de ver la anterior.
     ('cotizacion_encima(uuid,uuid)', 'X'),
     -- Crear las dos cotizaciones hermanas y cotizar encima de ellas: llaman a cotizacion_crear y a cotizacion_encima (arriba) una vez por opción, que piden el
     -- lead visible como siempre; encima en par toma además el lead de las anteriores `for key share` si quien llama lo ve, antes que ellas
     -- (`areas/cotizaciones/hermanas-crear-guardar.sql`).
-    ('cotizacion_crear_en_par(uuid[],uuid,uuid,jsonb,text,uuid,text,boolean,boolean,text,boolean)', 'X'),
+    ('cotizacion_crear_en_par(uuid[],uuid,uuid,jsonb,text,uuid,text,boolean,boolean,text,boolean,boolean)', 'X'),
     ('cotizacion_encima_en_par(uuid[],uuid[])', 'X'),
     -- Guardar las dos hermanas: llama a cotizacion_guardar (abajo) para cada una; no toma el lead.
     ('cotizacion_guardar_en_par(uuid[],uuid[],timestamp with time zone[],jsonb,text,text,text[],uuid,boolean,boolean)', 'X'),

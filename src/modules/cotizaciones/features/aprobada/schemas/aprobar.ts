@@ -4,4 +4,6 @@ import { z } from 'zod'
 export const esquemaAprobar = z.object({
   id: z.guid(),
   actualizadoEn: z.iso.datetime({ offset: true }),
+  // Aprobar una privada la hace pública: sólo con esto la base la aprueba (sin él, 22023 con `hint privada`).
+  hacerlaPublica: z.boolean().optional(),
 })

@@ -41,6 +41,7 @@ export const ENTIDADES_DE_LA_ACTIVIDAD: Readonly<Record<string, string>> = {
 const CAMPOS_COMUNES: Readonly<Record<string, string>> = {
   nombre: 'Nombre',
   titulo: 'Título',
+  privada: 'Privada',
   estado: 'Estado',
   notas: 'Notas',
   activo: 'Activo',

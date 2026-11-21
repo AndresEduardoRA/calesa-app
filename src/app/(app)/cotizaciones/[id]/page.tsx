@@ -203,6 +203,7 @@ async function Cotizacion({
               guardable={hoja.puedeGuardar}
               acciones={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Acciones', props)}
               insignias={dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'Insignias', props)}
+              privada={hoja.cotizacion.privada === true}
             />
             <LaHermana hoja={hoja} delPar={delPar} />
             {dibujarHuecos(HUECOS_DE_LA_GUARDADA, 'BajoLaCabecera', props)}

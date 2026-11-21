@@ -44,6 +44,7 @@ const fila = (i: number) => ({
   creado_en: `2026-10-29T08:${String(59 - i).padStart(2, '0')}:00.123456+00:00`,
   vence_el: '2026-11-05',
   vencida: false,
+  privada: false,
 })
 
 describe('leerGrupoDelListado', () => {

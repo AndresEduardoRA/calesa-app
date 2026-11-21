@@ -23,6 +23,7 @@ import {
 import { otroLado, type LadoDelPar, type ParDeHoja } from '../../../../entities/hoja-en-par'
 import { tituloBaseDeLaHermana } from '../../../../entities/titulo-en-par'
 import { AvisoDeVersion } from '../../../encima/components/aviso-de-version'
+import { PrivadaDelMenu } from '../../../privada/components/privada-del-menu'
 import { useGuardadoDeUnPar } from '../../hooks/use-guardado-de-un-par'
 import type { AperturaDeHoja } from '../../hooks/use-hoja'
 import { useLecturaDeUnaGuardada } from '../../hooks/use-lectura-de-una-guardada'
@@ -139,14 +140,17 @@ function Encima({
   hoja,
   hayCambios,
   comunesDistintos,
+  personaId,
 }: {
   hoja: HojaDeUnaGuardada
   hayCambios: boolean
   comunesDistintos: boolean
+  personaId: string
 }) {
   return (
     <>
       <AvisoDeVersion hoja={hoja} hayCambios={hayCambios} />
+      <PrivadaDelMenu hoja={hoja} personaId={personaId} hayCambios={hayCambios} />
       {comunesDistintos ? (
         <p role="status" className="text-(length:--text-sm) text-(--color-ink-soft)">
           {AVISO_DE_LO_COMUN_DISTINTO}
@@ -239,6 +243,7 @@ export function PantallaDeUnParGuardado({
   })
   const vehiculoId = vehiculoNuevo ?? laAbierta.cotizacion.vehiculoId
   const puedeGuardar = laAbierta.puedeGuardar && hojas[otroLado(abierta)].puedeGuardar
+  const deEncima = { hoja: laAbierta, comunesDistintos, personaId }
   const edicion = {
     guardado,
     cotizaciones: conTituloBase(hojas, par),
@@ -264,9 +269,7 @@ export function PantallaDeUnParGuardado({
       deLoGuardado={{ calculo, difiere: hayAviso }}
       deLaHermana={deLaHermana}
       abierta={abierta}
-      encima={(hayCambios) => (
-        <Encima hoja={laAbierta} hayCambios={hayCambios} comunesDistintos={comunesDistintos} />
-      )}
+      encima={(hayCambios) => <Encima {...deEncima} hayCambios={hayCambios} />}
       {...(pasos ? { pasos } : {})}
       {...(puedeGuardar
         ? { edicion, borrador: { clave: borrador, alDescartar: () => setVuelta((v) => v + 1) } }
