@@ -1,7 +1,7 @@
 'use client'
 
 import { MoreHorizontalIcon } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -129,15 +129,20 @@ function Renglones({ planilla, fila, alElegir }: Props & { alElegir: (a: Accion)
 }
 
 // El «⋯» de la fila activa (D21): uno solo en toda la planilla, arriba a la derecha de su D. Lo abren también el clic derecho, la tecla de menú y Shift+F10
-// (`planilla.menu`). Lo elegido corre cuando el menú terminó de cerrarse: abrir una celda o un panel antes perdería el foco contra el «⋯».
+// (`planilla.menu`). Lo elegido corre cuando el menú terminó de cerrarse: abrir una celda o un panel antes perdería el foco contra el «⋯»; y con algo elegido
+// el menú no devuelve el foco al «⋯» (lo pone lo elegido).
 export function MenuDeLaFila({ planilla, fila }: Props) {
   const [pendiente, setPendiente] = useState<Accion | null>(null)
+  const devolverElFoco = useRef(true)
   const { menu } = planilla
   return (
     <DropdownMenu
       open={menu.abierto}
       onOpenChange={(abierto) => {
-        if (abierto) setPendiente(null)
+        if (abierto) {
+          setPendiente(null)
+          devolverElFoco.current = true
+        }
         menu.alCambiar(abierto)
       }}
       onOpenChangeComplete={(abierto) => {
@@ -153,11 +158,16 @@ export function MenuDeLaFila({ planilla, fila }: Props) {
       >
         <MoreHorizontalIcon aria-hidden className="size-4" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-60 max-w-(--available-width)">
+      <DropdownMenuContent
+        align="end"
+        className="w-60 max-w-(--available-width)"
+        finalFocus={() => devolverElFoco.current}
+      >
         <Renglones
           planilla={planilla}
           fila={fila}
           alElegir={(accion) => {
+            devolverElFoco.current = false
             setPendiente(() => accion)
           }}
         />
