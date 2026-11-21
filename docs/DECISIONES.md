@@ -194,6 +194,17 @@ las trampas, en `docs/LECCIONES.md`.
 - **El flujo de repuestos se configura en Repuestos.** `/configuracion/repuestos/flujo`, primera sub-sección de la sección (sin `?seccion=` ni panel, la raíz abre ahí), con el mismo editor que la pestaña Flujo de un origen (`fijo`, sin selector: una página nunca abre otro flujo).
 - **`plantillas-de-v1` se queda en `/configuracion/cotizacion/<origen>/plantillas-de-v1` hasta su chore.** Es un `GET` que pide el modal, no una página: moverlo sólo para borrarlo después no aporta (`docs/PENDIENTES.md`).
 - **La lista de orígenes son tarjetas con lo que les falta.** Tipo, activo o inactivo y las faltas en corto (`faltasDeLaTarjeta()`): sin el paso de los permisos (aviso blando, como en el inicio) y nada en un origen inactivo. Descartada una tabla compacta: no deja ver las faltas sin ruido.
+- **La puesta en marcha es una página por paso, derivada de lo que hay** (sin preguntar). «Nuevo origen» abre `/configuracion/origenes/nuevo` (el drawer
+  se quita; `?panel=nuevo` responde 308) y, creado, cada paso es `/<id>/puesta-en-marcha/<paso>` con el mismo editor de su pestaña: un solo editor por
+  cosa, y la planilla y la tarjeta necesitan el ancho que un modal o un drawer no da. Qué está hecho se deriva de lo que hay (`estadoDeLaPuestaEnMarcha()`:
+  campos activos, fases, fórmula de trabajo, fórmula activa), no de un «paso actual» guardado: no pide migración, lo hecho fuera del paso a paso cuenta y
+  deshacer algo vuelve a dejarlo pendiente. «Seguir» no guarda ni exige (cada editor guarda con sus botones): con lo de por omisión se puede seguir. Las
+  pestañas van bajo el grupo `[id]/(pestanas)/` para que los pasos no lean ni dibujen el marco (un solo `h1`, el del paso, `sr-only`; el título visible
+  de la cabecera es un `<p>`). El paso a paso se dibuja en cada página y no en el layout: al saltar de paso, el layout queda y sus insignias no se
+  releerían. En «Para cotizar y mover», Publicar es el paso Fórmula (los dos miran la fórmula activa), y «Ir a la celda» de un rechazo al activar
+  sigue llevando al editor de la fórmula: se vuelve con «Seguir la puesta en marcha». Descartados: el paso a paso en un modal o drawer (sin ancho para
+  la planilla y sin URL por paso), una columna `origenes.paso_actual` (migración y un dato que se desfasa de lo hecho) y saltar los pasos hechos al
+  seguir (quien vuelve a mirar un paso no tiene por qué perderlo).
 
 ## Vehículos
 

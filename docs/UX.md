@@ -576,15 +576,17 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   historial, «Tramos de logística» y «Cajas» por moneda con sus modales en la URL (`?panel=tramo|caja`). Las URLs viejas
   `?seccion=catalogos|cotizador` redirigen a su sub-ruta con sus `?panel=`, `tramo`, `caja` y `moneda` (sin `?seccion=` ni panel, a Flujo).
 - **Orígenes** — `/configuracion/origenes` (`origenes.gestionar`, `flujos.configurar` o `cotizaciones.configurar`, cada una **en ese origen**): la
-  frase «De dónde vienen los vehículos: sus datos, campos y categorías, su flujo, su fórmula y sus tablas.», «Nuevo origen» (`?panel=nuevo`, lleva a
-  sus Datos) y, como tarjetas, sólo los orígenes que la persona abre (dos columnas desde 40 rem de contenedor; una al 200 % y en el celular; tope 100
+  frase «De dónde vienen los vehículos: sus datos, campos y categorías, su flujo, su fórmula y sus tablas.», «Nuevo origen» (un enlace a
+  `/configuracion/origenes/nuevo`; `?panel=nuevo`, el panel de antes, responde 308 ahí con su consulta; sin `origenes.gestionar`, apagado con su motivo) y, como tarjetas, sólo los orígenes que la persona abre (dos columnas desde 40 rem de contenedor; una al 200 % y en el celular; tope 100
   con `<AvisoDeTope>`): punto de color, nombre, «Subasta|Manual», «Activo|Inactivo», lo que falta en corto o «Nada pendiente», y vehículos y
   cotizaciones; la tarjeta entera abre sus Datos.
 - **La página del origen** — `/configuracion/origenes/<id>/<pestaña>`: arriba «‹ Orígenes»; el punto de color, el nombre como `h1`, «Activo» o
   «Inactivo» y, con `origenes.gestionar`, el «⋯» arriba a la derecha (activar, desactivar, eliminar: `?panel=eliminar-origen`). Debajo, **«Para cotizar y
   mover»** (`h2`): cinco pasos —Datos, Campos, Flujo (con fases), Fórmula (una activa) y Tarjeta (la de la activa, publicada)— con ✓ «Listo», ⚠ o ✗ y una frase corta,
   cada uno enlazado a su pestaña (la Fórmula, a la lista `/formulas`; la Tarjeta, a `formula/tarjeta`, la de la fórmula de trabajo; Datos con aviso de apibara, a Integraciones); sin el permiso del paso, el motivo
-  debajo y sin enlace; en el celular, dos columnas. Un inactivo dice sólo «Inactivo: no recibe vehículos ni cotizaciones nuevos.». Después, las
+  debajo y sin enlace; en el celular, dos columnas. Mientras el origen no tiene fórmula activa (su puesta en marcha), el paso que le toca lleva la
+  insignia «Pendiente» (Publicar es el paso Fórmula) y junto al `h2` va «Seguir la puesta en marcha», la única acción principal del bloque (a lo ancho en
+  el celular), que lleva al paso que falta. Un inactivo dice sólo «Inactivo: no recibe vehículos ni cotizaciones nuevos.». Después, las
   **pestañas** (en el celular la barra se desplaza dentro de su ancho y deja a la vista la abierta), cada una su sub-ruta; la que no se abre va
   apagada con su motivo:
   - **Datos** (`/datos`): el formulario con la barra fija de cambios sin guardar. **Campos** (`/campos`): «Datos clave (n de 4)» en orden con «Subir»,
@@ -617,6 +619,24 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
     pestaña del origen (la fórmula, por su ruta corta), `?seccion=formula` del origen a `/formulas`, `/configuracion/cotizacion/general/*` y `?seccion=tonos|colores|niveles|ajustes|vigencia` a Catálogos,
     `/configuracion/flujos?origen=` a su Flujo (`?ambito=repuestos` al de repuestos; sin origen, el primero que la persona configura), `?seccion=documentos`
     sin `flujos.configurar` a Tipos de documento, y `/configuracion/logistica/*` a su catálogo. Lo que no se resuelve, a la lista de orígenes.
+- **Nuevo origen** — `/configuracion/origenes/nuevo` (`origenes.gestionar`; sin él, «No puedes …» con su motivo): `h1` «Nuevo origen», a la izquierda el
+  paso a paso de la puesta en marcha (Datos el actual, los demás todavía sin enlace) y el formulario de Datos (tipo, nombre, sustantivo y género, color,
+  plataformas de subasta) con «Crear origen» y «Cancelar» (a la lista). Salir con algo escrito pregunta antes (`ConfirmarDescarte`). Un nombre repetido
+  se dice en el campo y lo escrito queda. Creado, lleva a `/<id>/puesta-en-marcha/campos`. Celular: una columna, el paso a paso arriba.
+- **Puesta en marcha** — `/configuracion/origenes/<id>/puesta-en-marcha/{datos,campos,flujo,formula,tarjeta,publicar,listo}` (se abre como la página
+  del origen: con alguno de sus tres permisos en ese origen; ajeno, «No puedes abrir este origen»): el paso a paso que lleva a quien crea un origen
+  hasta cotizar con él (glosario). Patrón: arriba «‹ <origen>», «Puesta en marcha de <origen>» con su punto de color y el «⋯» («Salir de la puesta en
+  marcha», a la página del origen); a la izquierda (arriba en el celular) el paso a paso (`nav` «Pasos de la puesta en marcha»: número, título e
+  insignia «Hecho», «Pendiente» o «Sin permiso» con el motivo; el actual con `aria-current="step"`, pegado al desplazar desde `md`); a la derecha el
+  editor del paso, el mismo de su pestaña (Datos, Campos, el editor del flujo, la planilla de la fórmula de trabajo o «Empezar en blanco» / «Copiar la de
+  otro origen», el editor de la tarjeta, y «Publicar…» con qué se publica y el modal de activar con su nota), y al pie «Seguir» (primario; «Ir a publicar»
+  antes de Publicar) y «Volver» (fantasma), a lo ancho en el celular. Cada paso guarda con sus botones; «Seguir» no guarda ni exige: lo hecho se deriva
+  de lo que hay (campos activos, fases, fórmula de trabajo, fórmula activa), así que lo hecho fuera del paso a paso cuenta. `/puesta-en-marcha` sola
+  lleva al primer paso que falta y la persona puede hacer. Sin el permiso de un paso: «No puedes hacer este paso» con el motivo, y «Seguir» lo salta.
+  Sin fórmula de trabajo, Tarjeta y Publicar dicen «Este origen todavía no tiene fórmula.» con «Ir a la fórmula». Con la planilla sin publicar, la
+  Tarjeta dice que la fórmula trae la tarjeta por omisión (o la de la copia). `listo`: «<Origen> ya cotiza.» con «Cotizar con <origen>» (la hoja de
+  cotizar de ese origen); sin fórmula activa, «Falta publicar la fórmula.» con el enlace a la página del origen. Estados: cargando con el esqueleto de
+  cada editor, sin permiso, error con reintentar y PT409 los de cada editor. Salir a mitad no pierde nada: se retoma desde «Para cotizar y mover».
 - **Sitio web (config)** — `/configuracion/web` abre la primera sub-sección que la persona puede; cada una es una sub-ruta del menú de Configuración
   («Web › Sitio web»), con su título y una frase. «Ajustes» (`/ajustes`) y «Legales» (`/legales`) con `web.ajustes.gestionar`; «Guías» (`/guias`),
   «Preguntas frecuentes» (`/faqs`) y «Testimonios» (`/testimonios`) con `web.contenido.gestionar`. Lo que no puede abrir va apagado en el menú, con su

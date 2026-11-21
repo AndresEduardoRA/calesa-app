@@ -9,8 +9,18 @@ Orígenes de vehículos configurables (subasta/apibara o manual), su layout de c
   mover» y las pestañas; las pestañas Flujo, Fórmulas (con el editor de cada fórmula en `formulas/[formula]/planilla|hoja|tarjeta`) y Tablas dibujan pantallas de `flujos` y `cotizaciones`, que este módulo no conoce). `/[id]` sin
   pestaña y los enlaces de antes (`?seccion=`, con `?campo=`, `?categoria=` y `?panel=`) redirigen con 308 (`[id]/route.ts`, `[id]/url-vieja.ts`). Las
   pantallas van partidas por pestaña: `pantallas/origen.ts` (el marco: `ParaCotizarYMover` y `MenuDelOrigen`, el «⋯» con activar, desactivar y
-  eliminar), `origen-datos.ts`, `origen-campos.ts` y `origen-categorias.ts`.
-- `index.ts`: `getOrigenes(incluirInactivos?)`, `leerLayout(origenId, { conUso })` (también los campos desactivados: quien consume filtra `activo`),
+  eliminar), `origen-datos.ts`, `origen-campos.ts` y `origen-categorias.ts`. Las pestañas viven bajo el grupo `[id]/(pestanas)/` (su layout dibuja el
+  marco).
+- **La puesta en marcha** (glosario): `/configuracion/origenes/nuevo` (el alta, `origenes.gestionar`; `pantallas/origen-nuevo.ts`,
+  `FormularioDelOrigenNuevo`; `?panel=nuevo` responde 308 desde `next.config.ts`) y `/configuracion/origenes/[id]/puesta-en-marcha/<paso>` (`datos`,
+  `campos`, `flujo`, `formula`, `tarjeta`, `publicar`, `listo`; la raíz, un `route.ts` que lleva al paso que falta). `src/app` arma cada paso con el
+  editor de su pestaña (`puesta-en-marcha/abrir.ts`: la sesión, el origen, los permisos y la fórmula de trabajo, una vez por pedido) y lo dibuja con
+  `pantallas/puesta-en-marcha.ts` (`PasoAPaso`, `MenuDeLaPuestaEnMarcha`). Las reglas, puras y con test, en `entities/puesta-en-marcha.ts`:
+  `estadoDeLaPuestaEnMarcha({ uso, hayFormulaDeTrabajo, permisos })` (lo hecho se deriva de lo que hay; nada guarda un «paso actual»), `estadoDelPaso()`,
+  `pasoPendiente()`, `pasoSiguiente()`, `pasoAnterior()`, `enMarcha()` (sin fórmula activa) y `pendienteEnLaTira()` (el paso de «Para cotizar y mover»
+  que dice «Pendiente»: Publicar es Fórmula). La tira de la página del origen recibe `pendiente` y `seguir` («Seguir la puesta en marcha») de
+  `[id]/puesta-en-marcha-en-la-tira.ts`, que lee la fórmula de trabajo sólo si el origen está activo, sin fórmula activa y con el permiso del cotizador.
+- `index.ts`: lo de la puesta en marcha (arriba), `getOrigenes(incluirInactivos?)`, `leerLayout(origenId, { conUso })` (también los campos desactivados: quien consume filtra `activo`),
   `leerCampoPrincipal(origenId)` (o `null`; para quien nombra un vehículo fuera del listado), `leerDatosNuevosDeApibara`, `leerOrigenes`,
   `pasosParaCotizarYMover(origen, { apibaraActiva })` y `pasosQueFaltan()` (los cinco pasos de «Para cotizar y mover», glosario: Datos, Campos, Flujo,
   Fórmula y Tarjeta, con `estado` listo|aviso|bloquea; un inactivo, `{ inactivo: true }`; los dos últimos miran la fórmula **activa**: Fórmula, que haya una
