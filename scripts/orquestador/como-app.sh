@@ -21,8 +21,12 @@ rechazar() {
   exit 64
 }
 case "${1:-} ${2:-}" in
-  "gh auth"* | "git credential"*) rechazar "$@" ;;
-  "gh "* | "git "*) ;;
+  "gh "* | "git "*)
+    # Las opciones globales van antes del subcomando (`gh -R x auth token`): se mira cada palabra.
+    for a in "${@:2}"; do
+      case "$1 $a" in "gh auth" | "git credential") rechazar "$@" ;; esac
+    done
+    ;;
   "bash "*) [[ "${2:-}" =~ ^(\./)?scripts/flujo/[a-z0-9-]+\.sh$ ]] || rechazar "$@" ;;
   *) rechazar "$@" ;;
 esac

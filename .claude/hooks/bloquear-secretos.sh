@@ -15,12 +15,16 @@ revisar_secretos() {
   case "$sin" in
     *app.pem* | *".config/orquestador/"* | *APP_CLAVE*) bloquear "$MSJ_CLAVE" ;;
   esac
+  # La caché del token de la app (token-app.sh: `<caché>/orquestador/app-<instalación>`); las carpetas de tareas
+  # (`orquestador/<proyecto>/…`) no.
   case "$CMD" in
-    *'$GH_TOKEN'* | *'${GH_TOKEN'* | *'$GITHUB_TOKEN'* | *'${GITHUB_TOKEN'* | *printenv* | *"/environ"*) bloquear "$MSJ_TOKEN" ;;
+    *'$GH_TOKEN'* | *'${GH_TOKEN'* | *'$GITHUB_TOKEN'* | *'${GITHUB_TOKEN'* | *printenv* | *"/environ"* | *"orquestador/app-"*)
+      bloquear "$MSJ_TOKEN" ;;
   esac
   # `GH_TOKEN=$(gh auth token --user <dueña>) gh …` usa el token sin mostrarlo (contratos.md): se quita antes de buscar.
+  # Las opciones globales van antes del subcomando (`gh -R x auth token`): entre `gh` y `auth` cabe cualquier cosa del segmento.
   sin=$(printf '%s' "$CMD" | sed -E 's/GH_TOKEN=\$\(gh[[:space:]]+auth[[:space:]]+token[^)]*\)//g')
-  if printf '%s' "$sin" | grep -qE 'gh[[:space:]]+auth[[:space:]]+token' ||
+  if printf '%s' "$sin" | grep -qE 'gh([[:space:]]+[^;&|[:space:]]+)*[[:space:]]+auth[[:space:]]+(token|git-credential)' ||
     printf '%s' "$CMD" | grep -qE 'gh[[:space:]]+auth[[:space:]]+status[^;&|]*([[:space:]]-[a-zA-Z]*t([[:space:]]|$)|--show-token)' ||
     printf '%s' "$CMD" | grep -qE 'git[[:space:]]+(-[^[:space:]]+[[:space:]]+)*credential'; then
     bloquear "$MSJ_TOKEN"

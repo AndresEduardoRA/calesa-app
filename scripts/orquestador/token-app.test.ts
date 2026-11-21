@@ -187,6 +187,13 @@ describe('token-app.sh', () => {
     expect(c.correr([], { env: { APP_ID: '' } })).toEqual({ estado: 3, stdout: '', stderr: '' })
     expect(c.correr([], { env: { ORQ_SIN_APP: '1' } }).estado).toBe(3)
     expect(c.llamadas()).toEqual([])
+    // Ni siquiera con un token fresco en la caché.
+    expect(c.correr().estado).toBe(0)
+    expect(c.correr([], { env: { ORQ_SIN_APP: '1' } })).toEqual({
+      estado: 3,
+      stdout: '',
+      stderr: '',
+    })
   })
 })
 

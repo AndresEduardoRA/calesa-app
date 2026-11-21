@@ -324,7 +324,10 @@ de instalación de una hora que se renueva solo. La sesión de gh de la persona 
 - **Sin bypass:** la app nunca va en el bypass del ruleset de `main`: su PR espera al CI y a la cola como cualquiera. `verificar` lo
   recuerda, y revisa la clave, el login de la app, los repos de la instalación y sus permisos.
 - **El hook** (`.claude/hooks/bloquear-secretos.sh`) frena en las sesiones leer la clave e imprimir el token o el entorno
-  (`printenv`, `env` solo, `$GH_TOKEN`, `gh auth token`, `git credential`, correr `token-app.sh`): gh y git push ya lo usan solos.
+  (`printenv`, `env` solo, `$GH_TOKEN`, `gh auth token` o `git-credential`, `git credential`, la caché `orquestador/app-*`, correr
+  `token-app.sh`): gh y git push ya lo usan solos. Lee texto, así que evita el descuido y no es una frontera: la sesión corre con el
+  usuario de la máquina, que puede leer la clave (`node -e`, `python -c` pasan). Lo que acota el daño es el token de una hora con los
+  permisos de la app y sin bypass de `main`.
 
 ## Arrancar
 

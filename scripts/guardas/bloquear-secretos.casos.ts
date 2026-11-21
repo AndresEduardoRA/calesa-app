@@ -31,6 +31,10 @@ export const BLOQUEA_SECRETOS = [
   'printf "protocol=https\\nhost=github.com\\n" | git credential fill',
   'cat /proc/self/environ',
   'bash scripts/orquestador/como-app.sh gh auth token',
+  'gh -R imandresalpiri/calesa-app auth token',
+  'printf "protocol=https\\nhost=github.com\\n" | gh auth git-credential get',
+  'cat ~/.cache/orquestador/app-184174354',
+  'tail -n +2 "$XDG_CACHE_HOME/orquestador/app-1"',
 ]
 
 export const PASA_SECRETOS = [
@@ -46,4 +50,5 @@ export const PASA_SECRETOS = [
   'cat ~/.config/orquestador/maquina.env',
   'set -euo pipefail',
   'export FOO=1',
+  'cat ~/.cache/orquestador/calesa-app/T475/cuerpo-pr.md',
 ]

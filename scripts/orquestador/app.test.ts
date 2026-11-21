@@ -252,9 +252,9 @@ describe('como-app.sh', () => {
     () => {
       const t = conApp()
       const r = t.funciones(
-        'bash "$ORQ/como-app.sh" printenv; echo "rc=$?"; bash "$ORQ/como-app.sh" gh auth status; echo "rc=$?"; bash "$ORQ/como-app.sh" gh api "repos/{owner}/{repo}/labels" --jq ".[].name"',
+        'bash "$ORQ/como-app.sh" printenv; echo "rc=$?"; bash "$ORQ/como-app.sh" gh auth status; echo "rc=$?"; bash "$ORQ/como-app.sh" gh -R a/b auth token; echo "rc=$?"; bash "$ORQ/como-app.sh" gh api "repos/{owner}/{repo}/labels" --jq ".[].name"',
       )
-      expect(r.salida).toMatch(/rc=64[\s\S]*rc=64/)
+      expect(r.salida).toMatch(/rc=64[\s\S]*rc=64[\s\S]*rc=64/)
       expect(r.salida).toContain('bug')
       expect(t.tokens()).toEqual([TOKEN])
     },

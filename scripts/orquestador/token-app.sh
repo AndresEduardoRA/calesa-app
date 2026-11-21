@@ -131,8 +131,9 @@ renovar() { # pide un token nuevo y reescribe la caché (con el candado tomado)
 }
 
 asegurar() { # deja la caché fresca; el código de salida de arriba si no puede
-  cache_fresca && return 0
+  # Primero la configuración: con ORQ_SIN_APP=1 (o sin ids) un token cacheado tampoco se entrega.
   configurada || return 3
+  cache_fresca && return 0
   umask 077
   mkdir -p "$CACHE_DIR" && chmod 700 "$CACHE_DIR"
   T=$(mktemp -d)

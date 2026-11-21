@@ -12,7 +12,9 @@ for p in "${partes[@]}"; do
   nuevo="${nuevo:+$nuevo:}$p"
 done
 export PATH="$nuevo"
-if [ "${1:-}" != auth ]; then
+auth=0
+for a in "$@"; do [ "$a" = auth ] && auth=1 && break; done # `gh -R x auth …` también
+if [ "$auth" = 0 ]; then
   case "${GH_TOKEN:-}" in
     '' | ghs_*)
       if t=$(bash "$yo/../token-app.sh" 2>/dev/null) && [ -n "$t" ]; then
