@@ -120,7 +120,7 @@ test('E2E mover · si otra persona movió antes, el aviso de conflicto la nombra
   await expect(aviso).toContainText(`«${terreno.b.nombre}»`)
   await expect(aviso).toContainText('No se movió nada.')
   // «Recargar» deja el panel en la fase nueva y la nota que había escrito sigue a mano.
-  await aviso.getByRole('button', { name: 'Recargar' }).click()
+  await aviso.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(page.getByRole('heading', { name: terreno.c.nombre, level: 3 })).toBeVisible()
   await page.getByRole('button', { name: `Elegir el destino «${terreno.c.nombre}»` }).click()
   await expect(page.getByLabel(/Nota interna/)).toHaveValue('Mi nota.')

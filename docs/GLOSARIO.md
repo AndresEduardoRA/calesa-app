@@ -888,6 +888,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   acción; se suscribe diferida y otra vez al volver la red.
 - **Widget del chat** — `chat/features/widget`, `<WidgetChat>`: botón flotante con los no leídos que abre el chat fuera de `/chat` (en el
   celular, enlace a `/chat`); docs y pruebas le dicen «la burbuja», que no es la **burbuja de un mensaje**.
+- **Recargar la página** — `<RecargarLaPagina>` de `shared/ui`: botón de la barra superior, a la izquierda del buscador; recarga completa del navegador.
+- **Copiar el enlace de esta página** — `<CopiarElEnlaceDeLaPagina>` de `shared/ui`: botón flotante secundario, a la izquierda del botón del chat (`<Flotantes>` del marco);
+  copia la URL actual o, si el portapapeles falla, la deja seleccionada en un modal.
 - **Push** — `suscripciones_push`: suscripción web push del navegador.
 - **Actividad** — `actividad` / `registrar_actividad()`: auditoría inmutable, 14 días.
 - **Actividad reciente** — `ActividadReciente` (`actividad/pantallas/actividad-reciente.ts`): los últimos 5 cambios de un registro como frases, cada uno

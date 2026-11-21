@@ -150,7 +150,7 @@ test('dos personas editan: la segunda ve de quién es el cambio y conserva lo qu
     nombre(`Conflicto de la dueña ${info.project.name}`),
   )
   // «Recargar» trae la versión de la dueña y descarta lo de Berta.
-  await panel.getByRole('button', { name: 'Recargar' }).click()
+  await panel.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(panel.getByLabel('Nombre')).toHaveValue(
     nombre(`Conflicto de la dueña ${info.project.name}`),
   )

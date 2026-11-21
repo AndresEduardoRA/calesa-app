@@ -115,7 +115,7 @@ test('E8: un PT409 porque otra persona guardó no borra y «Recargar» lo quita 
   await expect(confirmar(page)).toBeDisabled()
   expect(borradorGuardado(origenId())).not.toBeNull()
   await dialogo(page)
-    .getByRole('button', { name: /Recargar/ })
+    .getByRole('button', { name: /^Recargar$/ })
     .click()
   await expect(dialogo(page).getByText(/El borrador de esta plantilla cambió/)).toHaveCount(0)
   await expect(confirmar(page)).toBeEnabled()
@@ -132,7 +132,7 @@ test('E8: un PT409 porque otra persona guardó no borra y «Recargar» lo quita 
   await confirmar(page).click()
   await expect(dialogo(page).getByText(/El borrador ya no está: se descartó/)).toBeVisible()
   await dialogo(page)
-    .getByRole('button', { name: /Recargar/ })
+    .getByRole('button', { name: /^Recargar$/ })
     .click()
   await expect(
     dialogo(page).getByText('El borrador ya no está: otra persona lo publicó o lo descartó.'),

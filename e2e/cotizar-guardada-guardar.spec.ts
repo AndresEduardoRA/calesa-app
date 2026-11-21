@@ -165,7 +165,7 @@ test('E2E si otra persona guardó mientras tanto, el conflicto dice quién y que
   await expect(
     page.getByText(/Al recargar se abre esa versión; lo que escribiste no vuelve\./),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Recargar' }).click()
+  await page.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(celdaDeLaHoja(page, 'pub')).toContainText('77')
   await expect(celdaDeLaHoja(page, 'pub')).not.toContainText('20')
   await expect(page.getByText(/Olga Otra cambió esta cotización/)).toHaveCount(0)
@@ -207,7 +207,7 @@ test('E2E un guardado ya hecho con otros datos dice su texto: el pendiente de la
   await expect(
     page.getByText('Este guardado ya se hizo con otros datos. Recarga la cotización.'),
   ).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Recargar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Recargar', exact: true })).toBeVisible()
 })
 
 test('E2E quien sólo ve la cotización no deja borrador ni pendiente', async ({ page }) => {

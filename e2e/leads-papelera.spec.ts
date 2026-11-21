@@ -288,7 +288,7 @@ test('«Mostrar los N» sin red lo dice y reintenta; si el lote se purgó mientr
     '«Mostrar los 25» de un lote purgado',
   )
   await expect(segundo.getByText('Ese lote ya no está en la papelera.')).toBeVisible()
-  await segundo.getByRole('button', { name: 'Recargar' }).click()
+  await segundo.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(page.getByText(otro.nombres[0] ?? '')).toHaveCount(0)
   expect(id).not.toBe(otro.lote)
 })
