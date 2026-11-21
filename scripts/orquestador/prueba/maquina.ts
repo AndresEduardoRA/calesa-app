@@ -88,7 +88,8 @@ export function repo(m: Maquina, nombre: string, local = ''): Repo {
   mkdirSync(join(datos, 'cola'), { recursive: true })
   writeFileSync(
     join(datos, 'config.local.env'),
-    `PROYECTO="${nombre}"\nORQ_SOLO_LOCAL=1\nINTERVALO=1\n${local}`,
+    // Sin la app del orquestador (app.sh): config.env trae sus ids reales y una prueba no sale a GitHub.
+    `PROYECTO="${nombre}"\nORQ_SOLO_LOCAL=1\nINTERVALO=1\nAPP_ID=""\n${local}`,
   )
   const r = { m, nombre, ruta, origen, datos }
   m.repos.push(r)

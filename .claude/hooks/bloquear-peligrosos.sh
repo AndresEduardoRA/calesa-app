@@ -12,6 +12,8 @@
 #                   `pnpm update` dentro de los rangos de package.json (sin --latest, -g, -i ni una versión) y `pnpm dedupe`. ORQ_PERMITE se
 #                   lee del entorno del hook, que es el del proceso `claude`: un `ORQ_PERMITE=x pnpm …` escrito en el comando no cuenta.
 #                   Lo de pnpm vive en `bloquear-peligrosos-dependencias.sh`.
+#   Secretos:       ni la clave de la app del orquestador ni el token de GitHub se leen o se imprimen (`printenv`, `env` solo,
+#                   `$GH_TOKEN`, `gh auth token`, `git credential`, correr `token-app.sh`): viven en `bloquear-secretos.sh`.
 #   El revisor:     su Bash es de sólo lectura (`solo-lectura.sh`) aunque la carpeta no esté confiada: los hooks del frontmatter de
 #                   `.claude/agents/revisor.md` sólo corren con la carpeta confiada y `claude -p` (el orquestador) no la confía; los de
 #                   settings sí corren y su entrada trae `agent_type`.
@@ -53,6 +55,10 @@ junto_a_un_cd() { printf '%s' "$CMD" | grep -qE '(^|[^[:alnum:]_./-])(cd|pushd|c
 DEPENDENCIAS="$(dirname "${BASH_SOURCE[0]}")/bloquear-peligrosos-dependencias.sh"
 # shellcheck source=bloquear-peligrosos-dependencias.sh
 . "$DEPENDENCIAS" 2>/dev/null || bloquear "Falta $DEPENDENCIAS (las reglas de dependencias del hook): sin él no corre nada."
+SECRETOS="$(dirname "${BASH_SOURCE[0]}")/bloquear-secretos.sh"
+# shellcheck source=bloquear-secretos.sh
+. "$SECRETOS" 2>/dev/null || bloquear "Falta $SECRETOS (las reglas de secretos del hook): sin él no corre nada."
+revisar_secretos
 
 # --- Sobre el comando entero (lo de siempre) ---
 case "$CMD" in
@@ -249,6 +255,7 @@ revisar_segmento() {
     [[ "$t" =~ ^[0-9]*(\>\>?|\<). ]] && continue
     W+=("$t")
   done
+  revisar_secretos_del_segmento "${W[@]}"
   # Lo que agregar con pnpm no admite delante: otra carpeta (`env -C`, `pnpm -C x exec`) o variables (`npm_config_registry=…`).
   CON_CANDADO=0
   OTRA_CARPETA=0

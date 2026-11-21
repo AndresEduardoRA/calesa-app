@@ -6,7 +6,6 @@ import { leerFasesDeOrigen } from '@/modules/flujos'
 import { getOrigenes, leerLayout, type OrigenResumen } from '@/modules/origenes'
 import {
   PANEL_DE_IMAGENES,
-  columnaDeCompraDirecta,
   datosDelPanelDeImagenes,
   editablesDe,
   eliminablesDe,
@@ -78,8 +77,8 @@ export async function lecturasDeLaFicha(
   const suLayout = datosO(layout)
   return {
     suLayout,
-    // «Compra directa» de «Subasta»: el origen tiene activo el campo de apibara que trae el «Buy it now».
-    conCompraDirecta: columnaDeCompraDirecta(deSubasta, suLayout.campos).tipo === 'campo',
+    // «Editar fechas de subasta» del «⋯» y su modal: un origen de subasta y quien edita el vehículo (el de un vehículo ajeno se ve apagado, sin el modal).
+    fechas: deSubasta,
     editable,
     fase,
     papelera,

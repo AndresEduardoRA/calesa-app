@@ -1,5 +1,4 @@
-// El tiempo de una subasta: cuánto falta y si lo que sabemos quedó viejo.
-import type { EstadoDeSubasta } from './subasta'
+// El tiempo de una subasta: cuánto falta o hace cuánto empezó.
 
 export type CuentaRegresiva = {
   // `por_empezar`: falta tiempo. `empezo`: la hora ya pasó.
@@ -34,17 +33,4 @@ export function cuentaRegresiva(subastaEn: string, ahora: Date): CuentaRegresiva
   return diferencia >= 0
     ? { tipo: 'por_empezar', texto: `en ${distancia(diferencia)}` }
     : { tipo: 'empezo', texto: `hace ${distancia(-diferencia)}` }
-}
-
-// La subasta ya debía haber empezado y el estado no cambió: la información quedó vieja.
-export function estaDesactualizada(
-  estado: EstadoDeSubasta | null,
-  subastaEn: string | null,
-  ahora: Date,
-): boolean {
-  if (subastaEn === null || (estado !== 'abierta' && estado !== null)) {
-    return false
-  }
-  const instante = new Date(subastaEn).getTime()
-  return !Number.isNaN(instante) && instante < ahora.getTime()
 }

@@ -33,6 +33,8 @@ export function MenuDeFila({ vehiculo, fases, para }: Props) {
     publicar: para.publicar.estado === 'habilitado' ? para.publicar : null,
     subasta:
       para.consultables === null ? null : { consultable: para.consultables.has(vehiculo.id) },
+    // El modal de las fechas de la subasta es de la ficha: la lista no lo monta.
+    fechas: false,
     actividad: para.paraActividad !== null,
     papelera,
   })

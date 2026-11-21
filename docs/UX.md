@@ -294,18 +294,18 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   abre el visor en esa foto, ← → la recorren y Enter la abre) y, sobre su esquina como en la tarjeta de la lista, la vitrina (el botón de la tarjeta, que
   abre `?panel=vitrina`; sin permiso, apagado con su motivo) y el «⋯» (el mismo de la lista, con «Editar» e «Editar imágenes»: no hay «Editar» suelto);
   título, número, origen, situación (`<BadgeDeSituacion>`, la única vez), la insignia de vitrina y los enlaces cortos «Ver en logística» (`logistica.ver`
-  del origen) y «Repuestos · Proyecto #N» (`repuestos.ver`, si tiene proyecto). Debajo, en este orden: **«Cotización aprobada»** (`cotizaciones.ver` del
-  origen: la imagen de su tarjeta, n.º y título, total con su modo, autor y fecha, «Abrir» y «Compartir» —`?panel=compartir&para=<id>`, no en Modo Live—;
-  sin aprobada que quien mira vea, «Sin cotización aprobada» con «Cotizar» si cotiza en el origen); **«Subasta»** (sólo en un origen de subasta: la frase
-  con color y cuenta —«Se subasta en 2 días 4 h», «Cerró hace 3 h · sin resolver», «Ganada», «No ganada»—, el cierre en la zona de quien mira con la del
-  patio y la de la empresa más chicas, «Puja actual» o «Puja final» y «Compra directa» si el origen tiene el campo de apibara; «Editar fechas» en su «⋯»,
-  `?panel=fechas-de-subasta`; consultar de nuevo es «Actualizar los datos» del «⋯» del vehículo); **«Datos principales»** (sólo los datos clave del
+  del origen) y «Repuestos · Proyecto #N» (`repuestos.ver`, si tiene proyecto). Debajo, en este orden, **la subasta y el costo**, sin título a la vista y como la tarjeta de la lista: la **cuenta regresiva** del cierre (sólo
+  en un vehículo en subasta; sin fecha, «Sin fecha de cierre») y, en filas fijas, «Puja actual» o «Puja final» (en un origen manual, «Precio»), «Compra
+  directa» (sólo en un origen de subasta con el campo de apibara) y **«Costo estimado»** (`cotizaciones.ver` del origen): el total de la aprobada con su
+  modo, que es el botón que abre Compartir de esa cotización (`?panel=compartir&para=<id>`; en Modo Live, texto); sin aprobada que quien mira vea, «—» y
+  «Cotizar» si cotiza en el origen. «Editar fechas de subasta» está en el «⋯» del vehículo (`?panel=fechas-de-subasta`); consultar de nuevo es «Actualizar
+  los datos» del mismo «⋯». Después, **«Datos principales»** (sólo los datos clave del
   origen, en dos columnas en la lateral y una en el celular y al 200 %, y «Ver más» a lo ancho, que abre la **ficha completa** en `?ver=ficha`: casi toda
   la pantalla en escritorio y entera en el celular, sólo lectura, las fotos con su tira, los datos comunes, «Precio» y todos los grupos del layout; Esc y
   «atrás» la cierran y el foco vuelve a «Ver más»).
   **Derecha**: el índice quieto arriba de la columna («Índice de la ficha»; en el celular, pegajoso) y sólo lo de ventas, con su propio desplazamiento, los bloques que quien mira ve en este orden: **«Cotizaciones de este
   vehículo»** (`cotizaciones.ver` del origen: la fila de tarjetas con «Aprobar esta» y las casillas de «Comparar» (el botón en el título), al acercarse; «Cotizar» en el título, la hoja con
-  este vehículo y la vuelta a la ficha, sólo con `cotizaciones.crear` del origen; aprobar ahí pone al día «Cotización aprobada» de la izquierda; ver
+  este vehículo y la vuelta a la ficha, sólo con `cotizaciones.crear` del origen; aprobar ahí pone al día el «Costo estimado» de la izquierda; ver
   «Cotizaciones del lead y del vehículo»), **«Relacionados»** compacto (`leads.ver`: el vinculado con «Desvincular» confirmado, los interesados y lo cotizado;
   ver «Relacionados (estados propios)»), **«Actividad reciente»** (`actividad.ver`: los últimos 5 cambios del vehículo como frases y «Ver toda la actividad»,
   `/actividad?entidad=vehiculos&registro=<id>`) y **«Vitrina»** (siempre; en sólo lectura sin `vehiculos.vitrina`: publicado, la insignia «En vitrina» o
@@ -642,7 +642,9 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   resuelven en el servidor («jose» encuentra «José»); dibuja las 100 primeras por nombre y lo dice al pie; la persona se gestiona desde su
   «⋯», sin resumen. `?panel=invitar`; `?persona=`; `?baja=`.
 - **Roles** — `/configuracion/roles` (`equipo.roles.*`): matriz roles × permisos por módulo; desde 768 px la columna «Permiso» queda pegada
-  a la izquierda; cada celda guarda sola. En móvil, un rol a la vez (`?rol=`) y como lista (permiso, explicación y control debajo).
+  a la izquierda y la fila con los nombres de los roles arriba (la tarjeta se desplaza por dentro), con el título del módulo pegado debajo; cada
+  celda guarda sola. En móvil, un rol a la vez (`?rol=`) y como lista (permiso, explicación y control debajo): la barra «Rol a la vista» queda
+  pegada bajo la barra superior y el título del módulo en curso, debajo de ella.
   `?panel=nuevo-rol`, `?eliminar=`.
 - **Datos** — `/datos` (todos: «Mis leads»; todo: `datos.exportar.todo`): `?seccion=exportar|importar`, con la barra siempre; sin permiso
   para importar nada (`leads.crear`, `datos.importar.todo` o `vehiculos.crear` en algún origen), «Importar» apagada con su motivo y
@@ -909,7 +911,7 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   del mismo vehículo. Origen, filtros y cursor se quitan. Un `?vehiculo=` inexistente, en la papelera, de otro origen, que no se ve o que no es un id llega a
   la ficha: «No existe o no tienes acceso» con «Ir al inventario».
 - **Ficha (`/vehiculos/[id]`):** sin `logistica.ver`, sin «Ver en logística» (y `?seccion=documentos|fase` se queda arriba); sin `cotizaciones.ver`, ni
-  «Cotizaciones de este vehículo» ni el grupo Cotizado ni «Cotización aprobada»; sin `cotizaciones.crear`, sin «Cotizar» en el título; sin
+  «Cotizaciones de este vehículo» ni el grupo Cotizado ni la fila «Costo estimado»; sin `cotizaciones.crear`, sin «Cotizar» en el título; sin
   `cotizaciones.aprobar`, «Aprobar esta» apagado con su motivo; un `PT409` al aprobar dice quién y cuándo; sin `leads.ver`, sin «Relacionados»; sin
   `actividad.ver`, sin «Actividad reciente»; sin `repuestos.ver` o sin proyecto, sin «Repuestos · Proyecto #N» (y `?seccion=repuestos` se queda arriba);
   el índice siempre tiene «Vitrina». «Actividad reciente»: esqueleto, «Sin cambios en los últimos N días.», «No se pudo cargar la actividad» con
@@ -917,8 +919,9 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   se pudo leer, «No pudimos cargar «Vitrina».» con «Reintentar»; en Modo Live, el precio público tapado (`<Monto>`). La foto: sin fotos, el recuadro 4:3
   con su ícono (el «⋯» y la vitrina igual encima) y sin tira; con una, sin tira ni flechas; si la lectura falla, la portada en su lugar y el visor dice «No
   se pudieron cargar las fotos.» con «Reintentar». La vitrina de la foto sin `vehiculos.vitrina`: apagada (`aria-disabled`) con el motivo para el lector y
-  en un aviso al tocarla. «Cotización aprobada»: la imagen de la tarjeta preparándose o que falla, su recuadro con el total; en Modo Live, borrosa, sin
-  «Compartir». «Subasta»: origen manual, no está; sin fechas, «Sin fecha de cierre»; sin poder editar, sin su «⋯». «Datos principales»: sin datos clave
+  en un aviso al tocarla. Subasta y costo: mientras se lee, su esqueleto; sin aprobada, «Costo estimado» dice «—» (y «Cotizar»); en Modo Live, el costo no es botón
+  (sin «Compartir») y los montos van tapados; origen manual, sin cuenta ni «Compra directa», «Precio» y «Costo estimado»; subasta sin fecha de cierre,
+  «Sin fecha de cierre»; fuera de «En subasta» (cerrada, ganada), sin cuenta; sin poder editar, «Editar fechas de subasta» no aparece en el «⋯». «Datos principales»: sin datos clave
   guardados, los de fábrica de su tipo; un dato vacío, «—». La ficha completa sin red: «Sin conexión. No se pudo abrir esto.» con «Reintentar»; mientras
   lee los grupos, su esqueleto, y si falla, «No pudimos cargar la ficha del vehículo.» con «Reintentar». Sin fase: «Sin fase» en la cabecera. Subasta sin
   resolver: el aviso de arriba con «La ganamos». Sin red: el índice funciona (son anclas); lo diferido dice «Sin conexión» en su lugar con «Reintentar».

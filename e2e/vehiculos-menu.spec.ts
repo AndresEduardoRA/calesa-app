@@ -274,6 +274,8 @@ test('«Actualizar los datos» pide confirmar y dice el resultado; en un origen 
   )
   await alInventario(page, subasta.id)
   const menu = await abrir(menuDeVehiculo(page, DE_SUBASTA), page)
+  // Las fechas de la subasta se editan en la ficha (ahí está su modal): la lista no las ofrece.
+  expect(await opciones(menu)).not.toContain('Editar fechas de subasta')
   await menu.getByRole('menuitem', { name: 'Actualizar los datos' }).click()
   const dialogo = page.getByRole('dialog', { name: 'Actualizar los datos' })
   await expect(
@@ -305,4 +307,22 @@ test('«Actualizar los datos» pide confirmar y dice el resultado; en un origen 
   await alInventario(page, t.terreno.corea.id)
   const manual = await abrir(menuDeVehiculo(page, TITULO), page)
   expect(await opciones(manual)).not.toContain('Actualizar los datos')
+})
+
+test('«Editar fechas de subasta» está en el «⋯» de la ficha de una subasta y no en la de un origen manual', async ({
+  page,
+}) => {
+  await entrar(page, t.terreno.duena)
+  await page.goto(`/vehiculos/${deSubasta}`)
+  await expect(page.getByRole('heading', { name: DE_SUBASTA, level: 1 })).toBeVisible()
+  const deLaSubasta = await abrir(
+    page.getByRole('button', { name: `Más acciones de ${DE_SUBASTA}` }),
+    page,
+  )
+  expect(await opciones(deLaSubasta)).toContain('Editar fechas de subasta')
+  await cerrar(page, deLaSubasta)
+  await page.goto(`/vehiculos/${t.id}`)
+  await expect(page.getByRole('heading', { name: TITULO, level: 1 })).toBeVisible()
+  const manual = await abrir(page.getByRole('button', { name: `Más acciones de ${TITULO}` }), page)
+  expect(await opciones(manual)).not.toContain('Editar fechas de subasta')
 })

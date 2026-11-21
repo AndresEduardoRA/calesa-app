@@ -87,15 +87,15 @@ const entradaDelIndice = ({ ancla, etiqueta }: { ancla: string; etiqueta: string
 })
 
 // «Cotizar» desde la ficha: la hoja con este vehículo y su origen, con la vuelta a la ficha; null si no cotiza en el origen (`paraCotizarDe()`). La usan
-// «Cotización aprobada» (sin aprobada) y el título de «Cotizaciones de este vehículo».
+// el «Costo estimado» (sin aprobada) y el título de «Cotizaciones de este vehículo».
 function cotizarDesdeLaFicha(paraCotizar: ParaCotizar | null, vehiculoId: string): string | null {
   return paraCotizar === null
     ? null
     : conVuelta(rutaParaCotizar(paraCotizar, vehiculoId), `${RUTAS.vehiculos}/${vehiculoId}`)
 }
 
-// «Cotización aprobada» de la izquierda: con `cotizaciones.ver` del origen (si no, ni el bloque ni la consulta) y, sin aprobada, «Cotizar».
-function aprobadaDe(
+// La fila «Costo estimado» de la izquierda: con `cotizaciones.ver` del origen (si no, ni la fila ni la consulta) y, sin aprobada, «Cotizar».
+function costoDe(
   permisos: Permisos,
   origenId: string,
   cotizar: string | null,
@@ -134,6 +134,7 @@ function encabezadoDe(
       paraCotizar={lectura.paraCotizar}
       editaEnElOrigen={lectura.editaEnElOrigen}
       subasta={lectura.subasta}
+      fechas={lectura.fechas}
       enlaces={
         <EnlacesCortos
           vehiculoId={encontrado.id}
@@ -159,8 +160,8 @@ function ResumenDeLaFicha({
   )
 }
 
-// La ficha de un vehículo en dos columnas (docs/UX.md › Vehículo): a la izquierda lo que lo identifica (cabecera, aprobada, datos
-// principales y subasta); a la derecha, el índice y sólo lo de ventas que quien mira ve (`bloques.ts`): cotizaciones, relacionados, actividad y
+// La ficha de un vehículo en dos columnas (docs/UX.md › Vehículo): a la izquierda lo que lo identifica (cabecera, subasta y costo, y datos
+// principales); a la derecha, el índice y sólo lo de ventas que quien mira ve (`bloques.ts`): cotizaciones, relacionados, actividad y
 // vitrina. `?seccion=` de un bloque y los paneles de «Relacionados» llevan a su bloque; los de un bloque que se fue redirigen (`llegada-de-la-ficha.ts`:
 // `fotos` y `ficha` antes de leer, `documentos`, `fase` y `repuestos` con el permiso de su página); `?editar=`, `?panel=vitrina`,
 // `?panel=fechas-de-subasta`, `?ver=ficha` y `?visor=` abren lo suyo.
@@ -199,9 +200,7 @@ export default async function PaginaVehiculo({
             vehiculo={encontrado}
             origen={origen}
             layout={suLayout}
-            editable={editable}
-            conCompraDirecta={lectura.conCompraDirecta}
-            aprobada={aprobadaDe(sesion.permisos, origen.id, cotizar)}
+            costo={costoDe(sesion.permisos, origen.id, cotizar)}
           />
         }
         etiquetaDelLateral={`Datos de ${encontrado.titulo}`}
@@ -236,6 +235,7 @@ export default async function PaginaVehiculo({
         imagenes={lectura.imagenes}
         actualizar={lectura.actualizar}
         conCompartir={puede(sesion.permisos, 'cotizaciones.ver', origen.id)}
+        fechas={lectura.fechas && editable}
       />
     </>
   )

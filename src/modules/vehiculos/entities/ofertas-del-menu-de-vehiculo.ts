@@ -19,6 +19,8 @@ export type EntradaDelMenuDeVehiculo = {
   publicar: PermisoDeVitrina | null
   // Un origen de subasta con apibara encendida; `consultable` = tiene enlace, lote o VIN con qué preguntar (`entradaDeRefresco()`). null = no aplica.
   subasta: { consultable: boolean } | null
+  // La superficie puede abrir «Editar fechas de subasta» (la ficha de un vehículo de un origen de subasta: es la que monta su modal). La fila y la tarjeta, false.
+  fechas: boolean
   // Con `actividad.ver`.
   actividad: boolean
   papelera: PermisoDePapelera
@@ -33,7 +35,7 @@ const HABILITADA: OfertaConMotivo = { oferta: 'habilitada', motivo: null }
 const apagada = (motivo: string): OfertaConMotivo => ({ oferta: 'apagada', motivo })
 const si = (condicion: boolean): OfertaConMotivo => (condicion ? HABILITADA : OCULTA)
 
-// Editar, sus imágenes y la subasta comparten la regla: sin permiso en el origen no aparecen (un lector no ve un «⋯» lleno de apagadas); con el
+// Editar, sus imágenes, sus fechas de subasta y la subasta comparten la regla: sin permiso en el origen no aparecen (un lector no ve un «⋯» lleno de apagadas); con el
 // permiso y un vehículo ajeno, apagadas con el motivo.
 function porEdicion(edicion: EdicionDelMenu): OfertaConMotivo {
   switch (edicion) {
@@ -68,6 +70,7 @@ export function ofertasDelMenuDeVehiculo(entrada: EntradaDelMenuDeVehiculo): Ofe
     cotizar: si(entrada.cotizar),
     editar: edicion,
     imagenes: edicion,
+    fechas: entrada.fechas ? edicion : OCULTA,
     publicar: porPermiso(entrada.publicar),
     actualizar: porSubasta(entrada),
     actividad: si(entrada.actividad),

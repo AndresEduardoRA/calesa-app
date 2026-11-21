@@ -1,11 +1,13 @@
 'use client'
 
+import { useRef } from 'react'
 import type { Permisos } from '@/shared/lib/permisos'
 import { CabeceraPegada } from '@/shared/ui/lista'
 import { Table, TableHead, TableHeader, TableRow } from '@/shared/ui/table'
 import { rolDominado } from '../../../entities/dominancia'
 import type { GrupoDePermisos, OrigenDeLaMatriz } from '../../../entities/matriz'
 import type { RolConConcesiones } from '../../../entities/rol'
+import { useAltoPegado } from '../hooks/use-alto-pegado'
 import type { CambioDeConcesion } from '../hooks/use-matriz'
 import { EncabezadoRol } from './encabezado-rol'
 import { GrupoMatriz, type ColumnaDeRol } from './grupo-matriz'
@@ -22,15 +24,19 @@ type Props = {
 
 // La matriz desde 768 px: una columna por rol y un renglón por permiso. La columna «Permiso» va pegada a la izquierda: con muchos roles la
 // tabla se desplaza de costado dentro de su tarjeta (4.012 px con ocho roles al 200 %) y el nombre de cada permiso no se pierde (5a-19).
+// La fila de los roles queda pegada arriba mientras se desplazan los permisos: la tarjeta es la que se desplaza (`max-h`), porque un
+// `sticky top` no sirve dentro de un contenedor con `overflow-x`; el título del módulo se pega justo debajo (`GrupoMatriz`).
 // Por debajo de 768 px, un rol a la vez en `ListaDelRol`.
 export function TablaDeRoles(props: Props) {
   const { grupos, columnas, origenes, misPermisos, puedeGestionar } = props
+  const cabecera = useRef<HTMLTableSectionElement>(null)
+  useAltoPegado(cabecera, '--alto-cabecera-roles')
   return (
     // `scroll-pl-44`: el ancho de «Permiso» (`min-w-44`): una columna a la que se desplaza la tabla no queda debajo de la fija (5a-33).
-    <Table contenedor="scroll-pl-44">
-      <TableHeader>
+    <Table contenedor="scroll-pl-44 max-h-[calc(100dvh-var(--topbar)-1rem)] overflow-y-auto">
+      <TableHeader ref={cabecera} className="sticky top-0 z-30 bg-(--color-surface)">
         <TableRow>
-          <CabeceraPegada lado="nombre" className="min-w-44 align-bottom">
+          <CabeceraPegada lado="nombre" className="top-0 z-30 min-w-44 align-bottom">
             Permiso
           </CabeceraPegada>
           {columnas.map(({ rol }) => (
