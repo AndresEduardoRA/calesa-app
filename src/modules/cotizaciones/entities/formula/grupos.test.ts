@@ -4,13 +4,7 @@ import { evaluar } from '../motor'
 import type { Nodo } from '../nodos'
 import { validarFormula } from '../validar'
 import { filasDe } from './filas'
-import {
-  aplicarGrupo,
-  grupoDelRechazo,
-  miembrosDe,
-  puedeSumarAlGrupo,
-  type CambiosDelGrupo,
-} from './grupos'
+import { aplicarGrupo, miembrosDe, puedeSumarAlGrupo, type CambiosDelGrupo } from './grupos'
 
 // Una fórmula con dos grupos de buckets distintos (T1 y T5): `ga` (bucket `a` → `tca`, clave `oficial`) y `gb` (bucket `b` → `tcb`, clave `paralelo`),
 // el total dividido por `tca`. `ga` lleva dos miembros para que mover `cinco` no lo deje vacío.
@@ -274,34 +268,5 @@ describe('aplicarGrupo: quién suma y el dinero', () => {
     expect(bsAntes).toBeCloseTo(62, 9)
     expect(bsDespues - bsAntes).toBeCloseTo(5 * (10 - 7), 9)
     expect(usdDespues - usdAntes).toBeCloseTo((5 * (10 - 7)) / 7, 9)
-  })
-})
-
-describe('grupoDelRechazo', () => {
-  it('T6: da el grupo de `grupo_vacio` y de `bucket_inexistente`; nulo para una fila o una auxiliar', () => {
-    const grupos = FORMULA.definicion.grupos ?? []
-    const vacio = aplicarGrupo(FORMULA, 'gb', { ...cambiosDe(FORMULA, 'gb'), miembros: [] }, CTX)
-    if (!vacio.ok) throw new Error('debía aplicar')
-    const v = validarFormula(vacio.formula.definicion, { ...FORMULA.params.constantes })
-    expect(v.ok).toBe(false)
-    if (!v.ok) {
-      expect(v.error.regla).toBe('grupo_vacio')
-      expect(grupoDelRechazo(v.error, grupos)).toBe('gb')
-    }
-    const sinBucket = validarFormula(
-      {
-        ...FORMULA.definicion,
-        grupos: grupos.map((g) => (g.id === 'ga' ? { ...g, bucket: 'c' } : g)),
-      },
-      { ...FORMULA.params.constantes },
-    )
-    expect(sinBucket.ok).toBe(false)
-    if (!sinBucket.ok) {
-      expect(sinBucket.error.regla).toBe('bucket_inexistente')
-      expect(grupoDelRechazo(sinBucket.error, grupos)).toBe('ga')
-    }
-    expect(grupoDelRechazo({ donde: 'cinco' }, grupos)).toBeNull()
-    expect(grupoDelRechazo({ donde: 'dos__1' }, grupos)).toBeNull()
-    expect(grupoDelRechazo({}, grupos)).toBeNull()
   })
 })
