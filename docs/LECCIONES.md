@@ -341,6 +341,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Lee pronto el log de una corrida roja: `gh run view --log-failed` sale vacío al rato y la causa queda sin verificar.
 - `supabase db lint` cambia de formato si detecta un agente (`AI_AGENT`, `CLAUDECODE`): lee con `leerDbLint()` aceptando las dos formas y, para reproducir el CI, quita esas variables.
 - Corre Splinter con los schemas de `[api]` (`pgrst.db_schemas`): sin ellos sólo revisa `public` y no ve los avisos de `web`.
+- Un job que levanta la pila de Supabase la levanta con `./.github/acciones/pila`, nunca con `supabase start` suelto: reserva los puertos efímeros y, si aun así «address already in use», muestra quién tiene el puerto (`ss`), baja la pila y reintenta una vez (otro error cae a la primera). Un «Base» o un e2e rojo con ese texto en `supabase start` no es del código: mira ese diagnóstico antes de tocar nada.
 - El lint con tipos (`projectService`) del repo entero roza los 4 GB del heap de Node que da el runner: `pnpm lint` y `lint:fix` van con
   `NODE_OPTIONS=--max-old-space-size=8192`. Sin eso, el PR que suma archivos cae por `heap out of memory` (código 134) aunque el lint
   no tenga nada que decir.
