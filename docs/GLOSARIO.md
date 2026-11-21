@@ -793,6 +793,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   jubila; sin uso se elimina (`fase_eliminar`, `fase_impacto`).
 - **Reactivar una fase** — `fase_reactivar`: vuelve a ser destino; valida las reglas del flujo sobre la fila y no toca el resto.
 - **Fase inicial** — `fases.es_inicial` / `_vehiculo_fase_de_entrada()`: por donde un vehículo entra al flujo.
+- **Copiar las fases** — `flujo_copiar_fases` / «Empezar con las fases de…» (`EmpezarElFlujo`, `?panel=copiar-fases`): un flujo de origen sin ninguna
+  fase empieza como copia del de otro origen (fases activas, salidas con sus roles, roles por fase, requisitos y reglas); los tipos de documento
+  «Sólo de este flujo» se crean en el destino. Lo que no se copia tal cual se dice. Su par es **Empezar en blanco** («Nueva fase»).
 - **Transición** — `fases_transiciones`: paso permitido entre dos fases, con acción y nota obligatoria.
 - **Salida de una fase** — en la interfaz, una transición vista desde la fase de la que parte («Salidas y quién mueve»); la que llega es una
   **entrada**. En tipos, tablas y RPC sigue siendo `transicion`.

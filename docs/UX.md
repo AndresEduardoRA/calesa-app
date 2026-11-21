@@ -980,9 +980,16 @@ se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «R
   diagrama ni panel, en Catálogos › Tipos de documento.
 - **Sin selector:** cada página abre un flujo fijo, nunca el de otro origen. Vacíos: el flujo sin fases («El flujo de <origen> todavía no tiene
   fases.»); el flujo que desapareció.
+- **Empezar el flujo** (el vacío del flujo sin fases): «Cópialo de otro origen y ajústalo, o arma las fases una por una.» con «Empezar con las
+  fases de…» (primario) y «Empezar en blanco» (abre «Nueva fase»); en el celular, uno bajo otro a lo ancho. Sin otro origen con fases que quien
+  mira configure (y siempre en el de repuestos), sólo «Nueva fase». «Empezar con las fases de…» (`?panel=copiar-fases`, modal): «Origen» (los
+  flujos de vehículos con alguna fase activa, por su nombre), la línea de qué se copia y «Copiar las fases». Sin nada saltado, toast «Fases de
+  <origen> copiadas.» y cierra; con algo saltado, el mismo modal dice «Listo. Esto no se copió:» con una línea por cosa («Y más…» pasadas 50) y
+  «Listo». Un conflicto cierra el modal y avisa arriba con «Recargar»; otro rechazo queda en el modal. La URL con el flujo ya con fases o sin de
+  dónde copiar no abre: se avisa y se limpia.
 - **Barra del flujo** (sobre las fases): «Fases» con «En el orden del flujo: toca una fase para editarla.», «Reglas del flujo» y «Tipos de
-  documento» (abren el panel, según los permisos), «Ver como lista» / «Ver como diagrama» (sólo desde 768 px), «Nueva fase» y, si no se
-  puede ordenar, el motivo en texto. Se parte en renglones; botones de 44 px en el celular.
+  documento» (abren el panel, según los permisos), «Ver como lista» / «Ver como diagrama» (sólo desde 768 px), «Nueva fase» (no sin fases: lo
+  ofrece el vacío) y, si no se puede ordenar, el motivo en texto. Se parte en renglones; botones de 44 px en el celular.
 - **Diagrama** (`diferido()`, desde 768 px y por defecto): las fases como cajas en su orden, de izquierda a derecha (las jubiladas en su
   lugar, apagadas y punteadas), con el borde de su color, el nombre, «Inicial», «Final», «Subasta» o «Jubilada», sus requisitos y quién la
   mueve en corto y el ícono con sus avisos de «Revisar»; las salidas como flechas con su acción (rectas a la siguiente, ramas arriba,
