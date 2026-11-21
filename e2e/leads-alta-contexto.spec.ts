@@ -12,7 +12,8 @@ import {
 import {
   borrarOrigenesDePrueba,
   PREFIJO_DE_ORIGEN_E2E,
-  abrirOrigenes,
+  cerrarOrigenes,
+  listaDeOrigenes,
   modalDeOrigen,
 } from './soporte/origenes-de-lead'
 import { descartarAviso } from './soporte/inventario'
@@ -216,13 +217,20 @@ test('un origen creado en Configuración aparece en el alta sin recargar la pág
   page,
 }) => {
   await entrar(page, personas.duena)
-  await abrirOrigenes(page)
+  await page.goto('/configuracion/leads')
+  await expect(page.getByRole('region', { name: 'Orígenes del lead' })).toBeVisible()
   const pedidos = contarPedidos(page)
   // Se lee una vez (el foco llega a «Lead» de «Nuevo») y queda guardado.
   await abrirNuevo(page)
   await expect.poll(() => pedidos.contexto).toBe(1)
   await page.keyboard.press('Escape')
   await expect(modalDeNuevo(page)).toBeHidden()
+  // La lista de orígenes se abre desde su tarjeta, sin recargar: lo leído se conserva.
+  await page
+    .getByRole('region', { name: 'Orígenes del lead' })
+    .getByRole('button', { name: 'Editar', exact: true })
+    .click()
+  await expect(listaDeOrigenes(page)).toBeVisible()
   const nuevo = `${PREFIJO_DE_ORIGEN_E2E} contexto ${String(Date.now())}`
   await page.getByRole('button', { name: 'Nuevo origen' }).first().click()
   const modal = modalDeOrigen(page, 'Nuevo origen')
@@ -230,6 +238,7 @@ test('un origen creado en Configuración aparece en el alta sin recargar la pág
   await modal.getByRole('button', { name: 'Crear origen' }).click()
   await expect(modal).toBeHidden()
   await descartarAviso(page, 'Origen creado.')
+  await cerrarOrigenes(page)
   await abrirNuevoLeadDeLaBarra(page)
   await expect(telefono(page)).toBeVisible()
   await expect(

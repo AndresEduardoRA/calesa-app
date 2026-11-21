@@ -9,7 +9,7 @@ import { CAMPOS_DE_LEADS, PERMISO_DE_LAS_TARJETAS, SECCION_DE_LEADS } from './se
 import { SeccionDeLeads } from './tarjetas-de-leads'
 import { comoBusqueda } from './url-vieja'
 
-export const metadata: Metadata = { title: SECCION_DE_LEADS.titulo }
+export const metadata: Metadata = { title: 'Configuración de leads' }
 
 // Configuración › Leads: seis tarjetas, cada una con su modal por `?panel=` (`leads.configurar`). Las URLs de cuando había pestañas
 // (`?seccion=`, con sus paneles) van primero a su lugar (`destinoDeLaSeccionVieja()`). Quien sólo gestiona los campos va a «Campos»; sin ninguno de los dos
