@@ -41,7 +41,8 @@
       "Read(.env)",
       "Read(.env.local)",
       "Read(.env.*.local)",
-      "Read(.env.demo)"
+      "Read(.env.demo)",
+      "Read(~/.config/orquestador/**)"
     ]
   },
   "hooks": {
