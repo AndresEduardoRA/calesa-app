@@ -121,6 +121,7 @@ export const FilaDeLaCuadricula = memo(function FilaDeLaCuadricula(p: PropsDeLaF
         data-fila={fila.id}
         {...(p.activa === null ? {} : { 'data-activa': '' })}
         {...(p.rechazo === null ? {} : { 'data-rechazo': '' })}
+        {...(p.soltar === null ? {} : { 'data-soltar': p.soltar })}
         className={cn(p.soltar !== null && MARCA_AL_SOLTAR[p.soltar], p.arrastrada && 'opacity-50')}
       >
         <th scope="row" data-asa="" aria-roledescription="fila que se mueve" className={NUMERO}>
