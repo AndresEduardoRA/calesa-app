@@ -1,12 +1,17 @@
 // La geometría de la tarjeta de una cotización: el único modelo de dibujo, que pintan el HTML (la vista previa), el PDF y la imagen con posiciones absolutas
 // (lo único que entienden igual los tres: satori no tiene `grid`). Pura: toma la cuadrícula (ya convertida si era de la forma 1), la lectura, el cálculo
 // (valores, estados y totales por id de nodo) y el contexto de la cotización, y da el ancho y el alto en px y, por celda visible y en orden de lectura, su
-// rectángulo, su contenido ya resuelto y su estilo; las bandas de las filas que se dibujan, y las filas ocultas con su motivo. Una fila se oculta si su nodo no está en
-// la versión del cálculo (no tiene estado), no aplica (o vale 0, con `no_aplica_o_cero`) y las celdas que la cruzan se acortan; una celda sin filas visibles no se
-// dibuja. Sin plantilla o sin estados, la de por omisión.
+// rectángulo, su contenido ya resuelto (la lista de respaldo y las condiciones, también) y su estilo; las bandas de las filas que se dibujan, y las filas ocultas con su
+// motivo. Una fila se oculta si su nodo no está en la versión del cálculo (no tiene estado), no aplica (o vale 0, con `no_aplica_o_cero`) o se cumplen sus
+// condiciones (con `condiciones`), y las celdas que la cruzan se acortan; una celda sin filas visibles no se dibuja. Sin plantilla o sin estados, la de por omisión.
 import type { CalculoDeLaTarjeta } from '../calculo-de-la-tarjeta'
-import type { CeldaDeLaTarjeta, FilaDeLaTarjeta } from '../cuadricula-de-la-tarjeta'
+import type {
+  CeldaDeLaTarjeta,
+  ContenidoDeLaCelda,
+  FilaDeLaTarjeta,
+} from '../cuadricula-de-la-tarjeta'
 import type { MotivoDeLaOculta } from '../vista-previa-de-la-plantilla'
+import { resolverElContenido, seCumplen } from './condiciones-de-la-celda'
 import {
   aplica,
   contenidoDibujado,
@@ -43,7 +48,7 @@ export type CeldaDibujada = {
   marca: MarcaDeLaCelda
 }
 
-// Una fila que no se dibuja: su rótulo (el primer texto o etiqueta que lleva), la etiqueta de su nodo y por qué. Con `no_aplica`, `variante` es el título de la opción
+// Una fila que no se dibuja: su rótulo (el primer texto o etiqueta que lleva), la etiqueta de su nodo (sin nodo, por sus condiciones: su rótulo) y por qué. Con `no_aplica`, `variante` es el título de la opción
 // elegida de la variante (si la lectura la trae y el cálculo la eligió): «No aplica en esta cotización: la variante es Moto». Es la misma forma que `OcultaParaEditar`
 // del hueco del lienzo (`entities/vista-previa-de-la-plantilla.ts`).
 export type FilaOculta = {
@@ -75,8 +80,10 @@ export type EntradaDeLaGeometria = {
   locale: string
 }
 
-// Por qué no se dibuja una fila; nulo si se dibuja. Un nodo sin estado (que no es el total) no está en la versión del cálculo: va antes que «no aplica».
+// Por qué no se dibuja una fila; nulo si se dibuja. Un nodo sin estado (que no es el total) no está en la versión del cálculo: va antes que «no aplica». Una
+// condición sin respuesta no se cumple: la fila se dibuja.
 function motivoDeLaFila(e: EntradaDelContenido, f: FilaDeLaTarjeta): FilaOculta['motivo'] | null {
+  if (f.ocultar_si === 'condiciones') return seCumplen(e, f.si ?? []) ? 'condicion' : null
   if (f.ocultar_si === 'nunca' || f.nodo === undefined) return null
   const { estados } = e.calculo
   if (!esElTotal(e, f.nodo) && estados !== null && !estados.has(f.nodo))
@@ -85,13 +92,15 @@ function motivoDeLaFila(e: EntradaDelContenido, f: FilaDeLaTarjeta): FilaOculta[
   return f.ocultar_si === 'no_aplica_o_cero' && valorDelNodo(e, f.nodo) === 0 ? 'cero' : null
 }
 
+// La marca va con el contenido resuelto: el dato que ganó en una lista de respaldo o en unas condiciones.
 function marcaDe(
   e: EntradaDelContenido,
   c: CeldaDeLaTarjeta,
+  resuelto: ContenidoDeLaCelda,
   contenido: ContenidoDibujado,
 ): MarcaDeLaCelda {
   const color = colorDelFondo(c.estilo, e.tarjeta.colores)
-  const dato = c.contenido.tipo === 'dato' ? c.contenido : null
+  const dato = resuelto.tipo === 'dato' ? resuelto : null
   return {
     ...(dato !== null && 'nodo' in dato ? { nodo: dato.nodo, mostrar: dato.mostrar } : {}),
     ...(dato !== null && 'variable' in dato ? { variable: dato.variable } : {}),
@@ -142,7 +151,8 @@ function dibujada(
   if (primera === undefined) return null
   const hasta = Math.min(columnas.length, ci + (c.abarca_columnas ?? 1))
   const x = l.xs[ci] ?? 0
-  const contenido = contenidoDibujado(l.e, c.contenido)
+  const resuelto = resolverElContenido(l.e, c.contenido)
+  const contenido = contenidoDibujado(l.e, resuelto)
   return {
     orden: [primera.i, ci],
     celda: {
@@ -155,7 +165,7 @@ function dibujada(
       alto: suyas.reduce((s, { f }) => s + f.alto, 0),
       contenido,
       estilo: estiloDibujado(c.estilo, l.e.tarjeta.colores),
-      marca: marcaDe(l.e, c, contenido),
+      marca: marcaDe(l.e, c, resuelto, contenido),
     },
   }
 }
@@ -172,9 +182,12 @@ function ocultasDe(l: Lienzo): FilaOculta[] {
   const variante = tituloDeLaVariante(l.e)
   return filas.flatMap((f, i): FilaOculta[] => {
     const motivo = l.motivos[i]
-    if (motivo == null || f.nodo === undefined) return []
-    const delNodo = l.e.tarjeta.nodos.get(f.nodo)?.etiqueta ?? f.nodo
+    if (motivo == null) return []
     const propias = celdas.filter((c) => c.fila === f.id).map((c) => contenidoDeRotulo(l.e, c))
+    const delNodo =
+      f.nodo === undefined
+        ? rotuloDe(propias, `Fila ${String(i + 1)}`)
+        : (l.e.tarjeta.nodos.get(f.nodo)?.etiqueta ?? f.nodo)
     return [
       {
         fila: f.id,
@@ -231,13 +244,14 @@ function dibujar(
   }
 }
 
-// Para el rótulo de una fila oculta: sus celdas como si aplicaran (la etiqueta de un nodo que no aplica se dibujaría vacía).
+// Para el rótulo de una fila oculta: sus celdas (resueltas) como si aplicaran (la etiqueta de un nodo que no aplica se dibujaría vacía).
 function contenidoDeRotulo(e: EntradaDelContenido, c: CeldaDeLaTarjeta): CeldaDibujada {
+  const r = resolverElContenido(e, c.contenido)
   const contenido: ContenidoDibujado =
-    c.contenido.tipo === 'dato' && 'nodo' in c.contenido && c.contenido.mostrar === 'etiqueta'
-      ? { tipo: 'texto', lineas: [e.tarjeta.nodos.get(c.contenido.nodo)?.etiqueta ?? ''] }
-      : c.contenido.tipo === 'texto'
-        ? { tipo: 'texto', lineas: c.contenido.texto.split('\n') }
+    r.tipo === 'dato' && 'nodo' in r && r.mostrar === 'etiqueta'
+      ? { tipo: 'texto', lineas: [e.tarjeta.nodos.get(r.nodo)?.etiqueta ?? ''] }
+      : r.tipo === 'texto'
+        ? { tipo: 'texto', lineas: r.texto.split('\n') }
         : { tipo: 'vacio' }
   return {
     id: c.id,

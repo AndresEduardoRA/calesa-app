@@ -11,6 +11,8 @@ export function textoDeLaOculta(o: Pick<OcultaParaEditar, 'motivo' | 'variante'>
       return 'Vale 0'
     case 'fuera_de_la_version':
       return 'Su nodo no está en la versión de la referencia'
+    case 'condicion':
+      return 'Se cumplen sus condiciones'
   }
 }
 

@@ -25,7 +25,7 @@ const esquemaDelPedido = z.object({
 
 // Quién hizo cada una (`perfiles` por la PK) y el nombre del modo de cada una (`cotizaciones_modos_de()`), en paralelo y sólo de las de la página. Sin los nombres ni los
 // modos la página igual sirve: «Sin nombre» y el total sin su modo, como el listado.
-async function leerAutoresYModos(
+export async function leerAutoresYModos(
   supabase: ReturnType<typeof createClient>,
   filas: readonly { id: string; creadoPor: string }[],
 ) {

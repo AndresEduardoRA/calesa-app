@@ -35,7 +35,7 @@ export function useAperturaDeLaTarjeta(panel: PanelDeLaTarjeta, esperada: string
   return {
     apertura,
     publicando: modo === 'publicar' && !rechazada,
-    descartando: modo === 'descartar' && !rechazada && esperada !== null,
+    descartando: modo === 'descartar' && !rechazada,
     aDescartar,
   }
 }

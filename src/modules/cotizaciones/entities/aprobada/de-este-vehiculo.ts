@@ -30,6 +30,8 @@ export type FilaDeEsteVehiculo = {
   creadoEn: string
   actualizadoEn: string
   vencida: boolean
+  // Hasta cuándo vale (la fecha, en la zona de la empresa).
+  venceEl: string
   aprobada: boolean
 }
 
@@ -57,6 +59,7 @@ const esquemaDeLaFila = z.object({
   creado_en: z.string(),
   editada_en: z.string(),
   vencida: z.boolean(),
+  vence_el: z.string(),
   aprobada: z.boolean(),
   fijada: z.boolean(),
 })
@@ -84,6 +87,7 @@ export function paginaDeEsteVehiculoDesde(filas: unknown): PaginaDeEsteVehiculo 
       creadoEn: fila.creado_en,
       actualizadoEn: fila.editada_en,
       vencida: fila.vencida,
+      venceEl: fila.vence_el,
       aprobada: fila.aprobada,
     }
     if (fila.fijada) {

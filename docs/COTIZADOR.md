@@ -929,8 +929,8 @@ convierte al abrirla y se guarda convertida cuando quien edita guarda.
 
 **La forma 2**, estricta (`entities/cuadricula-de-la-tarjeta.ts`): `{forma: 2, columnas: [{id, ancho}], filas: [{id, alto, ocultar_si, nodo?}],
 celdas: [{id, fila, columna, abarca_columnas?, abarca_filas?, contenido, estilo?}]}`. Columnas de 24 a 640 px (hasta 16, **ancho total ≤ 1.600**);
-filas de 16 a 240 px (hasta 120) con `ocultar_si` `nunca` | `no_aplica` | `no_aplica_o_cero`, referido al `nodo` de la fila (obligatorio salvo con
-`nunca`, y ausente con `nunca`); hasta 1.000 celdas, con combinaciones de 1 a 16 columnas y 1 a 120 filas; ids con la forma de un id y únicos; una
+filas de 16 a 240 px (hasta 120) con `ocultar_si` `nunca` | `no_aplica` | `no_aplica_o_cero`, referido al `nodo` de la fila (obligatorio con esas dos
+y ausente con las otras), o `condiciones`, con su `si` (de 1 a 3 condiciones unidas con Y: la fila no se dibuja si se cumplen todas); hasta 1.000 celdas, con combinaciones de 1 a 16 columnas y 1 a 120 filas; ids con la forma de un id y únicos; una
 posición sin celda es una celda vacía sin estilo. **Contenido:** `{tipo: 'texto', texto}` (0 a 300 caracteres, sin `{{`: un texto no mezcla texto y
 variables), `{tipo: 'dato', variable}` (`empresa_nombre` —el nombre de la empresa de sus ajustes—, `fecha_larga`, `numero`, `titulo` —el título de la cotización sin el de respaldo «Cotización n.º N»,
 `tituloAparteDelNumero()`; en la hoja nueva, el que se está escribiendo—, `titulo_opcion`, `asesor_nombre`, `asesor_iniciales`, `cliente_nombre`,
@@ -939,7 +939,12 @@ variables), `{tipo: 'dato', variable}` (`empresa_nombre` —el nombre de la empr
 `porcentaje` —de un nodo de un par: el `porcentaje_de` o su `pct`—, `tc_nombre`, `tc_valor` y `plazo` —del grupo del nodo—), `{tipo: 'logo'}` (sólo el
 logo de la empresa, sin el nombre, entero en la celda menos su relleno y alineado por `alinear` y `alinear_vertical`, en el HTML, el PDF y la imagen),
 `{tipo: 'foto_del_asesor'}` (la foto de perfil del asesor, ubicada como el logo; sin foto, o si no carga, sus iniciales en un círculo del lado menor de la
-caja, con borde de 1,5 px y letra de 0,4 × el diámetro en el color del texto de la celda: `circuloDeLasIniciales()`) o `{tipo: 'vacio'}`. **El asesor** de
+caja, con borde de 1,5 px y letra de 0,4 × el diámetro en el color del texto de la celda: `circuloDeLasIniciales()`), `{tipo: 'vacio'}`,
+`{tipo: 'respaldo', datos}` (la **lista de respaldo**: de 2 a 5 datos, variables o nodos con qué mostrar, en orden; se muestra el primero con valor) o
+`{tipo: 'condiciones', ramas, si_no}` (las **condiciones de la tarjeta**: de 1 a 4 ramas `{si, contenido}` y el «si no», hasta 5 contando él; cada `si`, de
+1 a 3 condiciones unidas con Y; cada contenido, un texto, un dato o `vacio`). **Una condición** (`CondicionDeLaTarjeta`): `{es: 'vacio' | 'no_vacio', dato}`
+(si un dato tiene valor), `{es: 'cero' | 'no_cero' | 'encendido' | 'apagado', nodo}`, `{es: 'mayor' | 'menor' | 'igual', nodo, a}` (`a`, un número) o
+`{es: 'opcion', nodo, opcion}` (la clave de una opción de la variante). **El asesor** de
 las variables `asesor_*` y de la foto es **quien mira o comparte la tarjeta** (`leerAsesorQueMira()`: `perfiles` por PK; con «Ver como», la persona real),
 nunca quien la creó, que es el autor («Creado por» de «Compartir»): la misma guardada dice «Ana» si la mira Ana y «Luis» si la mira Luis. **Estilo** (todo opcional): `fondo` y `texto` (una clave del catálogo de colores o `auto`, por omisión), `negrita`, `cursiva`,
 `tamano` (10, 11, 12, 14, 16, 18, 22 o 28 px; 12 por omisión), `alinear` (izquierda por omisión), `alinear_vertical` (centro por omisión) y `bordes`
@@ -958,11 +963,16 @@ DETAIL y el `donde` en HINT; el primer rechazo manda. Con `def` nulo, sólo la f
 - **Forma 2**, en este orden: `forma` (el objeto y sus 24 KiB, `definicion`; la clave de más en orden C; `forma` = 2; cada columna, fila y celda con
   su ruta: `columnas[1].ancho`, `celdas[3].estilo.tamano`), `demasiadas_columnas` (`columnas`), `demasiadas_filas` (`filas`), `demasiadas_celdas`
   (`celdas`), `columna_repetida`, `fila_repetida`, `celda_repetida` (la segunda aparición: `columnas.<id>`…), `ancho_total` (`columnas`),
-  `celda_fuera_de_la_grilla`, `celdas_se_pisan` (la primera que ocupa una casilla ya ocupada), `variable_inexistente` (`celdas.<id>`); con la versión,
+  `celda_fuera_de_la_grilla`, `celdas_se_pisan` (la primera que ocupa una casilla ya ocupada), `variable_inexistente` (`celdas.<id>` o `filas.<id>`, por
+  una condición), `respaldo_vacio` (la primera lista de respaldo con menos de 2 datos); con la versión,
   `tono_inexistente` (sólo con `tonos`), `nodo_de_fila_inexistente` (`filas.<id>`), `nodo_inexistente`, `mostrar_no_admitido`, `nodo_restringido`
   (los nodos de las filas en orden y después los de las celdas; de un `porcentaje`, también su `pct`; **no figurar cuenta como restringido**) y
-  `tipo_de_cambio_restringido` (por cada celda `tc_*`, el nodo del bucket de su grupo por omisión y en cada modo). El `donde` nombra la fila o la
-  celda y el mensaje también, **nunca el nodo**. `grupo_*` y `nodo_sin_lugar` no aplican.
+  `tipo_de_cambio_restringido` (por cada celda `tc_*`, el nodo del bucket de su grupo por omisión y en cada modo) y, al final, `condicion_invalida` (una
+  condición que el nodo no puede responder: `opcion` sobre lo que no es la variante o con una clave que no tiene, `encendido` o `apagado` sobre lo que no es
+  una bandera, un número sobre la variante). El `donde` nombra la fila o la celda y el mensaje también, **nunca el nodo**. `grupo_*` y `nodo_sin_lugar` no
+  aplican. Las reglas de las variables y de los nodos miran **todo dato que la cuadrícula nombra, aplanado y en orden** (`datosNombrados()`, espejo
+  `_plantilla_cuadricula_datos()`): las filas (su nodo y los de sus condiciones) y después las celdas (su dato, los de su lista o, de sus condiciones, rama
+  por rama las condiciones y su contenido, y el «si no»). Un nodo de una condición que no es del nivel «todos» es `nodo_restringido`, como el de una celda.
 - **Forma 1**, en este orden: `forma` (la clave o el índice), `grupo_inexistente`, `grupo_repetido`, `grupo_faltante` (la tarjeta lleva **todos** los
   grupos de la fórmula: lo que se ve suma el total), `tono_inexistente` (sólo con `tonos`), `nodo_inexistente` y `nodo_sin_lugar` (una clave de
   `etiquetas`/`leyendas` es un miembro de un grupo, el total o lo aparte de `tarjeta_total`), `nodo_restringido` (un miembro, el total o lo aparte sin
@@ -989,8 +999,14 @@ de 120 filas o 1.000 celdas, un `{{` en una etiqueta o nota) se trata como `sin_
 **El modelo de dibujo** (`entities/tarjeta/geometria-de-la-tarjeta.ts`): de la cuadrícula, la lectura, el cálculo (valores, estados y totales por id) y
 el contexto de la cotización (las variables, ya formateadas: `contextoDeLaPagina()`), el ancho y el alto en px y, por celda visible y en orden de
 lectura, su rectángulo, su contenido resuelto y su estilo; más las filas ocultas con su motivo: `fuera_de_la_version` (el nodo de la fila no está en
-los estados del cálculo, salvo el total), `no_aplica` (con `variante`: el título de la opción elegida, si la lectura trae la variante) o `cero`. Esos
-motivos son sólo datos de las ocultas: el dibujo no cambia y `VERSION_DEL_DIBUJO` no sube. Una fila se oculta si su nodo no aplica (o vale 0) y
+los estados del cálculo, salvo el total), `no_aplica` (con `variante`: el título de la opción elegida, si la lectura trae la variante), `cero` o
+`condicion` (se cumplen sus condiciones). **Antes de dibujar, resuelve** cada celda (`resolverElContenido()`, `entities/tarjeta/condiciones-de-la-celda.ts`):
+una lista de respaldo da el primero de sus datos con valor (`tieneValor()`) o, si ninguno, la celda vacía; unas condiciones, el contenido de la primera rama
+cuyas condiciones se cumplen todas o, si ninguna, el «si no». Una condición lee un nodo así: 0 si no aplica, su número si aplica y nulo sin valor (una
+comparación con nulo no se cumple; `encendido` es «distinto de 0»; `opcion` compara la clave elegida); un nodo que no está en la versión del cálculo deja la
+condición sin respuesta, que cuenta como que no se cumple (la rama se salta y la fila no se oculta). Así los tres dibujos y «Copiar texto» sólo ven un
+contenido simple, y un cambio en cómo se resuelve sube `VERSION_DEL_DIBUJO`.
+Los motivos son sólo datos de las ocultas: no cambian el dibujo. Una fila se oculta si su nodo no aplica (o vale 0) y
 las celdas que la cruzan se acortan; un dato de un nodo que no aplica, en una fila que se dibuja, va vacío; un monto nulo, «—». El monto del total sale
 de los totales y, con «Ver total Bs», lleva la segunda línea en moneda local. Sin plantilla o sin estados, la tarjeta por omisión (`por-omision.ts`).
 Lo pintan tres dibujos con posiciones absolutas (satori no tiene `grid`): el HTML (escalado como una imagen, `min(1, ancho del contenedor / ancho)`),
@@ -1041,7 +1057,7 @@ publicar valida contra la publicada de **esa** fórmula. Guardar el borrador, pu
   omisión convertida (los grupos de la fórmula y el total). Si lo convertido no entra en la grilla (más de 120 filas o 1.000 celdas), se convierte con los
   primeros 4 miembros de cada grupo (`FILAS_POR_GRUPO_EN_LA_VISTA_PREVIA`) y, si tampoco, sólo con el total, y lo dice.
 - **El contexto reducido** (`contextoParaElNavegador(contexto, cuadricula)`): los nodos del nivel «todos» (lo que «Dato» ofrece), los restringidos que la
-  cuadrícula ya nombra (marcados: con ellos no se podría publicar), los del tipo de cambio de cada bucket y la variante; de cada uno etiqueta, grupo,
+  cuadrícula ya nombra, también en sus listas y condiciones (`nodosNombradosPor()`; marcados: con ellos no se podría publicar), los del tipo de cambio de cada bucket y la variante; de cada uno etiqueta, grupo,
   salida, descripción y el par `tipo`/`op`/`pct`, y el `{ver}` de la visibilidad. Nunca el cuerpo de un nodo ni la `definicion` entera.
 - **El lienzo es un hueco:** el área `plantilla` no importa la geometría (es del área `tarjeta`). La página pasa `LienzoDeLaPlantillaDiferido`
   (`pantallas/tarjeta-plantilla.ts`, tipos en `entities/vista-previa-de-la-plantilla.ts`): recibe la lectura de la cuadrícula de trabajo
@@ -1064,6 +1080,12 @@ publicar valida contra la publicada de **esa** fórmula. Guardar el borrador, pu
   regla de la grilla. Ids nuevos: el menor libre en base 36 (`c1`, `f1`, `k1`). El reductor (`reductor.ts`) une selección, operaciones, el bloque
   copiado, la celda en la que se escribe y el historial (`historial.ts`: instantáneas, tope 100, lo escrito en un campo se junta por clave hasta que
   cambia la selección); la barra y el menú prueban cada operación en seco (`disponibilidad.ts`) para apagarla con el motivo del reductor.
+- **«Cuál dato» y las condiciones:** «Dato» lleva «Cuál dato» (Uno | El primero con valor | Según condiciones) y «Ocultar la fila», «Según condiciones».
+  Lo que se arma vive en un **borrador del panel** (`useBorradorDeLaRegla()`, sobre `entities/plantilla/edicion/condiciones.ts` y
+  `borradores-de-la-celda.ts`): se manda al reductor sólo entero y distinto de lo que hay (la celda o la fila no cambian a medias); lo que cambia afuera
+  (deshacer) entra si el borrador estaba entero. Pasar a la lista o a las condiciones arma desde el dato de la celda; volver a «Uno» deja su primer dato. Los
+  topes y los mínimos apagan sus botones con el motivo (`motivoParaSumar*`, `motivoParaQuitar*`). Lo tipeado en un texto de rama o en un número se junta en
+  un paso de deshacer (por clave). Su código llega por `diferido()` (`panel/diferidos.tsx`).
 - **Validar:** `validarPlantilla(plantilla, null, {conTope: false})` para la forma, los 24 KiB aparte (apagan «Guardar borrador»), y con el contexto
   reducido para «Con esto no se podría publicar». Lo tipeado sin guardar va en `sessionStorage` (`tarjeta-cuadricula:<origen>:<esperada>`) y se repone
   sólo si sigue siendo una cuadrícula.
@@ -1083,7 +1105,8 @@ permiso, también a la dueña. La plantilla es la **publicada hoy** de la fórmu
 'sin_plantilla'}` sin regla ni `donde` (la tarjeta «por omisión»). Con ella, `{estado: 'lista', plantilla: {version}, definicion: <forma 2>, nodos:
 [{id, etiqueta, descripcion, grupo, pct}], grupos: [{id, etiqueta, plazo, bucket}], tipos_de_cambio: {buckets: {b: {nombre, nodo}}, modos: {clave:
 {b: {nombre, nodo}}}}, modos: [{clave, nombre}], variante: {nodo, opciones: [{clave, titulo}]} | null, colores: [{clave, hex}], total: {nodo},
-moneda_bs}`, **sólo lo que la cuadrícula nombra**: los nodos de las filas y de las celdas (y el `pct` de un `porcentaje`, sólo entonces), los grupos de
+moneda_bs}`, **sólo lo que la cuadrícula nombra**: los nodos de las filas y de las celdas, también los de sus listas de respaldo, ramas y condiciones (todo
+dato de `_plantilla_cuadricula_datos()`; y el `pct` de un `porcentaje`, sólo entonces), los grupos de
 un `tc_*` o un `plazo`, el tipo de cambio de esos buckets por su `nombre` de `tipos_cambio` (nulo si no hay uno activo) y su nodo (del nivel «todos»:
 lo exige la plantilla; su valor sale del snapshot), los modos si se muestra `modo_tc`, la variante si se muestra `titulo_opcion` y es del nivel
 «todos», y los colores del catálogo que nombran los estilos. **Ningún id, etiqueta ni texto de un nodo sin `ver: todos` sale, para nadie** (K4 de
@@ -1095,7 +1118,9 @@ lo exige la plantilla; su valor sale del snapshot), los modos si se muestra `mod
 Los **retoques de la tarjeta** cambian textos y ocultan filas de la tarjeta de **una** cotización guardada, sin tocar la plantilla del origen. Se
 guardan en `cotizaciones.tarjeta_retoques`: `{celdas?: {<id de celda>: texto}, filas_ocultas?: [<id de fila>]}` (nula: la tarjeta tal cual la
 plantilla). Sólo el texto de las celdas `texto` de la cuadrícula y filas enteras: nunca las celdas de `dato` (montos, etiquetas, tipos de cambio,
-variables), el logo, los colores, los tamaños, las columnas ni las combinaciones.
+variables), las de una lista de respaldo o unas condiciones (aunque la rama que se dibuja sea un texto: `celda_no_es_texto`; el modo dice «Esta celda cambia
+según la cotización: no se retoca.»), el logo, los colores, los tamaños, las columnas ni las combinaciones. Una fila que se oculta según condiciones se
+puede ocultar a mano.
 
 - **`validar_retoques(retoques, plantilla)`**: STABLE, invocadora, `search_path` vacío, sin leer tablas; 22023 con la regla en DETAIL y el `donde` en
   HINT; el primer rechazo manda. Con la plantilla nula, toda celda y toda fila es inexistente. En este orden: `forma` (el objeto, `retoques`),

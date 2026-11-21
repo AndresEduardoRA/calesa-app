@@ -2,8 +2,12 @@ import type { ComponentType, ReactNode } from 'react'
 import type { CotizacionDelListado } from '../../../entities/listado/filas-del-listado'
 import type { EntradaDelListado } from '../../../entities/listado/grupos-del-listado'
 import type { AnchoDeLaImagen } from '../../../entities/ruta-de-la-hoja'
+import type { DatosDeLaTarjeta } from '../../../entities/tarjetas-de-la-ficha'
 
 export type FilaDeCotizacion = CotizacionDelListado
+
+// Lo que dibuja una tarjeta de la lista: el listado le pasa su fila entera y las fichas del lead y del vehículo, sólo esto.
+export type FilaParaLaTarjeta = DatosDeLaTarjeta
 
 // Una entrada de la lista (un grupo o una cotización sola) con los nombres de su cotización.
 export type EntradaDeLaLista = EntradaDelListado<FilaDeCotizacion>

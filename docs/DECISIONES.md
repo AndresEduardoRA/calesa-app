@@ -297,10 +297,16 @@ las trampas, en `docs/LECCIONES.md`.
   llega por los enlaces cortos de la cabecera. Los enlaces viejos redirigen reemplazando la entrada (`secciones-viejas.ts`): `?seccion=ficha` a
   `?ver=ficha`, `fotos` al visor, `documentos` y `fase` a la unidad (con `logistica.ver` del origen), `repuestos` al proyecto (con `repuestos.ver` y si
   tiene); sin el permiso o sin proyecto, la ficha se queda arriba (no hay destino que mostrar). «Crear proyecto de repuestos» no se ofrece en la ficha:
-  vive en `/repuestos?panel=nuevo-proyecto&vehiculo=<id>`. Las cotizaciones son «De este vehículo» (de a 10 hasta 100), no el historial de 500: la misma
-  isla de la guardada, con «Aprobar esta» y las casillas. Descartados: la vista previa de la vitrina siempre abierta (la tarjeta con foto mide más que la
+  vive en `/repuestos?panel=nuevo-proyecto&vehiculo=<id>`. Las cotizaciones son la fila de tarjetas (ver «Las cotizaciones de las fichas, en una fila de tarjetas»), no el historial de 500. Descartados: la vista previa de la vitrina siempre abierta (la tarjeta con foto mide más que la
   columna y repite el precio), «Comparar» junto a «Cotizar» en el título (dos acciones en un título; va en su fila, con su ayuda) y mantener el historial
   de 500 (otra lista para lo mismo).
+- **Las cotizaciones de las fichas, en una fila de tarjetas.** La ficha del lead y la del vehículo muestran las últimas 10 que quien mira ve como
+  `TarjetaEnLaLista` (la del listado) en una fila con desplazamiento horizontal, y una última tarjeta «Ver más» a `/cotizaciones?lead=` o `?vehiculo=`: la
+  imagen y el total dicen más que una fila de texto, y el listado ya sabe filtrar. Una sola lectura con tope (`TARJETAS_EN_LA_FICHA`, 10 + 1 para saber si
+  hay más), sin cursor ni «cargar más»: lo que sigue es el listado. Sin «⋯» en la tarjeta (el resumen que abre el clic lo trae) y el total sin moneda
+  aparte (`<Monto>` con su modo). El lead lee `cotizaciones_listado(p_lead)` y el vehículo `cotizaciones_de_este_vehiculo()`, que devuelve `vence_el` para la
+  vigencia. Descartados: seguir con las filas de «De este vehículo» (sin imagen ni «Compartir» a la vista), paginar dentro de la fila (otra lista infinita) y una
+  cuadrícula (alarga la columna).
 - **Aprobar desde la ficha del vehículo refresca la página.** «Cotización aprobada» de la izquierda se lee en el servidor y no escucha a las islas: tras
   aprobar o deshacer, «Cotizaciones de este vehículo» hace `router.refresh()` en una transición. En la ficha no hay nada tipeado y la isla no se vuelve a
   montar (no cambian ni su posición ni su `key`); la isla ya apaga sus filas mientras relee.
@@ -795,6 +801,27 @@ las trampas, en `docs/LECCIONES.md`.
 - **El campo de una celda va encima de ella sólo si se escribe cómodo.** Con la tarjeta casi a su tamaño (escala ≥ 0,75), la celda escalada de ≥ 160 px y la
   letra sin agrandar; si no (el celular, el texto al 200 %), a lo ancho del modal bajo la tarjeta. Las filas se ocultan desde un canal de 44 px a la derecha
   (un botón por banda, siempre a la vista) y, para las bandas de menos de 24 px, desde «Ocultar fila» a 44 px bajo la tarjeta.
+- **La lista de respaldo y las condiciones de la tarjeta se resuelven antes de dibujar.** `resolverElContenido()` deja en cada celda un contenido simple
+  (texto, dato o nada) y la geometría sigue igual: el HTML, el PDF, la imagen y «Copiar texto» no saben de condiciones. Son datos cerrados (un `es` de una
+  lista, un nodo por id, un número), no expresiones: la tarjeta sigue sin motor propio. Un cambio en lo que se dibuja sube `VERSION_DEL_DIBUJO` (4).
+- **Hasta 5 ramas contando el «si no», que va siempre; una fila no tiene «si no».** Con el «si no» obligatorio una celda siempre sabe qué mostrar (si
+  ninguna rama se cumple, no queda indefinida). Una fila sólo decide si se oculta: su «si no» sería «se dibuja», que es lo que pasa si no se cumplen.
+- **Una lista de respaldo sin ningún dato con valor deja la celda vacía.** Ni el último dato ni «—»: tiene valor un texto que no queda vacío sin los
+  espacios de los bordes o un número (también el 0); un nulo no, y un nodo que no aplica tampoco.
+- **Nulo, 0 y «no aplica» en una condición.** Un nodo que no aplica vale 0 (lo que no aplica no suma: «es 0» se cumple con un nodo apagado por su interruptor); uno sin
+  valor es nulo y una comparación con nulo no se cumple (ni «mayor», ni «menor», ni «igual», ni «es 0»). Así «Remate es menor que 1.000» no oculta una fila
+  de una cotización con el remate sin valor, y sí la de una donde el remate no aplica (vale 0); quien quiera verla también en ese caso suma la
+  condición «Remate no es 0». `encendido` es «distinto de 0» y `opcion` compara la clave elegida.
+- **Una condición sobre un nodo que no está en la versión de la cotización no tiene respuesta y su rama se salta.** La plantilla publicada hoy dibuja
+  cotizaciones de versiones viejas: sin respuesta, la rama no gana por accidente y la fila no se oculta; si ninguna gana, el «si no». El editor lo dice junto
+  al dato («Este dato ya no está en la fórmula: se salta.»).
+- **`condicion_invalida` va última entre las reglas de la plantilla.** Antes van las que dicen que el nodo no existe o es restringido: una condición sólo se
+  juzga sobre un nodo que la tarjeta puede nombrar, y el mensaje que llega primero es el que se arregla primero.
+- **Lo que se arma a medias no sale del panel.** Una lista con un dato o una condición sin número quedan en un borrador del panel con su motivo junto al
+  campo («Sin terminar: la celda no cambia hasta completarla.»); la plantilla sólo recibe reglas enteras. Así «Guardar borrador», el historial de deshacer y
+  el lienzo nunca ven una forma que la base rechazaría.
+- **Una celda con lista de respaldo o condiciones no se retoca.** Lo que muestra cambia con cada cotización: retocar su texto pisaría la regla. La fila que
+  se oculta según condiciones sí se oculta a mano.
 - **El aspecto de la hoja es declarativo, cerrado y plano.** Claves opcionales junto a las de siempre (`ancho`, `alto`, `relleno`, `separacion`, `densidad`, `letra`, `enfasis`, `tono`), de escalas
   cerradas y validadas igual en TS y en SQL: nada de px, CSS ni hex. No se llaman `estilo`, `clase` ni `color` (el juego las rechaza). Sin la clave, lo de siempre, así un diseño viejo se ve igual;
   el editor quita la clave en vez de escribir el valor por defecto. La cabecera no lleva ancho ni alto (va sola en su fila) y la tarjeta del resumen no lleva aspecto (es fija).
@@ -907,7 +934,7 @@ las trampas, en `docs/LECCIONES.md`.
   marcaron: así la aprobada, si está elegida, es la referencia de lo distinto. El `returnTo` desde el resumen del listado es `/cotizaciones?cotizacion=<id>`,
   sin los filtros (leerlos pediría `useSearchParams()` fuera de un `<Suspense>`).
 - **El bloque es del área `aprobada`.** Usa «Aprobar» y la insignia del área; una pantalla sin prefijo sería núcleo, que no importa áreas. Sale por
-  `pantallas/aprobada-de-este-vehiculo.ts` para la ficha del vehículo y por `pantallas/aprobada-resumen.ts` para el resumen.
+  `pantallas/aprobada-resumen.ts` para el resumen (la ficha del vehículo dibuja su fila de tarjetas con las piezas del área).
 - **La aprobada al día entre islas, sin refrescar.** Aprobar desde el bloque no puede refrescar la guardada (perdería lo tipeado): `avisarAprobada()` y
   `useAlCambiarLaAprobada()` (un `Set` de oyentes por módulo) ponen al día «Aprobar» de la cabecera y el bloque relee su primera página. En el resumen sí se
   refresca el listado (no tiene nada tipeado), como «Aprobar» del «⋯».

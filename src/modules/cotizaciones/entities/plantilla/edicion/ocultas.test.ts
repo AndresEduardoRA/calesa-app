@@ -16,4 +16,9 @@ describe('textoDeLaOculta', () => {
       'Su nodo no está en la versión de la referencia',
     )
   })
+  it('por sus condiciones', () => {
+    expect(textoDeLaOculta({ motivo: 'condicion', variante: null })).toBe(
+      'Se cumplen sus condiciones',
+    )
+  })
 })

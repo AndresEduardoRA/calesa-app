@@ -186,9 +186,9 @@ declare
 begin
   c1 := pg_temp.dv_cot(jefa, e, v, 60 * 24 * 400, 'paralelo'); c2 := pg_temp.dv_cot(jefa, e, v, 10);
   perform pg_temp.dv_confirmar();
-  p := pg_temp.dv_corre(jefa, format('select jsonb_object_agg(x.id, x.vencida) from public.cotizaciones_de_este_vehiculo(%L, 10) x where not x.fijada', v));
-  l := pg_temp.dv_corre(jefa, format('select jsonb_object_agg(x.id, x.vencida) from public.cotizaciones_listado(p_tamano := 10, p_vehiculo := %L) x', v));
-  if p is distinct from l or not (p ->> c1::text)::boolean or (p ->> c2::text)::boolean then
+  p := pg_temp.dv_corre(jefa, format('select jsonb_object_agg(x.id, jsonb_build_array(x.vencida, x.vence_el)) from public.cotizaciones_de_este_vehiculo(%L, 10) x where not x.fijada', v));
+  l := pg_temp.dv_corre(jefa, format('select jsonb_object_agg(x.id, jsonb_build_array(x.vencida, x.vence_el)) from public.cotizaciones_listado(p_tamano := 10, p_vehiculo := %L) x', v));
+  if p is distinct from l or not (p -> c1::text ->> 0)::boolean or (p -> c2::text ->> 0)::boolean then
     raise exception 'D4: la vigencia no es la del listado: % contra %', p, l;
   end if;
   p := pg_temp.dv_corre(jefa, format('select jsonb_object_agg(x.id, x.modo) from public.cotizaciones_de_este_vehiculo(%L, 10) x where not x.fijada', v));

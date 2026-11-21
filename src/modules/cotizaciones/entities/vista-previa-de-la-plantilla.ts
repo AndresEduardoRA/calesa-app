@@ -11,9 +11,9 @@ export const FILAS_POR_GRUPO_EN_LA_VISTA_PREVIA = 4
 // Una fila que se dibuja: su banda en px de la tarjeta (sin escalar).
 export type FilaParaEditar = { readonly id: string; readonly y: number; readonly alto: number }
 
-// Por qué una fila no se dibuja con esta referencia: su nodo no aplica (con el título de la opción elegida de la variante, si la hay), vale 0, o no está en la versión
-// de la fórmula de la referencia.
-export type MotivoDeLaOculta = 'no_aplica' | 'cero' | 'fuera_de_la_version'
+// Por qué una fila no se dibuja con esta referencia: su nodo no aplica (con el título de la opción elegida de la variante, si la hay), vale 0, no está en la versión
+// de la fórmula de la referencia, o se cumplen sus condiciones.
+export type MotivoDeLaOculta = 'no_aplica' | 'cero' | 'fuera_de_la_version' | 'condicion'
 
 export type OcultaParaEditar = {
   readonly fila: string

@@ -74,6 +74,19 @@ describe('useAperturaDeLaTarjeta', () => {
     expect(avisarError).not.toHaveBeenCalled()
   })
 
+  it('el diálogo de descartar tampoco se cierra si el borrador deja de estar', () => {
+    const { result, rerender } = renderHook(
+      ({ esperada }: { esperada: string | null }) =>
+        useAperturaDeLaTarjeta(panel({ descartando: true }), esperada),
+      { initialProps: { esperada: BORRADOR as string | null } },
+    )
+    expect(result.current.descartando).toBe(true)
+    rerender({ esperada: null })
+    expect(result.current.descartando).toBe(true)
+    expect(result.current.aDescartar).toBe(BORRADOR)
+    expect(avisarError).not.toHaveBeenCalled()
+  })
+
   it('el borrador que se descarta se fija al abrir: tras irse, sigue nombrando el mismo', () => {
     const { result, rerender } = renderHook(
       ({ esperada, descartando }: { esperada: string | null; descartando: boolean }) =>
