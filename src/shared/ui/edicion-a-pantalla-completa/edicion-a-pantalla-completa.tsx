@@ -74,7 +74,7 @@ export function EdicionAPantallaCompleta({ salirA, titulo, camino, children }: P
             <div
               ref={setRanura}
               data-acciones-de-la-edicion=""
-              className="ml-auto flex min-h-11 min-w-0 flex-wrap items-center justify-end gap-2 max-md:w-full md:min-h-9 max-md:[&>*:not(:has([aria-haspopup]))]:flex-1 max-md:[&>*:not(:has([aria-haspopup]))>*]:w-full"
+              className="ml-auto flex min-h-11 min-w-0 flex-wrap items-center justify-end gap-2 empty:hidden max-md:w-full md:min-h-9 max-md:[&>*:not(:has([aria-haspopup]))]:flex-1 max-md:[&>*:not(:has([aria-haspopup]))>*]:w-full"
             />
           </div>
           {pendiente ? (
