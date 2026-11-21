@@ -116,6 +116,17 @@ las trampas, en `docs/LECCIONES.md`.
   Descartados: el formulario largo en bloques plegables, la edición en el lugar (sin versión por campo), un drawer al costado (tapa lo que se
   edita) y la mampostería con JavaScript (suma bytes en frío y parpadea). En esas páginas reemplaza la regla de los bloques plegables.
 
+### Edición a pantalla completa
+
+- **Se esconde el marco con CSS (`:has()`), no con `fixed`.** El contenedor `@container/configuracion` atrapa a un hijo `fixed`; la marca `data-edicion-a-pantalla-completa` del modo y `data-oculto-al-editar` de cada marco (menú, barra, avisos flotantes, menú de Configuración, marco del origen, cabeza de la fórmula) lo resuelven en `globals.css` desde el primer byte, sin parpadeo, y lo oculto sale del orden del Tab. `--topbar` pasa a `--barra-de-la-edicion` para que lo pegado (la vista previa de la hoja) cuelgue de la barra propia.
+- **El modo vive en la URL (`?editar=si`) y lo decide la página en el servidor** (`enLaEdicion()`): recargar lo mantiene y no hay parpadeo ni estado de cliente. Las páginas que ya existían siguen igual fuera del modo y suman «Editar»: así no se rompen los ~50 e2e de esos editores.
+- **Las acciones del editor suben a la barra con un portal** (`<AccionesDeLaEdicion orden>`): el editor sigue siendo dueño de su estado y de sus acciones, y fuera del modo el mismo componente dibuja lo suyo donde estaba (la puesta en marcha no cambia).
+- **«Salir» reusa `useSalidaConCambios()`**, con recargar sin pregunta (`alRecargar: false`): lo editado sobrevive en `sessionStorage` y la pregunta del navegador trabaría el modo. «Descartar» al salir tira también el borrador de la pestaña. Esc es del editor y nunca sale.
+- **El estado de la barra es lo no guardado, después el borrador y después la publicada** (`estadoDeUnaPieza()`). La hoja y la tarjeta que no conocen la versión publicada dicen «Publicada» sin número.
+- **Una tabla de un origen se abre siempre a pantalla completa** (`?tabla=` ya la abría: el enlace trae `&editar=si` y uno viejo también entra); las compartidas de Catálogos no (sin marco de origen al que volver). El flujo, en cambio, no entra por `?fase=` ni `?seccion=`: son enlaces de siempre a un panel.
+- **El flujo no dice estado:** se guarda en el acto por RPC y no tiene borrador.
+- **La tarjeta bajo 1.024 px conserva su aviso** y no ofrece «Editar»; la planilla, la hoja, una tabla y el flujo van a pantalla completa también en el celular, con la barra en dos renglones y el camino oculto.
+
 ## Equipo
 
 - **«Visto» en su tabla, no en `visitados`.** `visitados` es la lista corta del buscador (tope 50, cualquier módulo); `vistos` es por módulo y
