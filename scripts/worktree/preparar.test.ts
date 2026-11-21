@@ -42,7 +42,7 @@ function worktreeNuevo() {
   mkdirSync(repo)
   git('init', '-q', '-b', 'main')
   // El manifiesto reconoce al repo propio por el nombre del remoto `origin`.
-  git('remote', 'add', 'origin', 'https://github.com/AndresEduardoRA/calesa-app.git')
+  git('remote', 'add', 'origin', 'https://github.com/imandresalpiri/calesa-app.git')
   for (const f of COPIAR) {
     mkdirSync(dirname(join(repo, f)), { recursive: true })
     copyFileSync(resolve(f), join(repo, f))
