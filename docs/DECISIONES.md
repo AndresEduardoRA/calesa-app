@@ -1250,3 +1250,9 @@ las trampas, en `docs/LECCIONES.md`.
 - **Volver atrás nunca deshace una migración en la nube**: se escribe una migración que la revierta, con el respaldo como último recurso (no guarda Storage). `restaurar.sh` y `resetear.sh` son sólo de la demo.
 - **La base remota del proyecto la cambia también la IA** (sesión, orquestador o bucle): push, semilla, reset y reparar el historial, con el ref mirado y respaldo antes de borrar datos. La persona prefiere avance sin esperarla; secretos, configuración, funciones y Vercel siguen siendo suyos, y b_ip (otra app, datos reales) no se toca (`docs/DESPLIEGUE.md` › «La base remota»).
 - **Un cliente se instala desde un clon aparte** con `SUPABASE_PROJECT_REF` obligatoria (`--linked` actúa sobre `supabase/.temp/project-ref`); Auth por el panel; el dueño es la primera cuenta por `/registro`, antes de compartir la URL.
+- **Los e2e afectados se eligen con evidencia y con tope de 40** (`scripts/e2e-afectados.mjs`). Un texto que se fue y un localizador no
+  exacto que el texto nuevo cumple desde su comienzo pesan más que un dirigido de un módulo grande; un texto cuenta entero sólo en las
+  pantallas que lo dibujan (las rutas a las que llega su archivo por imports, o toda pantalla si llega al marco o a más de 6 rutas). Se
+  ignora un texto que nombran más de 12 specs («Guardar», «Cancelar», «Cerrar») y un localizador que tienen más de 40: el choque de un
+  localizador no exacto (strict mode) se cuenta aparte del texto que se nombra porque es una rotura cierta en toda pantalla que lo dibuja.
+  Lee también `src/**/*.ts` (los avisos de las acciones), no sólo `.tsx`. No cambia lo que corre el CI (`scripts/e2e-dirigidos.mjs`).
