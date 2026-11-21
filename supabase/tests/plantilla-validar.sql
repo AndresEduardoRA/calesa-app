@@ -129,10 +129,10 @@ begin
   -- El juego tiene un caso válido y uno por cada regla.
   v_reglas := array(select distinct x -> 'motivo' ->> 'regla' from jsonb_array_elements(j -> 'casos') x where x ? 'motivo' order by 1);
   -- Las de la forma 1 y las de la forma 2 menos `demasiadas_celdas` (1.001 celdas pasan de los 24 KiB: se prueba sin el tope, en T2b).
-  if v_reglas is distinct from array['ancho_total', 'celda_fuera_de_la_grilla', 'celda_repetida', 'celdas_se_pisan', 'columna_repetida', 'demasiadas_columnas',
-                                     'demasiadas_filas', 'fila_repetida', 'forma', 'grupo_faltante', 'grupo_inexistente', 'grupo_repetido', 'mostrar_no_admitido',
-                                     'nodo_de_fila_inexistente', 'nodo_inexistente', 'nodo_restringido', 'nodo_sin_lugar', 'tipo_de_cambio_restringido',
-                                     'tono_inexistente', 'variable_inexistente'] then
+  if v_reglas is distinct from array['ancho_total', 'celda_fuera_de_la_grilla', 'celda_repetida', 'celdas_se_pisan', 'columna_repetida', 'condicion_invalida',
+                                     'demasiadas_columnas', 'demasiadas_filas', 'fila_repetida', 'forma', 'grupo_faltante', 'grupo_inexistente', 'grupo_repetido',
+                                     'mostrar_no_admitido', 'nodo_de_fila_inexistente', 'nodo_inexistente', 'nodo_restringido', 'nodo_sin_lugar', 'respaldo_vacio',
+                                     'tipo_de_cambio_restringido', 'tono_inexistente', 'variable_inexistente'] then
     raise exception 'el juego no cubre todas las reglas: %', v_reglas;
   end if;
   -- `octetos`: los bytes del texto jsonb de cada valor (lo que mide el tope de 32 KB), los mismos que cuenta bytesComoJsonb() de TS (4.19-2).
@@ -381,7 +381,9 @@ begin
   if exists (select 1 from public.tonos where clave = 'auto') then raise exception 'el catálogo tiene la clave auto'; end if;
   if public._tono_clave('Auto') = 'auto' or public._tono_clave('AUTO') = 'auto' then raise exception '_tono_clave da auto: %', public._tono_clave('Auto'); end if;
   foreach v_f in array array['public._plantilla_cuadricula_forma(jsonb, boolean)', 'public._plantilla_cuadricula_nodos(jsonb, jsonb, jsonb, jsonb, text[])',
-                             'public._plantilla_cuadricula_rechazar(text, text)', 'public._plantilla_es_id(jsonb)', 'public._plantilla_entero_entre(jsonb, integer, integer)'] loop
+                             'public._plantilla_cuadricula_rechazar(text, text)', 'public._plantilla_es_id(jsonb)', 'public._plantilla_entero_entre(jsonb, integer, integer)',
+                             'public._plantilla_cuadricula_datos(jsonb)', 'public._plantilla_cuadricula_dato(jsonb, text)',
+                             'public._plantilla_cuadricula_condiciones(jsonb, text)', 'public._plantilla_cuadricula_simple(jsonb, text)'] loop
     if not has_function_privilege('authenticated', v_f, 'execute') or not has_function_privilege('service_role', v_f, 'execute')
        or has_function_privilege('anon', v_f, 'execute') or has_function_privilege('public', v_f, 'execute') then
       raise exception 'privilegios de %', v_f;
@@ -408,12 +410,14 @@ begin
     array['celda_fuera_de_la_grilla', 'celdas.x', 'La celda «x» se sale de la cuadrícula.'],
     array['celdas_se_pisan', 'celdas.y', 'La celda «y» pisa otra celda.'],
     array['variable_inexistente', 'celdas.fecha', 'La celda «fecha» muestra un dato que no existe.'],
+    array['respaldo_vacio', 'celdas.x', 'La celda «x» necesita al menos dos datos para mostrar el primero con valor.'],
     array['tono_inexistente', 'celdas.x', 'La celda «x» usa un color que no está en el catálogo.'],
     array['nodo_de_fila_inexistente', 'filas.fees', 'La fila «fees» depende de un nodo que no es de la fórmula.'],
     array['nodo_inexistente', 'celdas.x', 'La celda «x» nombra un nodo que no es de la fórmula.'],
     array['mostrar_no_admitido', 'celdas.x', 'La celda «x» muestra algo que su nodo no tiene.'],
     array['nodo_restringido', 'filas.fees', 'La tarjeta no puede mostrar lo que nombra la fila «fees»: no es del nivel «todos».'],
-    array['tipo_de_cambio_restringido', 'celdas.tc', 'La tarjeta no puede nombrar el tipo de cambio de la celda «tc»: no es del nivel «todos».']] loop
+    array['tipo_de_cambio_restringido', 'celdas.tc', 'La tarjeta no puede nombrar el tipo de cambio de la celda «tc»: no es del nivel «todos».'],
+    array['condicion_invalida', 'filas.f', 'La fila «f» tiene una condición que esta fórmula no puede responder.']] loop
     begin
       perform public._plantilla_cuadricula_rechazar(v_caso[1], v_caso[2]);
       v_malos := v_malos || (v_caso[1] || ': no rechaza');

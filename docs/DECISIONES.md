@@ -801,6 +801,27 @@ las trampas, en `docs/LECCIONES.md`.
 - **El campo de una celda va encima de ella sólo si se escribe cómodo.** Con la tarjeta casi a su tamaño (escala ≥ 0,75), la celda escalada de ≥ 160 px y la
   letra sin agrandar; si no (el celular, el texto al 200 %), a lo ancho del modal bajo la tarjeta. Las filas se ocultan desde un canal de 44 px a la derecha
   (un botón por banda, siempre a la vista) y, para las bandas de menos de 24 px, desde «Ocultar fila» a 44 px bajo la tarjeta.
+- **La lista de respaldo y las condiciones de la tarjeta se resuelven antes de dibujar.** `resolverElContenido()` deja en cada celda un contenido simple
+  (texto, dato o nada) y la geometría sigue igual: el HTML, el PDF, la imagen y «Copiar texto» no saben de condiciones. Son datos cerrados (un `es` de una
+  lista, un nodo por id, un número), no expresiones: la tarjeta sigue sin motor propio. Un cambio en lo que se dibuja sube `VERSION_DEL_DIBUJO` (4).
+- **Hasta 5 ramas contando el «si no», que va siempre; una fila no tiene «si no».** Con el «si no» obligatorio una celda siempre sabe qué mostrar (si
+  ninguna rama se cumple, no queda indefinida). Una fila sólo decide si se oculta: su «si no» sería «se dibuja», que es lo que pasa si no se cumplen.
+- **Una lista de respaldo sin ningún dato con valor deja la celda vacía.** Ni el último dato ni «—»: tiene valor un texto que no queda vacío sin los
+  espacios de los bordes o un número (también el 0); un nulo no, y un nodo que no aplica tampoco.
+- **Nulo, 0 y «no aplica» en una condición.** Un nodo que no aplica vale 0 (lo que no aplica no suma: «es 0» se cumple con un nodo apagado por su interruptor); uno sin
+  valor es nulo y una comparación con nulo no se cumple (ni «mayor», ni «menor», ni «igual», ni «es 0»). Así «Remate es menor que 1.000» no oculta una fila
+  de una cotización con el remate sin valor, y sí la de una donde el remate no aplica (vale 0); quien quiera verla también en ese caso suma la
+  condición «Remate no es 0». `encendido` es «distinto de 0» y `opcion` compara la clave elegida.
+- **Una condición sobre un nodo que no está en la versión de la cotización no tiene respuesta y su rama se salta.** La plantilla publicada hoy dibuja
+  cotizaciones de versiones viejas: sin respuesta, la rama no gana por accidente y la fila no se oculta; si ninguna gana, el «si no». El editor lo dice junto
+  al dato («Este dato ya no está en la fórmula: se salta.»).
+- **`condicion_invalida` va última entre las reglas de la plantilla.** Antes van las que dicen que el nodo no existe o es restringido: una condición sólo se
+  juzga sobre un nodo que la tarjeta puede nombrar, y el mensaje que llega primero es el que se arregla primero.
+- **Lo que se arma a medias no sale del panel.** Una lista con un dato o una condición sin número quedan en un borrador del panel con su motivo junto al
+  campo («Sin terminar: la celda no cambia hasta completarla.»); la plantilla sólo recibe reglas enteras. Así «Guardar borrador», el historial de deshacer y
+  el lienzo nunca ven una forma que la base rechazaría.
+- **Una celda con lista de respaldo o condiciones no se retoca.** Lo que muestra cambia con cada cotización: retocar su texto pisaría la regla. La fila que
+  se oculta según condiciones sí se oculta a mano.
 - **El aspecto de la hoja es declarativo, cerrado y plano.** Claves opcionales junto a las de siempre (`ancho`, `alto`, `relleno`, `separacion`, `densidad`, `letra`, `enfasis`, `tono`), de escalas
   cerradas y validadas igual en TS y en SQL: nada de px, CSS ni hex. No se llaman `estilo`, `clase` ni `color` (el juego las rechaza). Sin la clave, lo de siempre, así un diseño viejo se ve igual;
   el editor quita la clave en vez de escribir el valor por defecto. La cabecera no lleva ancho ni alto (va sola en su fila) y la tarjeta del resumen no lleva aspecto (es fija).

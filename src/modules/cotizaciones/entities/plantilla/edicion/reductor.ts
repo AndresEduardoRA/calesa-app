@@ -11,7 +11,7 @@ import {
   type EstadoDelEditor,
 } from './estado-del-editor'
 import { ponerEstilo } from './estilo'
-import { altoDeFila, anchoDeColumna, moverFila, ocultarSi } from './filas-y-columnas'
+import { altoDeFila, anchoDeColumna, moverFila, ocultarSegun, ocultarSi } from './filas-y-columnas'
 import { cortar } from './historial'
 import { insertarColumna, insertarFila, sumarColumna } from './insertar'
 import { anclaEn, celdaEn, mapaDeLaGrilla, type MapaDeLaGrilla } from './mapa-de-la-grilla'
@@ -141,6 +141,8 @@ const MANEJADORES: Manejadores = {
     conResultado(e, 'cambiar el alto', altoDeFila(e.plantilla, a.fila, a.alto), a.clave),
   ocultarSi: (e, a) =>
     conResultado(e, 'ocultar la fila', ocultarSi(e.plantilla, a.fila, a.ocultar, a.nodo)),
+  ocultarSegun: (e, a) =>
+    conResultado(e, 'ocultar la fila', ocultarSegun(e.plantilla, a.fila, a.si), a.clave),
   moverFila: (e, a) => conResultado(e, 'mover la fila', moverFila(e.plantilla, a.desde, a.hasta)),
   sumarColumna: (e) => conResultado(e, 'sumar una columna', sumarColumna(e.plantilla)),
   copiar: copiarLoElegido,

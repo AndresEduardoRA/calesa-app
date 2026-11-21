@@ -53,6 +53,8 @@ export function nombreDelContenido(
   if (c.tipo === 'texto') return c.texto.trim() === '' ? 'Vacía' : c.texto
   if (c.tipo === 'logo') return 'Logo'
   if (c.tipo === 'foto_del_asesor') return 'Foto del asesor'
+  if (c.tipo === 'respaldo') return 'Dato: el primero con valor'
+  if (c.tipo === 'condiciones') return 'Dato: según condiciones'
   if ('variable' in c) return `Dato: ${nombres.variable(c.variable)}`
   return `Dato: «${nombres.nodo(c.nodo)}» · ${nombres.mostrar(c.mostrar)}`
 }

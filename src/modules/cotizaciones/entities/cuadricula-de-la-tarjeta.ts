@@ -37,9 +37,34 @@ export const MOSTRAR = [
 ] as const
 export type Mostrar = (typeof MOSTRAR)[number]
 
-// Cuándo una fila no se dibuja, según el nodo de la fila.
-export const OCULTAR_SI = ['nunca', 'no_aplica', 'no_aplica_o_cero'] as const
+// Cuándo una fila no se dibuja: según el nodo de la fila (`no_aplica`, `no_aplica_o_cero`) o según sus condiciones (`condiciones`, con `si`).
+export const OCULTAR_SI = ['nunca', 'no_aplica', 'no_aplica_o_cero', 'condiciones'] as const
 export type OcultarSi = (typeof OCULTAR_SI)[number]
+// Las tres que decide un nodo (`nodo`); «condiciones» la decide su `si`.
+export type OcultarPorNodo = Exclude<OcultarSi, 'condiciones'>
+
+// Las condiciones de la tarjeta (glosario: «Condiciones de la tarjeta», «Condición (de la tarjeta)»): qué pregunta cada una, por su clave `es`. `vacio` y `no_vacio`
+// miran un dato (`dato`); las demás, un nodo (`nodo`): `cero` y `no_cero`, los numéricos con su número `a`, la variante (`opcion`, con la clave de la opción) y el
+// interruptor (`encendido`, `apagado`, sobre un nodo `bandera`).
+export const ES_DE_LA_CONDICION = [
+  'vacio',
+  'no_vacio',
+  'cero',
+  'no_cero',
+  'mayor',
+  'menor',
+  'igual',
+  'opcion',
+  'encendido',
+  'apagado',
+] as const
+export type EsDeLaCondicion = (typeof ES_DE_LA_CONDICION)[number]
+export const ES_SOBRE_UN_DATO = ['vacio', 'no_vacio'] as const
+export const ES_CON_NUMERO = ['mayor', 'menor', 'igual'] as const
+// Una lista de respaldo lleva de 2 a 5 datos; unas condiciones, hasta 5 ramas contando el «si no» (que va siempre), y cada rama hasta 3 condiciones unidas con Y.
+export const DATOS_DEL_RESPALDO = { minimo: 2, maximo: 5 } as const
+export const MAXIMO_DE_RAMAS = 5
+export const MAXIMO_DE_CONDICIONES = 3
 
 export const TAMANOS_DE_LETRA = [10, 11, 12, 14, 16, 18, 22, 28] as const
 export type TamanoDeLetra = (typeof TAMANOS_DE_LETRA)[number]
@@ -98,22 +123,53 @@ export const COLUMNAS_DE_LA_CONVERSION = [
 
 export type ColumnaDeLaTarjeta = { readonly id: string; readonly ancho: number }
 
+// Lo que muestra «Dato»: una variable de la cotización o algo de un nodo de la fórmula.
+export type DatoDeLaCelda =
+  | { readonly tipo: 'dato'; readonly variable: string }
+  | { readonly tipo: 'dato'; readonly nodo: string; readonly mostrar: Mostrar }
+
+export type CondicionDeLaTarjeta =
+  | { readonly es: (typeof ES_SOBRE_UN_DATO)[number]; readonly dato: DatoDeLaCelda }
+  | { readonly es: 'cero' | 'no_cero' | 'encendido' | 'apagado'; readonly nodo: string }
+  | { readonly es: (typeof ES_CON_NUMERO)[number]; readonly nodo: string; readonly a: number }
+  | { readonly es: 'opcion'; readonly nodo: string; readonly opcion: string }
+
+// Lo que muestra una rama de unas condiciones: un texto, un dato o nada.
+export type ContenidoSimple =
+  { readonly tipo: 'texto'; readonly texto: string } | DatoDeLaCelda | { readonly tipo: 'vacio' }
+
+// «Si <condiciones, unidas con Y> → <contenido>».
+export type RamaDeLaTarjeta = {
+  readonly si: readonly CondicionDeLaTarjeta[]
+  readonly contenido: ContenidoSimple
+}
+
+// Un tipo con opcionales (no una unión) para que quien lee `f.nodo` no cambie.
 export type FilaDeLaTarjeta = {
   readonly id: string
   readonly alto: number
   readonly ocultar_si: OcultarSi
-  // Obligatorio salvo con `nunca` (y ausente con `nunca`).
+  // Con `no_aplica` y `no_aplica_o_cero`; ausente con `nunca` y `condiciones`.
   readonly nodo?: string
+  // Sólo con `condiciones`: la fila no se dibuja si se cumplen todas (de 1 a 3).
+  readonly si?: readonly CondicionDeLaTarjeta[]
 }
 
 export type ContenidoDeLaCelda =
   | { readonly tipo: 'texto'; readonly texto: string }
-  | { readonly tipo: 'dato'; readonly variable: string }
-  | { readonly tipo: 'dato'; readonly nodo: string; readonly mostrar: Mostrar }
+  | DatoDeLaCelda
   | { readonly tipo: 'logo' }
   // La foto de perfil del asesor (quien mira o comparte la tarjeta); sin foto, sus iniciales en un círculo.
   | { readonly tipo: 'foto_del_asesor' }
   | { readonly tipo: 'vacio' }
+  // La lista de respaldo (glosario): el primero de sus datos que tiene valor.
+  | { readonly tipo: 'respaldo'; readonly datos: readonly DatoDeLaCelda[] }
+  // Las condiciones de la tarjeta (glosario): la primera rama cuyas condiciones se cumplen o, si ninguna, el «si no».
+  | {
+      readonly tipo: 'condiciones'
+      readonly ramas: readonly RamaDeLaTarjeta[]
+      readonly si_no: ContenidoSimple
+    }
 
 export type BordesDeLaCelda = { readonly todos?: Borde } & { readonly [L in Lado]?: Borde }
 

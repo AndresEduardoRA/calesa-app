@@ -4,6 +4,8 @@ import {
   ALINEAR,
   ALINEAR_VERTICAL,
   BORDES,
+  ES_CON_NUMERO,
+  ES_SOBRE_UN_DATO,
   MOSTRAR,
   OCULTAR_SI,
   TAMANOS_DE_LETRA,
@@ -24,13 +26,33 @@ const tamano = z.custom<TamanoDeLetra>(
   (v) => typeof v === 'number' && (TAMANOS_DE_LETRA as readonly number[]).includes(v),
 )
 
-const esquemaDelContenido = z.union([
-  z.object({ tipo: z.literal('texto'), texto: z.string() }),
+const texto = z.object({ tipo: z.literal('texto'), texto: z.string() })
+const vacio = z.object({ tipo: z.literal('vacio') })
+const esquemaDelDato = z.union([
   z.object({ tipo: z.literal('dato'), variable: id }),
   z.object({ tipo: z.literal('dato'), nodo: id, mostrar: z.enum(MOSTRAR) }),
+])
+const esquemaDeLaCondicion = z.discriminatedUnion('es', [
+  z.object({ es: z.enum(ES_SOBRE_UN_DATO), dato: esquemaDelDato }),
+  z.object({ es: z.enum(['cero', 'no_cero', 'encendido', 'apagado']), nodo: id }),
+  z.object({ es: z.enum(ES_CON_NUMERO), nodo: id, a: z.number() }),
+  z.object({ es: z.literal('opcion'), nodo: id, opcion: id }),
+])
+const condiciones = z.array(esquemaDeLaCondicion).min(1)
+const esquemaSimple = z.union([texto, esquemaDelDato, vacio])
+
+const esquemaDelContenido = z.union([
+  texto,
+  esquemaDelDato,
   z.object({ tipo: z.literal('logo') }),
   z.object({ tipo: z.literal('foto_del_asesor') }),
-  z.object({ tipo: z.literal('vacio') }),
+  vacio,
+  z.object({ tipo: z.literal('respaldo'), datos: z.array(esquemaDelDato).min(1) }),
+  z.object({
+    tipo: z.literal('condiciones'),
+    ramas: z.array(z.object({ si: condiciones, contenido: esquemaSimple })).min(1),
+    si_no: esquemaSimple,
+  }),
 ])
 
 const esquemaDelEstilo = z.object({
@@ -56,7 +78,13 @@ export const esquemaDeLaCuadricula = z.object({
   forma: z.literal(2),
   columnas: z.array(z.object({ id, ancho: entero })),
   filas: z.array(
-    z.object({ id, alto: entero, ocultar_si: z.enum(OCULTAR_SI), nodo: id.optional() }),
+    z.object({
+      id,
+      alto: entero,
+      ocultar_si: z.enum(OCULTAR_SI),
+      nodo: id.optional(),
+      si: condiciones.optional(),
+    }),
   ),
   celdas: z.array(
     z.object({

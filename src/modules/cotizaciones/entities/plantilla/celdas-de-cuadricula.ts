@@ -1,18 +1,16 @@
 // Las celdas de la forma 2, espejo de la parte de `_plantilla_cuadricula_forma()` que las recorre: por celda, en este orden, la clave de más, `id`, `fila`,
 // `columna`, `abarca_columnas` (1 a 16), `abarca_filas` (1 a 120), `contenido` según su `tipo` y `estilo`. Cada `donde` es su ruta con índice
-// (`celdas[3].estilo.tamano`). Un texto no mezcla texto y variables: `{{` se rechaza.
+// (`celdas[3].estilo.tamano`). Un texto no mezcla texto y variables: `{{` se rechaza. La lista de respaldo y las condiciones, en `condiciones-de-cuadricula.ts`.
 import {
   ALINEAR,
   ALINEAR_VERTICAL,
   BORDES,
-  MAXIMO_DE_CARACTERES_DE_UN_TEXTO,
   MAXIMO_DE_COLUMNAS,
   MAXIMO_DE_FILAS,
-  MOSTRAR,
   TAMANOS_DE_LETRA,
 } from '../cuadricula-de-la-tarjeta'
 import type { RechazoDePlantilla } from './motivos-de-plantilla'
-import { caracteres, esObjetoJsonb } from '../json-de-la-base'
+import { esObjetoJsonb } from '../json-de-la-base'
 import {
   campo,
   conClaveDeMas,
@@ -21,8 +19,12 @@ import {
   esId,
   formaRota,
 } from './campos-de-cuadricula'
-
-type Objeto = Readonly<Record<string, unknown>>
+import {
+  revisarCondiciones,
+  revisarDatoDeUnaCelda,
+  revisarRespaldo,
+  textoAdmitido,
+} from './condiciones-de-cuadricula'
 
 const CLAVES_DE_UNA_CELDA = new Set([
   'id',
@@ -33,11 +35,17 @@ const CLAVES_DE_UNA_CELDA = new Set([
   'contenido',
   'estilo',
 ])
-const TIPOS = ['texto', 'dato', 'logo', 'vacio', 'foto_del_asesor'] as const
+const TIPOS = [
+  'texto',
+  'dato',
+  'logo',
+  'vacio',
+  'foto_del_asesor',
+  'respaldo',
+  'condiciones',
+] as const
 const SOLO_EL_TIPO = new Set(['tipo'])
 const DEL_TEXTO = new Set(['tipo', 'texto'])
-const DE_LA_VARIABLE = new Set(['tipo', 'variable'])
-const DEL_NODO = new Set(['tipo', 'nodo', 'mostrar'])
 const CLAVES_DEL_ESTILO = new Set([
   'fondo',
   'texto',
@@ -51,9 +59,6 @@ const CLAVES_DEL_ESTILO = new Set([
 // En este orden se revisan los lados.
 const LADOS_DE_LOS_BORDES = ['todos', 'arriba', 'derecha', 'abajo', 'izquierda'] as const
 
-const textoAdmitido = (v: unknown) =>
-  typeof v === 'string' && caracteres(v) <= MAXIMO_DE_CARACTERES_DE_UN_TEXTO && !v.includes('{{')
-
 function revisarContenido(c: unknown, donde: string): RechazoDePlantilla | null {
   if (!esObjetoJsonb(c)) return formaRota(donde)
   const tipo = campo(c, 'tipo')
@@ -62,20 +67,10 @@ function revisarContenido(c: unknown, donde: string): RechazoDePlantilla | null 
     if (conClaveDeMas(c, DEL_TEXTO)) return formaRota(donde)
     return textoAdmitido(campo(c, 'texto')) ? null : formaRota(`${donde}.texto`)
   }
-  if (tipo === 'dato') return revisarDato(c, donde)
+  if (tipo === 'dato') return revisarDatoDeUnaCelda(c, donde)
+  if (tipo === 'respaldo') return revisarRespaldo(c, donde)
+  if (tipo === 'condiciones') return revisarCondiciones(c, donde)
   return conClaveDeMas(c, SOLO_EL_TIPO) ? formaRota(donde) : null
-}
-
-// Una variable (`{tipo, variable}`) o un nodo (`{tipo, nodo, mostrar}`): lo decide la clave `variable`. Que la variable exista es otra regla
-// (`variable_inexistente`, después de la forma).
-function revisarDato(c: Objeto, donde: string): RechazoDePlantilla | null {
-  if (Object.hasOwn(c, 'variable')) {
-    if (conClaveDeMas(c, DE_LA_VARIABLE)) return formaRota(donde)
-    return esId(c['variable']) ? null : formaRota(`${donde}.variable`)
-  }
-  if (conClaveDeMas(c, DEL_NODO)) return formaRota(donde)
-  if (!esId(campo(c, 'nodo'))) return formaRota(`${donde}.nodo`)
-  return enLista(campo(c, 'mostrar'), MOSTRAR) ? null : formaRota(`${donde}.mostrar`)
 }
 
 function revisarBordes(b: unknown, donde: string): RechazoDePlantilla | null {

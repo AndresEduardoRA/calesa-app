@@ -9111,6 +9111,24 @@ export type Database = {
         }
         Returns: Json
       }
+      _plantilla_cuadricula_condiciones: {
+        Args: { p_donde: string; p_si: Json }
+        Returns: undefined
+      }
+      _plantilla_cuadricula_dato: { Args: { p_donde: string; p_x: Json }; Returns: undefined }
+      _plantilla_cuadricula_datos: {
+        Args: { p_plantilla: Json }
+        Returns: {
+          es: string
+          id: string
+          lugar: string
+          mostrar: string
+          nodo: string
+          o: number
+          opcion: string
+          variable: string
+        }[]
+      }
       _plantilla_cuadricula_forma: {
         Args: { p_con_tope: boolean; p_plantilla: Json }
         Returns: undefined
@@ -9129,6 +9147,7 @@ export type Database = {
         Args: { p_donde: string; p_regla: string }
         Returns: undefined
       }
+      _plantilla_cuadricula_simple: { Args: { p_donde: string; p_x: Json }; Returns: undefined }
       _plantilla_entero_entre: {
         Args: { p: Json; p_maximo: number; p_minimo: number }
         Returns: boolean

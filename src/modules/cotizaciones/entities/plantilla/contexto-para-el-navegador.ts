@@ -6,6 +6,7 @@
 // fórmula, sus entradas) ni un nodo restringido que la cuadrícula no nombra. Todo lo que se arma por id va por `Object.fromEntries`/`Map`:
 // `__proto__` y `constructor` son ids legales.
 import type { PlantillaEnCuadricula } from '../cuadricula-de-la-tarjeta'
+import { datosNombrados } from './datos-de-la-cuadricula'
 import {
   esDeTodos,
   type DefinicionParaPlantilla,
@@ -15,15 +16,9 @@ import {
 } from './nodos-de-plantilla'
 import type { ContextoDePlantilla } from './validar-plantilla'
 
-// Los nodos que la cuadrícula nombra: los de las filas y los de las celdas.
-export function nodosNombradosPor(p: PlantillaEnCuadricula): ReadonlySet<string> {
-  return new Set([
-    ...p.filas.flatMap((f) => (f.nodo === undefined ? [] : [f.nodo])),
-    ...p.celdas.flatMap((c) =>
-      c.contenido.tipo === 'dato' && 'nodo' in c.contenido ? [c.contenido.nodo] : [],
-    ),
-  ])
-}
+// Los nodos que la cuadrícula nombra: los de las filas y los de las celdas, también los de sus condiciones y sus listas de respaldo.
+export const nodosNombradosPor = (p: PlantillaEnCuadricula): ReadonlySet<string> =>
+  new Set(datosNombrados(p).flatMap((d) => (d.nodo === null ? [] : [d.nodo])))
 
 // La variante, sólo si es del nivel «todos»: el título de la opción en la tarjeta y en «Ocultas con esta referencia».
 const varianteDeTodos = ({ definicion, visibilidad }: ContextoDePlantilla) =>
