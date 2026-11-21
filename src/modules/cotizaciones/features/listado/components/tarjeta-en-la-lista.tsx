@@ -14,14 +14,14 @@ import { tituloDeLaCotizacion } from '../../../entities/titulo-de-la-cotizacion'
 import {
   PROPORCION_EN_LA_LISTA,
   SIN_NOMBRE,
-  type FilaDeCotizacion,
+  type FilaParaLaTarjeta,
   type OrigenDelListado,
   type ImagenDeLaFila,
 } from './tipos'
 import { Vigencia } from './vigencia'
 
 type Props = {
-  cotizacion: FilaDeCotizacion
+  cotizacion: FilaParaLaTarjeta
   origen: OrigenDelListado | null
   abierta: boolean
   alAbrir: () => void
@@ -34,6 +34,11 @@ type Props = {
   rutaDeClientes: string | null
   // La fila del conteo de un grupo («3 cotizaciones de este vehículo»): su lugar se reserva aunque esté vacía.
   conteo?: ReactNode
+  // Las fichas del lead y del vehículo (`FilaDeTarjetas`): sin la línea del cliente (la ficha ya lo es o no lo necesita), con la casilla de «Comparar» sobre la imagen (arriba a la
+  // izquierda) y «Aprobar esta» bajo «Compartir». En el listado ninguna de las tres.
+  sinCliente?: boolean
+  casilla?: ReactNode
+  aprobar?: ReactNode
 }
 
 // La insignia del origen: su nombre con el color de su fila (texto y color, nunca sólo color).
@@ -60,7 +65,8 @@ function CabeceraDeLaTarjeta({
   cotizacion,
   menu,
   Imagen,
-}: Pick<Props, 'cotizacion' | 'menu' | 'Imagen'>) {
+  casilla,
+}: Pick<Props, 'cotizacion' | 'menu' | 'Imagen' | 'casilla'>) {
   return (
     <div className="relative w-full">
       {Imagen ? (
@@ -81,6 +87,14 @@ function CabeceraDeLaTarjeta({
         />
       )}
       {menu ? <EsquinaDeAcciones sobreImagen>{menu}</EsquinaDeAcciones> : null}
+      {casilla ? (
+        <div
+          data-no-abre=""
+          className="absolute top-1 left-1 rounded-(--radius-md) bg-(--color-surface)/90 shadow-sm"
+        >
+          {casilla}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -160,7 +174,7 @@ export function TarjetaEnLaLista(props: Props) {
             </span>
           )}
         </p>
-        <ClienteDeLaTarjeta {...props} />
+        {props.sinCliente === true ? null : <ClienteDeLaTarjeta {...props} />}
         <p className="truncate text-(length:--text-xs) text-(--color-ink-soft)">
           {cotizacion.autor} · {fechaRelativa(cotizacion.creadoEn, { zona: zonaHoraria })}
         </p>
@@ -173,6 +187,7 @@ export function TarjetaEnLaLista(props: Props) {
             Compartir
           </Button>
         )}
+        {props.aprobar ? <div data-no-abre="">{props.aprobar}</div> : null}
       </div>
     </TarjetaDeLista>
   )

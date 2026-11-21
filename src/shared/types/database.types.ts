@@ -10484,6 +10484,7 @@ export type Database = {
           origen_id: string
           titulo: string
           total: number
+          vence_el: string
           vencida: boolean
         }[]
       }

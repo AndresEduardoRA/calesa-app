@@ -282,9 +282,9 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   sin assert) y «Ver más» hasta 500, que ofrece «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`).
   `e2e/cotizar-historial-del-vehiculo.spec.ts`:
   ≤ 5.250 B la primera respuesta y ≤ 65 nodos. «Cotizado (n)» es la misma consulta con `select('id')`, en paralelo con la hoja.
-- «Cotizaciones de este vehículo» de `/vehiculos/[id]`: «De este vehículo» (`cotizaciones_de_este_vehiculo`, de a `TAMANO_DE_ESTE_VEHICULO` = 10 hasta
-  `TOPE_DE_ESTE_VEHICULO` = 100), al acercarse el bloque (nunca con el documento), código con el `diferido()` de la isla. `e2e/vehiculos-cotizaciones.spec.ts`:
-  ≤ 5.250 B la 1.ª respuesta, ≤ 201 nodos con 10 y ≤ 1.997 con 100 (medidos 191 y 1.901 más un 5 %), con las casillas; la 10.ª respuesta pesa lo que la 1.ª.
+- «Cotizaciones de este vehículo» de `/vehiculos/[id]`: la fila de tarjetas lee `cotizaciones_de_este_vehiculo` una vez (`TARJETAS_EN_LA_FICHA` = 10, la aprobada fijada aparte), sin cursor ni
+  «Ver más» propio: lo demás es la tarjeta «Ver más» al listado filtrado. Al acercarse el bloque (nunca con el documento), código con el `diferido()` de la isla. `e2e/vehiculos-cotizaciones.spec.ts`:
+  ≤ 5.150 B la respuesta (medido 4.884) y ≤ 395 nodos la fila con 10 tarjetas (con la imagen, «Compartir», «Aprobar esta» y la casilla; medido 375), en los dos proyectos más un 5 %.
 - **Comparar cotizaciones** (`/cotizaciones/comparar`): a lo sumo 3 `cotizacion_hoja_guardada()` (por `cotizaciones_pkey`) y una lectura de las marcas por
   PostgREST de ≤ 3 filas (`cotizaciones_pkey` con la aprobada por `cotizaciones_aprobadas_cotizacion_id_key`, `.limit(ids.length)`), todo en paralelo tras
   `<Suspense>`; sin `cotizacion_evaluar`. Ninguna lista que crezca: sin cursor, sin conteo, sin medición propia. Lo dibujado: ≤ 3 columnas × los nodos
@@ -298,8 +298,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   ms y 6 la profunda; ≈ 440 buffers en total por el costo fijo de la RLS), sin recorrer la tabla y sin crecer con N; Ana («propios», 5 de 5.000) ≤ 100 ms como en
   el listado (medido 40, recorre las del vehículo). La línea de la guardada y la decisión de dibujar son una lectura del servidor por PostgREST con `limit 101`
   (`conteoAcotado`, `cache()`), la forma de «Cotizado (n)»: sin medición propia. En pantalla (`e2e/cotizaciones-de-este-vehiculo.spec.ts`, 10 filas y la
-  aprobada): la primera respuesta ≤ 5.250 B (columnas cortas, `total`, `moneda`, `editada_en`, como el alias `a` del historial; con los nombres largos medía
-  5.219) y ≤ 240 nodos (medido 165: ≈ 15 por fila, porque cada una lleva n.º, título, insignias, `<Monto>`, modo, autor, fecha y dos acciones; el tope de 65
+  aprobada): la primera respuesta ≤ 5.600 B (columnas cortas, `total`, `moneda`, `editada_en`, `vence_el`, como el alias `a` del historial; medido 5.327) y ≤ 240 nodos (medido 165: ≈ 15 por fila, porque cada una lleva n.º, título, insignias, `<Monto>`, modo, autor, fecha y dos acciones; el tope de 65
   del historial era para filas de 3 nodos). Código: la isla al acercarse y la cáscara `diferido()` en su `diferidos.tsx`; el bloque, al acercarse (guardada) o
   al abrir el resumen. En frío, sólo la cáscara del hueco (el resumen ya es diferido).
 - **La barra del resumen** (`e2e/cotizaciones-drawer.spec.ts`): abrir el resumen no pide nada nuevo: el «⋯» y «Compartir» salen de lo que la página ya leyó. La
@@ -628,7 +627,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 501,9 en 32 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
   «Cotizaciones de este vehículo» y «Actividad reciente» (las cáscaras de sus islas), la ficha completa (`?ver=ficha`, con `useAbiertoAlgunaVez`), la imagen de la aprobada y
   «Compartir» van con `diferido()`; la tira es la del visor; «Vitrina» es de cliente y su vista previa ya viajaba con el panel. El documento de la ficha
-  aporta 53,7 KB sobre `/perfil` con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 58;
+  aporta 58,3 KB sobre `/perfil` con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 61;
   `e2e/vehiculos-ficha-dos-columnas.spec.ts`). Lecturas por pedido, tras su `<Suspense>` y en paralelo: `vehiculo_relacionados` (≤ 9 filas), la
   subasta y sus ajustes, la aprobada (`cotizaciones_de_este_vehiculo` con `TAMANO_DE_LA_APROBADA`: la fijada por `cotizaciones_aprobadas_pkey` y ≤ 2
   filas por `cotizaciones_vehiculo_creado_idx`), los datos clave (`leerDatosClave`, 1 o 2 lecturas por PK; al documento viajan sólo sus ≤ 4 campos), la
@@ -796,9 +795,9 @@ fallar.
   bloques de `cotizaciones`; con 250.000 ≤ 1,2 × los bloques de 50.000 + 20 y ≤ máx(1,5 × t; t + 3 ms); `mis_leads()` 1 vez si va la cartera
   (ninguna con `p_lead`), `origenes_con_alcance()` ≤ 2 + 2 por ruta, `en_cartera()` ≤ una por fila leída de la cartera o del vehículo,
   ninguna a `alcance_de` ni a `_bajas_en_curso`; los índices de cada caso por nombre y ningún otro con bloques. Máximo de la base: 100 (la pantalla pide hasta 50, `MAXIMO_DE_PAGINA_DE_COTIZACIONES`).
-  El bloque «Cotizaciones» de la ficha del lead (PostgREST, `lead_id = …`, 3 + 1 por `cotizaciones_lead_creado_idx`, mismo archivo): la dueña ≤ 10 ms, Ana
-  ≤ 50 con su cartera y ≤ 100 con el ajeno. Se lee al acercarse a la vista, con `diferido()` en su `diferidos.tsx`; lo demás, en «Ver todas»
-  (`/cotizaciones?lead=`); `e2e/leads-cotizaciones.spec.ts`: la respuesta ≤ 1.500 B.
+  El bloque «Cotizaciones» de la ficha del lead (`cotizaciones_listado(p_lead)`, 10 + 1 por `cotizaciones_lead_creado_idx`, más los autores por la PK de `perfiles`, los modos por `cotizaciones_modos_de()`
+  y las aprobadas por `cotizaciones_aprobadas`, sólo de las 10): la fila de tarjetas. Se lee al acercarse a la vista, con `diferido()` en su `diferidos.tsx`; lo demás, en la tarjeta «Ver más»
+  (`/cotizaciones?lead=`); `e2e/leads-cotizaciones.spec.ts`: la respuesta del listado ≤ 6.500 B.
   **La lista agrupada por vehículo** (`cotizaciones_listado_por_vehiculo()`, `medir-cotizaciones-listado-por-vehiculo.sql`, `MEDIR_SOLO=medir-cotizaciones-listado-por-vehiculo
 pnpm db:medir:volumen`): invocadora, páginas de `MAXIMO_DE_PAGINA_DE_COTIZACIONES` (50) grupos + 1. Recorre lotes de `_cotizaciones_lote_del_listado()` (las rutas e índices del listado, sin la del
   vehículo; el primero de 4 × la página (204), duplicándose hasta 2.020 leídas: si no llena la página, `cortada`); hacia adelante sólo la primera de cada vehículo en la lectura
