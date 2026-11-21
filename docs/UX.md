@@ -304,7 +304,7 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   la pantalla en escritorio y entera en el celular, sólo lectura, las fotos con su tira, los datos comunes, «Precio» y todos los grupos del layout; Esc y
   «atrás» la cierran y el foco vuelve a «Ver más»).
   **Derecha**: el índice quieto arriba de la columna («Índice de la ficha»; en el celular, pegajoso) y sólo lo de ventas, con su propio desplazamiento, los bloques que quien mira ve en este orden: **«Cotizaciones de este
-  vehículo»** (`cotizaciones.ver` del origen: «De este vehículo» con las casillas y «Comparar» en su fila, al acercarse; «Cotizar» en el título, la hoja con
+  vehículo»** (`cotizaciones.ver` del origen: la fila de tarjetas con «Aprobar esta» y las casillas de «Comparar» (el botón en el título), al acercarse; «Cotizar» en el título, la hoja con
   este vehículo y la vuelta a la ficha, sólo con `cotizaciones.crear` del origen; aprobar ahí pone al día «Cotización aprobada» de la izquierda; ver
   «Cotizaciones del lead y del vehículo»), **«Relacionados»** compacto (`leads.ver`: el vinculado con «Desvincular» confirmado, los interesados y lo cotizado;
   ver «Relacionados (estados propios)»), **«Actividad reciente»** (`actividad.ver`: los últimos 5 cambios del vehículo como frases y «Ver toda la actividad»,
@@ -321,11 +321,14 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   `?panel=vitrina` («Publicar en la web»), `?panel=imagenes` («Editar imágenes»), `?panel=actualizar-datos` («Actualizar los datos»),
   `?panel=fechas-de-subasta`, `?ver=ficha` y `?visor=` abren lo suyo. Cada bloque tiene su esqueleto, su vacío y su error («No pudimos cargar «<título>».»
   con «Reintentar»; uno caído no tumba a los demás).
-  - **Cotizaciones del lead y del vehículo** (bloque): en el lead, «Cotizar» en el título (la hoja con este lead en el primer origen donde quien mira
-    cotiza, como «Cotizar lead») y las 3 más recientes que quien mira ve, con la insignia «Aprobada» si es la aprobada de su vehículo (lo trae la misma
-    lectura), y «Ver todas» (`/cotizaciones?lead=`, sin número) si hay más. En el vehículo, «De este
-    vehículo» (ver abajo): de a 10 con «Ver más» hasta 100 y «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`), con «Cotizar» en el título y las casillas
-    de «Comparar» en su fila. Los dos se leen al acercarse; esqueleto, error con «Reintentar», «Sin cotizaciones que puedas ver.».
+  - **Cotizaciones del lead y del vehículo** (bloque): una **fila de tarjetas** que se desliza, sólo tarjetas (sin filas de letras), de las **últimas 10** que quien mira ve
+    (la más reciente primero; en el vehículo, la aprobada primero) y, al final, la tarjeta **«Ver más»** a `/cotizaciones?lead=` o `?vehiculo=` (el listado filtrado). Cada tarjeta es la
+    de la lista (`docs/GLOSARIO.md` › «Fila de tarjetas»): la imagen de la tarjeta, el título en dos líneas, «N.º n» con «Aprobada», «Final», autor · hace…, el total con su modo
+    (`<Monto>`), la vigencia y **«Compartir»** a la vista (no en Modo Live); sin línea de cliente ni «⋯» (el resumen que abre lo trae). Un clic abre el resumen sobre la ficha (`?cotizacion=`)
+    y deja marcada la tarjeta abierta; cerrarlo deja la ficha donde estaba. Se desliza con el dedo, la rueda o las flechas ‹ › (escritorio); un degradado en el borde dice que sigue. En el lead, «Cotizar»
+    en el título (la hoja con este lead en el primer origen donde quien mira cotiza, como «Cotizar lead»). En el vehículo, «Cotizar» en el título, **«Aprobar esta»** al pie de cada tarjeta menos la
+    aprobada (con `cotizaciones.aprobar` del origen; apagado con su motivo; tras aprobar la ficha se refresca) y una casilla sobre la imagen para **«Comparar»** 2 o 3, cuyo botón va en el título del bloque. Los dos
+    se leen al acercarse; esqueleto de 3 tarjetas, error con «Reintentar», «Sin cotizaciones que puedas ver.».
   - **De este vehículo** (bloque de la guardada y quinta pestaña del resumen de la cotización): las cotizaciones del mismo vehículo que quien mira ve, **la aprobada
     primero** (insignia «Aprobada» y borde de acento) y después de la más nueva; de a 10 con «Ver más» y, en 100, «Mostrando las 100 más recientes.» con
     «Ver todas en Cotizaciones» (`/cotizaciones?vehiculo=`). Cada fila: «N.º N · título» (`tituloDeLaCotizacion()`: el suyo, si no el del vehículo, si no «Cotización n.º N»), insignias
@@ -560,7 +563,7 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   sin «Eliminar»: se desactivan) y «Categorías de gasto» (`/categorias-de-gasto`: nombre, propósito de la lista fija de la base, orden y activa; una con
   gastos no se elimina), con `logistica.catalogos.gestionar` y sólo si algún área llena el catálogo, y «Tipos de documento» (`/tipos-de-documento`: los
   de la empresa; los cambia quien gestiona los catálogos de logística y los leen quien configura un flujo o los repuestos); y, sin rótulo,
-  **«Tablas compartidas»** (`/tablas`, `cotizaciones.configurar`; `?tabla=<id>`, `?panel=publicar-tabla`): las tablas de referencia sin origen, con el
+  **«Tablas compartidas»** (`/tablas`, `cotizaciones.configurar`; `?tabla=<id>`, `?panel=publicar-tabla|nueva-tabla|columnas-de-tabla|desactivar-tabla`): las tablas de referencia sin origen, con el
   aviso de a qué orígenes les cambia. Sin título de bloque ni segunda frase: «Nuevo …» arriba a la derecha y la lista. Ver «Logística: estados propios».
 - **Repuestos (config)** — `/configuracion/repuestos` (`repuestos.configurar`) abre `/flujo`. **Flujo de repuestos** (`/configuracion/repuestos/flujo`):
   el editor del flujo (el de la pestaña Flujo de un origen) sobre el flujo de los repuestos, sin selector. **Catálogos** (`/configuracion/repuestos/catalogos`):
@@ -599,7 +602,7 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
     llena la cotización.»): `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe el cliente.»): `?panel=publicar-tarjeta|
 descartar-plantilla` y `?referencia=ejemplo`, a todo el ancho.
   - **Tablas** (`/tablas`, `cotizaciones.configurar` en el origen): las del origen y las compartidas que usa (una compartida tapada por una propia va
-    «Tapada por la de <origen>»); `?tabla=<id>` (el editor) y `?panel=publicar-tabla`. Una compartida se edita ahí con el aviso de a quién le cambia.
+    «Tapada por la de <origen>»); `?tabla=<id>` (el editor) y `?panel=publicar-tabla|nueva-tabla|columnas-de-tabla|desactivar-tabla`. Una compartida se edita ahí con el aviso de a quién le cambia.
   - `/<id>` sola abre (308) la primera pestaña que la persona abre, y `/<id>?seccion=…` su parte, conservando `?campo=`, `?categoria=` y `?panel=`. Una
     pestaña que no abre, por URL: «No puedes abrir esta pestaña», su motivo e «Ir a <la primera que abre>»; un origen ajeno, «No puedes abrir este
     origen» (con «Ver los orígenes» si abre otros), sin decirle si existe; a quien sí podría abrirlo, uno que no existe es un 404.
@@ -611,9 +614,12 @@ descartar-plantilla` y `?referencia=ejemplo`, a todo el ancho.
   («Web › Sitio web»), con su título y una frase. «Ajustes» (`/ajustes`) y «Legales» (`/legales`) con `web.ajustes.gestionar`; «Guías» (`/guias`),
   «Preguntas frecuentes» (`/faqs`) y «Testimonios» (`/testimonios`) con `web.contenido.gestionar`. Lo que no puede abrir va apagado en el menú, con su
   motivo, y su URL abre la primera que sí. `?seccion=ajustes|legales|guias|faqs|testimonios` redirige a su sub-ruta y conserva el resto de la URL
-  (`?panel=`, `?q=`). «Ajustes»: la fila única del sitio (nombre, lema, WhatsApp de respaldo, horario, dirección, redes, SEO, moneda secundaria y orígenes
-  visibles, avisando qué vehículos dejan de verse), con versión, sin red y conflicto; «Ajustes» y «Legales» se guardan con la barra fija de abajo
-  («Tienes cambios sin guardar» · «Descartar» · «Guardar»; salir con cambios pregunta). «Guías» (con categorías) y su editor
+  (`?panel=`, `?q=`). «Ajustes»: la fila única del sitio en cinco tarjetas con lo guardado a la vista, sin acordeones ni barra de cambios (Identidad del sitio: nombre y lema ·
+  Contacto: WhatsApp de respaldo, horario y dirección · Redes · SEO · Vitrina: moneda secundaria y orígenes visibles, avisando en el modal qué vehículos dejan
+  de verse), cada una con «Editar» y «⋯» que abren su modal (`?panel=identidad|contacto|redes|seo|vitrina`) con su «Guardar»; con versión, sin red y conflicto
+  («Recargar» conserva lo tipeado); cerrar un modal con cambios pregunta. «Legales»: una tarjeta por documento (términos, privacidad) con su estado («Publicada»
+  o «Sin publicar»), un extracto, su última edición y «Editar», que abre su modal con el título y el editor (`?panel=terminos|privacidad`, con borrador); las
+  dos páginas entran enteras a 1440×900. «Guías» (con categorías) y su editor
   `/configuracion/web/guias/[id]` (documento con imágenes; publicar, programar o despublicar con `web.guias.publicar`; «Borrador», «Programada»,
   «Publicada»; «← Guías» vuelve a la lista). «Preguntas frecuentes»: panel por URL, reordenar, eliminar con confirmación. «Testimonios»: con su
   consentimiento (quién, cuándo, canal; ciudad, vehículo y foto por separado) y «Retirar». Las listas llevan su acción principal («Nueva …») sin repetir el
@@ -1523,13 +1529,29 @@ El modo «Retocar la tarjeta» de «Vista previa» en una guardada (`/cotizacion
 
 ### Cotización: tablas (estados propios)
 
-Configuración › Orígenes › un origen › Tablas (`/configuracion/origenes/<id>/tablas`; las compartidas, también en Catálogos › Tablas compartidas, `/configuracion/catalogos/tablas`): editar y publicar las filas de las tablas de referencia
-(`tabla_referencia_publicar()`).
+Configuración › Orígenes › un origen › Tablas (`/configuracion/origenes/<id>/tablas`; las compartidas, también en Catálogos › Tablas compartidas, `/configuracion/catalogos/tablas`): crear tablas de referencia, cambiar sus columnas, desactivarlas y editar y publicar sus filas
+(`tabla_referencia_crear|columnas|desactivar|publicar()`).
 
 - **Quién entra y origen:** como «Fórmula»; cambiar de origen con los chips suelta `?tabla=`.
 - **Lista:** las tablas activas del origen y las compartidas, por clave: nombre como enlace a `?tabla=<id>`, clave, «Compartida» y
-  «Tapada por la de <Origen>» (`<Badge>`) y «Versión N · <persona> · <cuándo>». Vacía: «<Origen> no tiene tablas de referencia.» y «Las
-  tablas nuevas y sus columnas todavía no se crean desde aquí.». Tope 100 con aviso. Esqueleto y error de la ruta.
+  «Tapada por la de <Origen>» (`<Badge>`) y «Versión N · <persona> · <cuándo>», y su «⋯» («Editar filas», «Columnas», «Desactivar»: lleva a la
+  tabla con ese panel). «Nueva tabla» arriba a la derecha; vacía: «<Origen> no tiene tablas de referencia.» con «Nueva tabla» en el mismo bloque. Tope
+  100 con aviso y «Nueva tabla» apagado con su motivo. Esqueleto y error de la ruta.
+- **Nueva tabla** (`?panel=nueva-tabla`, un `<Drawer>`): «Nombre» (debajo, «Clave: `x` · no cambia después»), para quién (sólo con origen: «Sólo
+  <Origen>» o «Compartida: la usan los orígenes sin una propia»; en Catálogos siempre compartida) y las columnas (nombre, tipo número, año o texto y
+  clave, que sigue al nombre hasta tocarla; «Subir», «Bajar», «Quitar»; «Sumar una columna» hasta 20, apagado en el tope con su motivo). «Crear tabla» /
+  «Creando…»; un rechazo de la base va junto a su campo con el foco (la clave tomada, junto al nombre) y uno sin campo, arriba. Sin conexión, el aviso
+  arriba y lo escrito queda (repetir devuelve la misma tabla). Entró: «Creaste «X». Suma sus filas y publícala.» y abre la tabla. Cerrar con algo escrito
+  pregunta.
+- **Columnas** (`?tabla=<id>&panel=columnas-de-tabla`, `<Drawer>` amplio; «Columnas» del «⋯» del encabezado del editor, apagado con cambios sin publicar
+  en las filas): renombrar, ordenar, sumar y quitar. La clave y el tipo de una existente se ven y no se cambian; quitar la marca «Se quita» con «No
+  quitar» y avisa que su valor se borra de cada fila. Al pie, el resumen («Se renombra 1 · se quita 1») o «Sin cambios en las columnas.»; «Guardar
+  columnas» apagado sin cambios. Una columna que usa una fórmula (publicada o borrador): el texto de la base arriba, con quién la usa. Conflicto: el
+  texto de la base con «Recargar» (lo cambiado no vuelve). Entró: «Guardaste las columnas de «X».» y el editor se vuelve a montar con la versión nueva.
+  Si es compartida, a qué orígenes les cambia.
+- **Desactivar** (`?tabla=<id>&panel=desactivar-tabla`, `<Confirmar>` «Desactivar «X»»; apagado con cambios sin publicar): no se deshace y la clave
+  queda tomada. En uso: el texto de la base con las fórmulas que la usan. Sin conexión, el aviso dentro y queda abierto; conflicto, «Recargar» dentro.
+  Entró: «Desactivaste «X».» y vuelve a la lista.
 - **Abrir una:** sólo si está en la lista del origen elegido; si no, o si ya no está o pasa de 2.000 filas, su motivo con «Volver a las
   tablas». El editor (con `diferido()`) ocupa el lugar de la lista: «Volver a las tablas» (no pregunta: el borrador conserva lo hecho),
   versión y, si es compartida o tapada, a quién le cambia publicarla.

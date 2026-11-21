@@ -8,8 +8,8 @@ import { NoSeAbre } from '../no-se-abre'
 
 export const metadata: Metadata = { title: 'Tablas del origen' }
 
-// Configuración › Orígenes › un origen › Tablas: las tablas de referencia del origen y las compartidas que usa; con `?tabla=<id>`, el editor de una
-// (`?panel=publicar-tabla`).
+// Configuración › Orígenes › un origen › Tablas: las tablas de referencia del origen y las compartidas que usa, con «Nueva tabla» (`?panel=nueva-tabla`); con
+// `?tabla=<id>`, el editor de una (`?panel=publicar-tabla`, `columnas-de-tabla`, `desactivar-tabla`).
 export default async function PaginaDeLasTablas({
   params,
   searchParams,

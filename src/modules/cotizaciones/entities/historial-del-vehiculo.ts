@@ -7,8 +7,8 @@ import { z } from 'zod'
 export const COLUMNAS_DEL_HISTORIAL =
   'id, numero, clase, creado_en, perfiles!cotizaciones_creado_por_fkey(nombre, email), a:cotizaciones_aprobadas!cotizaciones_aprobadas_cotizacion_id_fkey(cotizacion_id)'
 
-// De quién es una lista de cotizaciones del historial (4.17-4b): de un vehículo (el panel de la hoja y su pestaña) o de un lead (la sección de su ficha).
-export type ListaDe = { vehiculo: string } | { lead: string }
+// De quién es una lista de cotizaciones del historial (4.17-4b): de un vehículo (el panel de la hoja y su pestaña).
+export type ListaDe = { vehiculo: string }
 
 export const ETIQUETA_DE_CLASE = { preventa: 'Preventa', final: 'Final' } as const
 

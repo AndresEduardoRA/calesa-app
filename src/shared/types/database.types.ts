@@ -9594,16 +9594,62 @@ export type Database = {
       _sin_tildes: { Args: { p_texto: string }; Returns: string }
       _subasta_conflicto: { Args: { p_vehiculo: string }; Returns: undefined }
       _subasta_puede_resolver: { Args: { p_vehiculo: string }; Returns: string }
+      _tabla_referencia_clave: { Args: { p_nombre: string }; Returns: string }
+      _tabla_referencia_columnas_validas: {
+        Args: { p_anteriores?: Json; p_columnas: Json }
+        Returns: Json
+      }
       _tabla_referencia_filas_validas: {
         Args: { p_columnas: Json; p_filas: Json }
         Returns: undefined
       }
+      _tabla_referencia_frase_de_usos: {
+        Args: { p_columnas?: string[]; p_tabla: string }
+        Returns: string
+      }
+      _tabla_referencia_permiso_de_quienes_la_usan: {
+        Args: { p_tabla: string }
+        Returns: undefined
+      }
       _tabla_referencia_publicada_por: { Args: { p_tabla: string }; Returns: string }
+      _tabla_referencia_tomar: {
+        Args: { p_tabla: string; p_version_esperada: number }
+        Returns: {
+          activa: boolean
+          actualizado_en: string
+          clave: string
+          columnas: NonNullable<Json>
+          creado_en: string
+          descripcion: string | null
+          id: string
+          nombre: string
+          nota: string | null
+          origen_id: string | null
+          publicado_en: string | null
+          publicado_por: string | null
+          version: number
+        }
+        SetofOptions: {
+          from: '*'
+          to: 'tablas_referencia'
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       _tabla_referencia_usada_en: {
         Args: { p_origen?: string; p_tabla: string }
         Returns: {
           formula_del_origen_id: string
           formula_id: string
+          origen_id: string
+        }[]
+      }
+      _tabla_referencia_usos: {
+        Args: { p_tabla: string }
+        Returns: {
+          columnas: string[]
+          estado: string
+          origen: string
           origen_id: string
         }[]
       }
@@ -10419,6 +10465,7 @@ export type Database = {
           origen_id: string
           titulo: string
           total: number
+          vence_el: string
           vencida: boolean
         }[]
       }
@@ -11834,6 +11881,18 @@ export type Database = {
       }
       storage_gc_rescatar: { Args: { p_bucket: string; p_ruta: string }; Returns: undefined }
       storage_refcount: { Args: { p_bucket: string; p_ruta: string }; Returns: number }
+      tabla_referencia_columnas: {
+        Args: { p_columnas: Json; p_tabla: string; p_version_esperada: number }
+        Returns: Json
+      }
+      tabla_referencia_crear: {
+        Args: { p_columnas: Json; p_id: string; p_nombre: string; p_origen: string }
+        Returns: Json
+      }
+      tabla_referencia_desactivar: {
+        Args: { p_tabla: string; p_version_esperada: number }
+        Returns: Json
+      }
       tabla_referencia_publicar: {
         Args: { p_filas: Json; p_nota: string; p_tabla: string; p_version_esperada: number }
         Returns: Json

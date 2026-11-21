@@ -194,7 +194,7 @@ test('E2E «Seguimiento»: un solo «+» que anota o agenda, el recordatorio má
   await expect(drawerDeTodos(page).getByRole('article')).toHaveCount(10)
 })
 
-test('E2E «Cotizaciones»: «Cotizar» como «Cotizar lead», las 3 más recientes y «Ver todas» al listado del lead', async ({
+test('E2E «Cotizaciones»: «Cotizar» como «Cotizar lead» y sus cotizaciones en tarjetas (con 5 no hay «Ver más»; con 11, `leads-cotizaciones.spec.ts`)', async ({
   page,
 }) => {
   await abrirLaFicha(page, duena)
@@ -206,12 +206,9 @@ test('E2E «Cotizaciones»: «Cotizar» como «Cotizar lead», las 3 más recien
   )
   await bloque.scrollIntoViewIfNeeded()
   await expect(
-    bloque.getByRole('list', { name: 'Cotizaciones del lead' }).getByRole('listitem'),
-  ).toHaveCount(3)
-  await expect(bloque.getByRole('link', { name: 'Ver todas' })).toHaveAttribute(
-    'href',
-    `/cotizaciones?lead=${lead}`,
-  )
+    bloque.getByRole('list', { name: 'Cotizaciones del lead' }).getByRole('article'),
+  ).toHaveCount(5)
+  await expect(bloque.getByRole('link', { name: 'Ver más' })).toHaveCount(0)
 })
 
 test('E2E «Vehículos»: «Vincular o marcar» en el título y los vínculos anteriores plegados', async ({

@@ -1,15 +1,30 @@
 'use client'
 
 import { diferido } from '@/shared/ui/diferido'
-import { EsqueletoFormulario } from '@/shared/ui/esqueletos'
-import type { PropsDeAjustesDelSitio } from './formulario-de-ajustes-del-sitio'
 
-// El formulario de «Ajustes» se pide al abrir la pestaña: el hueco (`pantallas/sitio-ajustes.ts`) lo importa `pestanas.ts`, y por él
-// el hub de Configuración; con el componente directo, el formulario y su action viajarían en el hub.
-export const FormularioDeAjustesDelSitio = diferido<PropsDeAjustesDelSitio>(
-  () =>
-    import('./formulario-de-ajustes-del-sitio').then(
-      (modulo) => modulo.FormularioDeAjustesDelSitio,
-    ),
-  { esqueleto: <EsqueletoFormulario bloques={3} campos={4} />, aviso: 'aqui' },
+// Los modales de las tarjetas de «Ajustes» se piden la primera vez que se abren (`useAbiertoAlgunaVez()`): la página dibuja sólo texto y los
+// formularios no viajan en frío.
+export const ModalDeIdentidadDiferido = diferido(
+  () => import('./modal-de-identidad').then((modulo) => modulo.ModalDeIdentidad),
+  { aviso: 'pantalla' },
+)
+
+export const ModalDeContactoDiferido = diferido(
+  () => import('./modal-de-contacto').then((modulo) => modulo.ModalDeContacto),
+  { aviso: 'pantalla' },
+)
+
+export const ModalDeRedesDiferido = diferido(
+  () => import('./modal-de-redes').then((modulo) => modulo.ModalDeRedes),
+  { aviso: 'pantalla' },
+)
+
+export const ModalDeSeoDiferido = diferido(
+  () => import('./modal-de-seo').then((modulo) => modulo.ModalDeSeo),
+  { aviso: 'pantalla' },
+)
+
+export const ModalDeVitrinaDiferido = diferido(
+  () => import('./modal-de-vitrina').then((modulo) => modulo.ModalDeVitrina),
+  { aviso: 'pantalla' },
 )
