@@ -604,15 +604,15 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 ## JS en frío (con gzip, lo que el documento nombra)
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB` de `e2e/soporte/presupuestos.ts`, lo medido más un 5 % a la decena; uno pasado por ≤ 5 % se sube con la regla del 5 %):
-  `/leads` 560, `/leads/[id]` 590, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 400 (con las tarjetas de la lista, la imagen de la tarjeta en frío y el hook de los menús de las filas que comparte con las fichas),
-  `/cotizaciones/nuevo` 470 (con el interruptor «Privada» y los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, sobre los 465 de antes; con la subasta, `?origen=`; la línea «Descargar PDF», el contexto del «⋯» de la guardada y el interruptor «Privada» viajan con la hoja), `/cotizaciones/[id]` 480
-  (el título de la cotización y la cabecera compacta, con el menú de Base UI del «⋯» en frío), `/cotizaciones/comparar` 380, `/logistica` 390,
+  `/leads` 560, `/leads/[id]` 590, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 540 (530,7 medidos con la cotización privada y los dos botones del marco, sobre los 530 de antes), `/cotizaciones` 400 (con las tarjetas de la lista, la imagen de la tarjeta en frío y el hook de los menús de las filas que comparte con las fichas),
+  `/cotizaciones/nuevo` 470 (466,6 medidos con el interruptor «Privada» y los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, sobre los 465 de antes; con la subasta, `?origen=`; la línea «Descargar PDF», el contexto del «⋯» de la guardada y el interruptor «Privada» viajan con la hoja), `/cotizaciones/[id]` 490
+  (el título de la cotización y la cabecera compacta, con el menú de Base UI del «⋯» en frío; 480,1 medidos con «Hacer privada», la insignia y los dos botones del marco, sobre los 480 de antes), `/cotizaciones/comparar` 380, `/logistica` 390,
   `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470; `/cotizaciones/papelera` 440 (en su spec).
 - Medido: `/leads` 526,5 KB en 36 chunks y `/leads/[id]` 558,3 KB (el «+» y los «⋯» de los bloques de la derecha van en frío: `DropdownMenu` y `MasAcciones` ya
   viajaban con el «⋯» de la cabecera). Al borde: `/cotizaciones` 386,9 de 390 (el despliegue de un grupo y «Comparar» van con `diferido()`; con `<MenuDeVistas>` en
   frío serían 450: va con `diferido()`; la imagen del resumen, sólo su cáscara: `CLAVE_DEL_VISOR` por el barril del visor sumaba 2,5 KB, se importa de
-  `use-carrusel`), `/cotizaciones/[id]` 475,0 de 480 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
-  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 465,8 de 470 (lo de la hoja en par va con `diferido()`; el
+  `use-carrusel`), `/cotizaciones/[id]` 480,1 de 490 (la rejilla y el aspecto de la hoja pesan por sus tablas de clases; la barra del vehículo de la cabecera va con
+  `diferido()`, y con ella el panel de elegir otro vehículo en una preventa) y `/cotizaciones/nuevo` 466,6 de 470 (lo de la hoja en par va con `diferido()`; el
   pedido del PDF va en su propia composición, sin la lectura de la tarjeta; el campo del título va con `diferido()` dentro del panel; los pasos de la hoja y el botón del ⚙ de la cabecera viajan en frío, su panel, los campos por defecto y los enlaces de la ayuda con
   `diferido()`) (`docs/PENDIENTES.md`).
 - La hoja no lleva al navegador `diseno.ts` ni su Zod: las constantes de la rejilla viven en `rejilla-de-la-hoja.ts` (importarlas de `diseno.ts` suma 1,7 KB a cada
@@ -624,7 +624,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   «Actualizar los datos» no pesan en frío. Abrir «Editar imágenes» o la vitrina (`?panel=…&para=<id>`, `shallow: false`) vuelve a pedir la página de la
   lista al servidor, como `?editar=`; la página lee sólo el panel nombrado (la galería ≤ 24 con la subasta en un origen de subasta, o el vehículo por pk y,
   si se abre, `vehiculo_vitrina_previa`). «Actualizar los datos» es una consulta a apibara por confirmación, nunca al abrir el menú.
-- `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 501,9 en 32 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
+- `/vehiculos/[id]` (la ficha del vehículo): ≤ 540 KB, medido 530,7 en 35 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
   «Cotizaciones de este vehículo» y «Actividad reciente» (las cáscaras de sus islas), la ficha completa (`?ver=ficha`, con `useAbiertoAlgunaVez`), la imagen de la aprobada y
   «Compartir» van con `diferido()`; la tira es la del visor; «Vitrina» es de cliente y su vista previa ya viajaba con el panel. El documento de la ficha
   aporta 58,3 KB sobre `/perfil` con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 61;

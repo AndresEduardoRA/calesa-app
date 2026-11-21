@@ -974,7 +974,8 @@ las trampas, en `docs/LECCIONES.md`.
   en el celular y la matriz ya es esa grilla). Suma «No ve» como cuarto escalón; «Sólo las suyas» es «lo propio», que incluye las de sus clientes, y la
   leyenda lo dice.
 - **El interruptor y la línea del «⋯» viajan con la hoja.** Son un `<Switch>`, una línea y una insignia: diferirlos haría parpadear el pie del resumen y el menú.
-  `/cotizaciones/nuevo` pasó de 465 a 470 KB (465,8 medidos, regla del 5 %, `docs/RENDIMIENTO.md`).
+  `/cotizaciones/nuevo` pasó de 465 a 470 KB, `/cotizaciones/[id]` de 480 a 490 y `/vehiculos/[id]` de 530 a 540 (466,6, 480,1 y 530,7 medidos con los
+  botones del marco, regla del 5 %, `docs/RENDIMIENTO.md`).
 
 ### Papelera
 
