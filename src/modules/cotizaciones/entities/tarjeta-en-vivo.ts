@@ -4,9 +4,21 @@
 import type { CalculoDeLaTarjeta } from './calculo-de-la-tarjeta'
 import type { LecturaEnCuadricula } from './cuadricula-de-la-tarjeta'
 
+// Lo que la tarjeta de trabajo nombra (con lo restringido): los nodos de sus filas y celdas (también los de sus condiciones) y, si se guardó en la forma 1, sus
+// grupos y los nodos de sus etiquetas y leyendas. La planilla no borra una fila ni quita una banda que nombra: publicar la fórmula dejaría la tarjeta sin
+// calzar (`entities/formula/usos-de-la-fila.ts`). Arreglos: cruza de una página de servidor a un componente de cliente.
+export type NombradoPorLaTarjeta = {
+  readonly nodos: readonly string[]
+  readonly grupos: readonly string[]
+}
+
 export type LecturaDeLaTarjetaEnVivo =
   // La plantilla de trabajo (el borrador si hay, si no la publicada) con lo que nombra del nivel «todos».
-  | { readonly estado: 'lista'; readonly lectura: LecturaEnCuadricula }
+  | {
+      readonly estado: 'lista'
+      readonly lectura: LecturaEnCuadricula
+      readonly nombra: NombradoPorLaTarjeta
+    }
   // El origen no tiene borrador ni publicada de la tarjeta (o no tiene fórmula publicada con qué leerla).
   | { readonly estado: 'sin_tarjeta' }
   | { readonly estado: 'no_se_leyo' }
