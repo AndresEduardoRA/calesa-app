@@ -52,3 +52,6 @@ docs/referencias/cotizador-actual/
 
 # el mapa se genera (scripts/mapa.sh) y no se versiona: dos carriles lo cambiarían a la vez
 docs/MAPA.md
+
+# caché local de eslint (`eslint --cache`): de cada máquina, no se versiona
+.eslintcache
