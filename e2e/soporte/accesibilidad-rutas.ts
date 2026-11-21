@@ -86,6 +86,29 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/configuracion/origenes/[id]/tablas': (t) => ({
     url: `/configuracion/origenes/${t.origen}/tablas`,
   }),
+  // La puesta en marcha (su raíz es un `route.ts`, 307 al paso que falta: no se barre): cada paso con el origen del barrido, que no tiene fórmula activa;
+  // «Listo» sin ella vuelve a la raíz, así que va con la subasta de la semilla, que la tiene.
+  '/configuracion/origenes/[id]/puesta-en-marcha/datos': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/puesta-en-marcha/datos`,
+  }),
+  '/configuracion/origenes/[id]/puesta-en-marcha/campos': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/puesta-en-marcha/campos`,
+  }),
+  '/configuracion/origenes/[id]/puesta-en-marcha/flujo': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/puesta-en-marcha/flujo`,
+  }),
+  '/configuracion/origenes/[id]/puesta-en-marcha/formula': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/puesta-en-marcha/formula`,
+  }),
+  '/configuracion/origenes/[id]/puesta-en-marcha/tarjeta': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/puesta-en-marcha/tarjeta`,
+  }),
+  '/configuracion/origenes/[id]/puesta-en-marcha/publicar': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/puesta-en-marcha/publicar`,
+  }),
+  '/configuracion/origenes/[id]/puesta-en-marcha/listo': () => ({
+    url: `/configuracion/origenes/${sql("select id from public.origenes where clave = 'subasta_usa'")}/puesta-en-marcha/listo`,
+  }),
   '/repuestos/[id]': (t) => ({ url: `/repuestos/${t.proyectoDeRepuestos}` }),
   '/cotizaciones/[id]': (t) => ({ url: `/cotizaciones/${t.cotizacion}` }),
   '/repuestos/[id]/cotizaciones/[cotizacion]': (t) => ({
