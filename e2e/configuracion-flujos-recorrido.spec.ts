@@ -1,6 +1,7 @@
 // @sin-celular-archivo: Configuración se usa en escritorio; la persona pidió no probarla en celular (2026-11-08)
 import { expect, test } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
+import { delAltaASuPagina } from './soporte/origenes'
 import {
   borrarPersonasDePrueba,
   borrarRolesDePrueba,
@@ -79,14 +80,15 @@ test.afterAll(async () => {
 test(`${P} la dueña crea un origen y arma 5 fases con sus salidas`, async ({ page }) => {
   await entrar(page, duena, { fresco: true })
   await page.goto('/configuracion/origenes')
-  await page.getByRole('button', { name: 'Nuevo origen' }).click()
-  const panel = page.getByRole('dialog')
+  await page.getByRole('link', { name: 'Nuevo origen' }).click()
+  const panel = page.locator('main')
   await panel.getByLabel('Nombre', { exact: true }).fill(ORIGEN)
   await panel.getByLabel('Lo que entra por acá se llama').fill('unidad')
   await panel.getByRole('button', { name: 'Crear origen' }).click()
   await expect(page.getByText(`Origen «${ORIGEN}» creado`)).toBeVisible()
 
-  // Creado, abre su página; «Para cotizar y mover» lleva a la pestaña Flujo, que nace sin fases.
+  // Creado, sigue en la puesta en marcha; desde la página del origen, «Para cotizar y mover» lleva a la pestaña Flujo, que nace sin fases.
+  await delAltaASuPagina(page)
   await expect(page.getByRole('heading', { name: ORIGEN, level: 1 })).toBeVisible()
   await page
     .getByRole('region', { name: 'Para cotizar y mover' })

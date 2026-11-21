@@ -176,3 +176,11 @@ export async function irADetalle(page: Page, nombre: string, seccion?: string) {
     await irAParte(page, seccion)
   }
 }
+
+// Recién creado, el origen sigue en el paso Campos de su puesta en marcha: de ahí a su página (la pestaña Datos).
+export async function delAltaASuPagina(page: Page) {
+  await expect(page).toHaveURL(
+    /\/configuracion\/origenes\/[0-9a-f-]{36}\/puesta-en-marcha\/campos$/,
+  )
+  await page.goto(page.url().replace(/\/puesta-en-marcha\/campos$/, '/datos'))
+}

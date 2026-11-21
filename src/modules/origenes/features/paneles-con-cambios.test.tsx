@@ -4,16 +4,17 @@ import { salirSinPerder } from '@/shared/ui/salida-con-cambios'
 import type { Categoria } from '../entities/categoria'
 import type { EdicionesDeCategorias } from './categorias/hooks/use-categorias'
 import { PanelDeCategoria } from './categorias/components/panel-de-categoria'
-import type { EdicionesDeOrigenes } from './origenes/hooks/use-origenes'
-import { PanelNuevoOrigen } from './origenes/components/panel-nuevo-origen'
+import { FormularioDelOrigenNuevo } from './origenes/components/formulario-del-origen-nuevo'
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }))
+vi.mock('./origenes/actions/crear-origen', () => ({ crearOrigen: vi.fn() }))
+vi.mock('./origenes/actions/eliminar-origen', () => ({ eliminarOrigen: vi.fn() }))
+vi.mock('./origenes/actions/guardar-origen', () => ({ guardarOrigen: vi.fn() }))
+vi.mock('next-safe-action/hooks', () => ({
+  useAction: () => ({ executeAsync: vi.fn(), isPending: false, result: {} }),
+}))
 
 afterEach(cleanup)
-
-const edicionesDeOrigenes = {
-  enCurso: false,
-  errores: { crear: undefined, guardar: undefined },
-  crear: vi.fn(),
-} as unknown as EdicionesDeOrigenes
 
 const edicionesDeCategorias = {
   enCurso: false,
@@ -46,17 +47,9 @@ function pulsarAviso() {
 
 const hayPregunta = () => screen.queryByText('Tienes cambios sin guardar.') !== null
 
-describe('PanelNuevoOrigen', () => {
-  function montar() {
-    render(
-      <PanelNuevoOrigen
-        abierto
-        ediciones={edicionesDeOrigenes}
-        alCerrar={vi.fn()}
-        alCrear={vi.fn()}
-      />,
-    )
-  }
+// La página del alta (`/configuracion/origenes/nuevo`): sin un `<Drawer>`, la pregunta va en su pie (`useSalidaConCambios()`).
+describe('FormularioDelOrigenNuevo', () => {
+  const montar = () => render(<FormularioDelOrigenNuevo />)
 
   it('sin escribir nada, el aviso sale directo', () => {
     montar()
