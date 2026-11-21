@@ -18,7 +18,7 @@ revisar_secretos() {
   # La caché del token de la app (token-app.sh: `<caché>/orquestador/app-<instalación>`); las carpetas de tareas
   # (`orquestador/<proyecto>/…`) no.
   case "$CMD" in
-    *'$GH_TOKEN'* | *'${GH_TOKEN'* | *'$GITHUB_TOKEN'* | *'${GITHUB_TOKEN'* | *printenv* | *"/environ"* | *"orquestador/app-"*)
+    *"\$GH_TOKEN"* | *"\${GH_TOKEN"* | *"\$GITHUB_TOKEN"* | *"\${GITHUB_TOKEN"* | *printenv* | *"/environ"* | *"orquestador/app-"*)
       bloquear "$MSJ_TOKEN" ;;
   esac
   # `GH_TOKEN=$(gh auth token --user <dueña>) gh …` usa el token sin mostrarlo (contratos.md): se quita antes de buscar.
