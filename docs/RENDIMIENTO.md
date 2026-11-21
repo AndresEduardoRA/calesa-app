@@ -752,8 +752,9 @@ fallar.
   `configuracion-cotizacion-formula.spec.ts`: «Ver más» ≤ 4.650 B, ≤ 127 nodos con 20 y ≤ 3.151 con 500. Publicar, revertir y descartar: un
   pedido por envío y relee la primera página.
 - Pestaña «Tarjeta» (`e2e/configuracion-cotizacion-tarjeta-volumen.spec.ts`): con 500 miembros y la cuadrícula más grande que admite la forma 2 (16 × 120 y
-  las celdas de texto que entran en 24 KiB: 193; 1.000 no caben, manda el tope en bytes), primer HTML ≤ 267.400 B y ≤ 5.000 nodos (medido 254.607 B y 4.000
-  nodos: 193 celdas dibujadas, 1.727 casillas vacías de un nodo sin hijos cada una, 120 filas con su asa, las cabeceras y el panel). Crece contra el editor de
+  las celdas de texto que entran en 24 KiB: 193; 1.000 no caben, manda el tope en bytes), primer HTML ≤ 280.700 B y ≤ 5.000 nodos (medido 267.903 B y 4.135
+  nodos: 193 celdas dibujadas, 1.727 casillas vacías de un nodo sin hijos cada una, 120 filas con su asa, las cabeceras y el panel; la puesta en marcha suma
+  un chunk que nombra cada referencia de cliente del payload, y el grupo `(pestanas)`). Crece contra el editor de
   bloques (183.947 B) porque el contexto reducido lleva todos los nodos del nivel «todos» con su descripción (los ofrece «Dato») y la cuadrícula viaja entera;
   y por el marco de la página del origen (encabezado, «Para cotizar y mover», pestañas, sub-pestañas y el esqueleto de cada nivel, que el payload lleva dos
   veces): ≈ 40 KB fijos, que no crecen con los miembros ni con la cuadrícula (el editor con sus datos es una sola fila de 104 KB);
