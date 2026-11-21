@@ -59,7 +59,7 @@ export function TarjetasDelVehiculo({
   const ranura = useRanura(ranuraDeComparar)
   // Las marcadas; las que se ven elegidas son las que siguen a la vista (tras aprobar o releer se sueltan las que ya no están).
   const [marcadas, setMarcadas] = useState<readonly string[]>([])
-  const leerAlMontar = useEffectEvent(lista.leerLaPrimera)
+  const leerAlMontar = useEffectEvent(lista.leerAlMontar)
   useEffect(() => {
     leerAlMontar()
   }, [])
