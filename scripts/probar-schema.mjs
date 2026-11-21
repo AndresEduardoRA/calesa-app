@@ -209,13 +209,6 @@ const DATOS_DE_PRUEBA = {
   'areas/diseno/colores.sql': {
     _casos_de_colores: path.join(base, 'tests', 'casos-de-colores.json'),
   },
-  // Las plantillas de V1 del código: aplicarlas y publicarlas con los validadores de verdad (docs/COTIZADOR.md › «Plantillas de V1»).
-  'areas/formula/plantillas-de-v1.sql': {
-    _plantilla_v1_usa: 'src/modules/cotizaciones/entities/plantillas-de-v1/usa.json',
-    _plantilla_v1_china: 'src/modules/cotizaciones/entities/plantillas-de-v1/china.json',
-    _plantilla_v1_oficina: 'src/modules/cotizaciones/entities/plantillas-de-v1/oficina.json',
-    _plantilla_v1_dealer: 'src/modules/cotizaciones/entities/plantillas-de-v1/dealer.json',
-  },
   // El juego espejo de qué nodos van en par (glosario: «Variante en par»): lo corre también Vitest (`entities/en-par.test.ts`).
   'areas/formula/en-par.sql': {
     _juego_en_par: 'src/modules/cotizaciones/entities/casos-de-en-par.json',

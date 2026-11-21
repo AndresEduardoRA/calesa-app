@@ -601,10 +601,10 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   - **Fórmulas** (`/formulas`, `cotizaciones.configurar` en el origen; apagada con «Lo configura quien tiene el permiso «Configurar el cotizador».»): la
     lista de las fórmulas del origen («Cotización: fórmulas del origen (estados propios)»). Cada una se edita en `/formulas/<fórmula>/<parte>`, con la
     cabeza del editor (el nombre, su estado y el «⋯» de la lista) y sus pestañas **Planilla · Hoja · Tarjeta** (`/planilla`, `/hoja`, `/tarjeta`;
-    `/formulas/<fórmula>` sola abre la planilla) y «Empezar desde una plantilla» a la derecha (`?panel=plantillas-de-v1`, escribe en esa fórmula).
+    `/formulas/<fórmula>` sola abre la planilla).
     «Planilla» («Qué se calcula.», a todo el ancho): arriba la publicada, el borrador y las versiones, y abajo la planilla; `?panel=publicar-formula`,
-    `revertir-formula&version=<id>` y `descartar-borrador`, y los de la planilla («Cotización: fórmula (estados propios)»); `editar-formula`
-    responde 308 a la misma planilla. «Hoja» («Cómo se ve y se llena la cotización.»):
+    `revertir-formula&version=<id>` y `descartar-borrador`, y los de la planilla («Cotización: fórmula (estados propios)»); `editar-formula` y
+    `plantillas-de-v1` (paneles que ya no existen) responden 308 a la misma parte, sin ellos. «Hoja» («Cómo se ve y se llena la cotización.»):
     `?vista=412|1280|200`, desde `xl` al costado. «Tarjeta» («La imagen que recibe el cliente.»): `?panel=publicar-tarjeta|descartar-plantilla` y
     `?referencia=ejemplo`, a todo el ancho. La ruta corta `/formula`, `/formula/hoja` y `/formula/tarjeta` responde 308 a esa parte de la fórmula de
     trabajo (por persona, con su consulta) o, sin ninguna, a la lista.
@@ -1768,34 +1768,6 @@ aspecto en la rejilla de 12 y su vista previa.
   dibujar.» Su código se pide al abrirla (`diferido()`); un color que no llega deja la hoja sin colores. Abierta y desde `xl`, va al costado
   del editor, pegada arriba al desplazarse; cerrada, el botón queda en su lugar. Por debajo de `xl`, en línea.
 - **200 %:** la fila de campos de una celda va en columna bajo `@container` estrecho (el resto, `.claude/rules/ui.md`).
-
-### Cotización: empezar desde una plantilla (estados propios)
-
-Configuración › Orígenes › un origen › Fórmulas › una fórmula › «Empezar desde una plantilla» (`?panel=plantillas-de-v1`, en sus tres pestañas; escribe en esa fórmula): un modal grande que
-crea con un clic los **borradores** de la fórmula (con su diseño) y de la tarjeta del origen desde una plantilla de V1 (`docs/COTIZADOR.md` › «Plantillas de
-V1»). No publica.
-
-- **Quién lo ve:** `cotizaciones.configurar` del origen (sin él la página no abre; el GET responde 404 y la action, `sin_permiso`).
-- **Elegir:** un `radiogroup` de cuatro tarjetas (USA (subasta), China, Oficina y Compra dealer USA), cada una con su nombre, una frase y la tarjeta con
-  cifras de ejemplo (el lienzo de la pestaña Tarjeta, achicado a su marco), en dos columnas desde `md`. Lo que se dibuja se pide al abrir el modal
-  (`GET /configuracion/cotizacion/<origen>/plantillas-de-v1`, `no-store`), una vez por apertura. El pie: «Usar esta plantilla» (primario, apagado sin
-  elegir) y «Cancelar».
-- **Confirmar** (sólo si hay borradores o avisos): la pregunta («Importadora USA ya tiene un borrador de la fórmula (de Ana, hace 2 horas) y de la tarjeta
-  (guardado hace 1 día). Usar «China» los reemplaza.»; el propio dice «tuyo») y los avisos, cada uno en un `<Aviso>` suave y sin bloquear: un tipo de cambio
-  que la empresa no tiene («… créalo en Empresa › Monedas antes de publicar.») o un dato del vehículo que el origen no tiene («… esas celdas valdrán 0 hasta
-  sumarlo en Orígenes › Campos.»). Botones «Reemplazar» (con borradores) o «Usar esta plantilla» (sólo avisos), primario, y «Volver», que regresa a la
-  lista sin escribir nada.
-- **Al aplicar:** cierra el modal, avisa «Se crearon los borradores de la fórmula y de la tarjeta desde «USA (subasta)». Revísalos y publícalos.» y va a la
-  planilla de esa fórmula, con los dos borradores y su nota «Empezado desde la plantilla de V1 «USA (subasta)».».
-- **Cargando:** cuatro tarjetas `Esqueleto` con el título y los botones apagados. **Error al leer:** «No se pudieron leer las plantillas.» con «Reintentar».
-  **Sin red** (al leer o al aplicar): «No hay conexión.» con «Reintentar»; reintentar no duplica nada (todo o nada: si el primero entró, el segundo da el PT409 con «Recargar»).
-- **Colores que no caben:** en la tarjeta del paquete elegido y en el pie, «No hay lugar para N colores más en el catálogo (máximo 48): elimina alguno que
-  no se use.» con «Usar esta plantilla» apagado y ese motivo; si la base lo rechaza igual (otra persona sumó colores), el mismo texto y nada creado. Dos
-  colores que ya existen con otro tono: su aviso, apagado igual.
-- **PT409** (otra persona guardó o publicó mientras se elegía): el mensaje de la base tal cual, nada creado y «Recargar», que vuelve a pedir el GET y
-  reinicia el paso. **Una regla de la base** (no debería pasar: la prueban los paquetes): «La base rechazó la plantilla: <mensaje> (<donde>).», nada creado.
-- **Celular y 200 %:** una columna; la tarjeta escala con su marco (`min(1, ancho / ancho de la tarjeta)`); los botones del pie a todo el ancho.
-- **Modo Live:** el lienzo es el de la pestaña Tarjeta, con sus reglas; son cifras de ejemplo, sin imagen de la tarjeta ni «Compartir».
 
 ### Cotización: colores (estados propios)
 

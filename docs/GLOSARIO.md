@@ -524,10 +524,6 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   Dos formas: la **forma 1** (grupos con color, etiquetas y leyendas por nodo, total, nota, logo, columnas), que se convierte a la cuadrícula al
   leerla (`convertirPlantilla()`, `_plantilla_convertir()`) y no se migra; y la **forma 2** o **cuadrícula** (`"forma": 2`: columnas, filas y
   celdas libres, como en V1), `PlantillaEnCuadricula` en `entities/cuadricula-de-la-tarjeta.ts`.
-- **Plantilla de V1** — `entities/plantillas-de-v1/`, `cotizacion_paquete_aplicar()` (en la base, `paquete`): el paquete fijo que replica un cotizador de V1
-  —la fórmula con su diseño de la hoja y la tarjeta en forma 2— y crea con un clic los borradores de un origen («Empezar desde una plantilla»). Hay cuatro:
-  USA (subasta), China, Oficina y Compra dealer USA. Vive en el código, no en la base, y no publica. No es la **Plantilla de tarjeta** (sólo la tarjeta,
-  versionada en la base).
 - **Celda de la tarjeta** — `CeldaDeLaTarjeta`, `definicion.celdas[]` de la forma 2: un rectángulo de la cuadrícula con su posición (`fila`,
   `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo, foto del asesor, vacío, una **lista de respaldo** o unas
   **condiciones de la tarjeta**) y su estilo. La de logo dibuja
@@ -1441,10 +1437,6 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   Dos formas: la **forma 1** (grupos con color, etiquetas y leyendas por nodo, total, nota, logo, columnas), que se convierte a la cuadrícula al
   leerla (`convertirPlantilla()`, `_plantilla_convertir()`) y no se migra; y la **forma 2** o **cuadrícula** (`"forma": 2`: columnas, filas y
   celdas libres, como en V1), `PlantillaEnCuadricula` en `entities/cuadricula-de-la-tarjeta.ts`.
-- **Plantilla de V1** — `entities/plantillas-de-v1/`, `cotizacion_paquete_aplicar()` (en la base, `paquete`): el paquete fijo que replica un cotizador de V1
-  —la fórmula con su diseño de la hoja y la tarjeta en forma 2— y crea con un clic los borradores de un origen («Empezar desde una plantilla»). Hay cuatro:
-  USA (subasta), China, Oficina y Compra dealer USA. Vive en el código, no en la base, y no publica. No es la **Plantilla de tarjeta** (sólo la tarjeta,
-  versionada en la base).
 - **Celda de la tarjeta** — `CeldaDeLaTarjeta`, `definicion.celdas[]` de la forma 2: un rectángulo de la cuadrícula con su posición (`fila`,
   `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo o vacío) y su estilo. La de logo dibuja sólo el logo
   de la empresa, a la medida de la celda; su nombre es el dato «Nombre de la empresa» (`empresa_nombre`). No es la **Celda (de la hoja)**.
