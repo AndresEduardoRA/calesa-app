@@ -24,7 +24,7 @@ async function abrirElSelector(page: Page, tamano: '' | '200%'): Promise<Locator
   await page.goto('/ingreso')
   await ingresar(page, duena, CLAVE)
   await expect(page).toHaveURL('/')
-  await page.goto('/configuracion/leads/seguimientos')
+  await page.goto('/configuracion/leads?panel=seguimientos')
   await page.evaluate((t) => {
     document.documentElement.style.fontSize = t
   }, tamano)

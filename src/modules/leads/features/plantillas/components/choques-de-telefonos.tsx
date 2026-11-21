@@ -7,7 +7,6 @@ import { RUTAS } from '@/shared/lib/rutas'
 import { textoDelTope } from '@/shared/lib/conteo'
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
-import { Bloque } from '@/shared/ui/bloque'
 import { Button } from '@/shared/ui/button'
 import { leerChoques } from '../../../composicion.client'
 import type {
@@ -45,7 +44,8 @@ function Fila({ choque }: { choque: ChoqueDeTelefonos }) {
 
 // Los números que hoy se repiten entre leads vivos: un extra que es el principal (o un extra anterior) de otro lead. Sólo con la regla
 // guardada encendida. Sin total exacto: de a una página, «Ver más» sigue por el cursor, «Seguir buscando» si el recorrido de la base se
-// cortó, y al llegar al tope de lo cargado se avisa. El número va enmascarado.
+// cortó, y al llegar al tope de lo cargado se avisa. El número va enmascarado. Lo dibuja el modal de «Números repetidos»; la primera página
+// la lee `CuerpoDeNumerosRepetidos`.
 export function ChoquesDeTelefonos({ primera }: Props) {
   const [filas, setFilas] = useState(primera.filas)
   const [siguiente, setSiguiente] = useState(primera.siguiente)
@@ -70,7 +70,7 @@ export function ChoquesDeTelefonos({ primera }: Props) {
   }
 
   return (
-    <Bloque titulo="Números repetidos">
+    <>
       {filas.length === 0 && !hayMas && !cortado ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">
           No hay números repetidos entre leads.
@@ -109,6 +109,6 @@ export function ChoquesDeTelefonos({ primera }: Props) {
           ) : null}
         </div>
       )}
-    </Bloque>
+    </>
   )
 }

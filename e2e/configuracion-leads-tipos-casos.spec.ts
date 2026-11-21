@@ -15,13 +15,14 @@ import {
   abrirTipos,
   borrarTiposDePrueba,
   filaDeTipo,
+  listaDeTipos,
   llenarHasta,
   modalDeTipo,
   sembrarTipo,
   tipoDeFabrica,
   tipoEnLaBase,
 } from './soporte/tipos-de-lead'
-import { elegirDelMenu, lineaApagada, masAccionesDe } from './soporte/lista-de-catalogo'
+import { elegirDelMenu, lineaApagada } from './soporte/lista-de-catalogo'
 import {
   cicloDeUnaConfirmacion,
   dobleClicManda,
@@ -113,14 +114,18 @@ test('dos personas editando el mismo tipo: la segunda ve el conflicto y lo escri
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
-test('una URL que nombra un tipo que no existe no abre nada y lo dice', async ({ page }) => {
+test('una URL que nombra un tipo que no existe no abre su modal, lo dice y deja la lista', async ({
+  page,
+}) => {
   await entrar(page, duena)
   await page.goto(
-    '/configuracion/leads?seccion=tipos&panel=editar-tipo&tipo=00000000-0000-4000-8000-000000000000',
+    '/configuracion/leads?panel=editar-tipo&tipo=00000000-0000-4000-8000-000000000000',
   )
   await expect(page.getByText('Ese tipo ya no existe.').first()).toBeVisible()
-  await expect(page.getByRole('dialog')).toHaveCount(0)
-  await expect.poll(() => page.url()).not.toContain('panel=')
+  // El panel que no abrió se quita y queda la lista de la tarjeta.
+  await expect(listaDeTipos(page)).toBeVisible()
+  await expect(modalDeTipo(page, 'Editar tipo')).toHaveCount(0)
+  await expect.poll(() => page.url()).toMatch(/panel=tipos(&|$)/)
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
@@ -128,12 +133,14 @@ test('el tope de 100: lo dice, apaga «Nuevo tipo» y la base no deja pasar', as
   await llenarHasta(100)
   await entrar(page, duena)
   await abrirTipos(page)
-  await expect(page.getByText('Llegaste al máximo de 100 tipos.')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Nuevo tipo' })).toBeDisabled()
-  await expect(page.getByText('100 de 100 tipos posibles.')).toBeVisible()
-  // Por la URL tampoco abre.
-  await page.goto('/configuracion/leads?seccion=tipos&panel=nuevo-tipo')
-  await expect(page.getByRole('dialog')).toHaveCount(0)
+  const lista = listaDeTipos(page)
+  await expect(lista.getByText('Llegaste al máximo de 100 tipos.')).toBeVisible()
+  await expect(lista.getByRole('button', { name: 'Nuevo tipo' })).toBeDisabled()
+  await expect(lista.getByText('100 de 100 tipos posibles.')).toBeVisible()
+  // Por la URL tampoco abre: se queda la lista.
+  await page.goto('/configuracion/leads?panel=nuevo-tipo')
+  await expect(listaDeTipos(page)).toBeVisible()
+  await expect(modalDeTipo(page, 'Nuevo tipo')).toHaveCount(0)
   // Y la base lo rechaza aunque se llame sin la pantalla.
   const cliente = await sesionDe(duena, CONTRASENA)
   const crear = await cliente.rpc('tipo_lead_crear', {
@@ -153,7 +160,8 @@ test('eliminar un tipo: su URL, Esc, atrás, recarga, sin red y un solo pedido; 
   await sembrarTipo(url)
   await entrar(page, duena, { fresco: true })
   await abrirTipos(page)
-  const disparador = masAccionesDe(page, url)
+  // Al cerrarse la confirmación vuelve la lista, que arranca con el foco en «Nuevo tipo»: ahí queda el foco, no en el «⋯» de la fila.
+  const disparador = listaDeTipos(page).getByRole('button', { name: 'Nuevo tipo' })
   const dialogo = page.getByRole('dialog', { name: `Eliminar el tipo «${url}»` })
   await cicloDeUnaConfirmacion(page, {
     abrir: async () => {
@@ -171,7 +179,7 @@ test('eliminar un tipo: su URL, Esc, atrás, recarga, sin red y un solo pedido; 
 
   await noAbre(
     page,
-    '/configuracion/leads?seccion=tipos&panel=eliminar-tipo&tipo=00000000-0000-4000-8000-000000000999',
+    '/configuracion/leads?panel=eliminar-tipo&tipo=00000000-0000-4000-8000-000000000999',
     'Ese tipo ya no existe.',
     /panel=eliminar-tipo/,
   )

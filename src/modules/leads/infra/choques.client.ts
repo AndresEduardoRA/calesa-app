@@ -1,5 +1,5 @@
-// «Ver más» y «Seguir buscando» de los choques de teléfonos extra, en el navegador con la sesión de quien configura: la misma RPC que lee
-// el servidor para la primera página (`infra/queries/choques-de-telefonos.ts`), de a `TAMANO_DE_VER_MAS`.
+// Los choques de teléfonos extra, en el navegador con la sesión de quien configura: la primera página al abrir «Números repetidos» y, después, «Ver
+// más» y «Seguir buscando» (`telefonos_extra_choques()`), de a `TAMANO_DE_VER_MAS`.
 import { errorDePostgrest, fallo, ok } from '@/shared/lib/errores'
 import { TAMANO_DE_VER_MAS } from '@/shared/lib/paginacion'
 import { createClient } from '@/shared/lib/supabase/browser'

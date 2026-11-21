@@ -116,12 +116,14 @@ test('E2E desde cada sección del menú se vuelve al inicio de Configuración', 
 
 test('E2E el menú marca la sección actual y salta a otra', async ({ page }) => {
   await entrar(page, duena, { fresco: true })
-  // Leads no tiene sub-sección índice: su ruta abre la primera sub-ruta. La sección queda marcada como la rama y la sub-sección, como la
-  // página.
+  // Leads es una página de tarjetas y «Campos» su única sub-sección: en la página, Leads es la página; en «Campos», la rama.
   await page.goto('/configuracion/leads')
-  await expect(page).toHaveURL('/configuracion/leads/campos')
+  await expect(page).toHaveURL('/configuracion/leads')
   const leads = menu(page).getByRole('link', { name: 'Leads', exact: true })
   const catalogos = menu(page).getByRole('link', { name: 'Catálogos', exact: true })
+  await expect(leads).toHaveAttribute('aria-current', 'page')
+  await menu(page).getByRole('link', { name: 'Campos', exact: true }).click()
+  await expect(page).toHaveURL('/configuracion/leads/campos')
   await expect(leads).toHaveAttribute('aria-current', 'true')
   await expect(menu(page).getByRole('link', { name: 'Campos', exact: true })).toHaveAttribute(
     'aria-current',
@@ -147,20 +149,12 @@ test('E2E con sólo configurar los leads se ve sólo «Ventas › Leads»', asyn
   await page.context().clearCookies()
   await entrar(page, soloLeads, { fresco: true })
   await page.goto('/configuracion/leads')
-  await expect(page).toHaveURL('/configuracion/leads/origenes')
+  await expect(page).toHaveURL('/configuracion/leads')
   // Un solo grupo: las demás listas del menú son las sub-secciones de Leads, sin nombre.
   await expect(menu(page).getByRole('list', { name: /./ })).toHaveCount(1)
   await expect(menu(page).getByRole('list', { name: 'Ventas' })).toBeVisible()
   // «Campos» pide otro permiso: va apagada, sin enlace.
-  await expect(menu(page).getByRole('link')).toHaveText([
-    'Leads',
-    'Orígenes del lead',
-    'Tipos de lead',
-    'Tipos de seguimiento',
-    'Plantilla del embudo',
-    'Mensaje del portal',
-    'Teléfonos extra',
-  ])
+  await expect(menu(page).getByRole('link')).toHaveText(['Leads'])
 
   await volver(page).click()
   await expect(tituloDelInicio(page)).toBeVisible()

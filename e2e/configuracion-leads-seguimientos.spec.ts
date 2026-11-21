@@ -15,6 +15,7 @@ import {
   elegirIcono,
   filaDeTipoDeSeguimiento,
   iconoDeLaFila,
+  listaDeSeguimientos,
   masAccionesDe,
   nombresDeLaLista,
   modalDeTipoDeSeguimiento,
@@ -24,7 +25,8 @@ import {
 } from './soporte/tipos-de-seguimiento'
 import { aLaVistaSinDesplazar, capturar, sinScrollHorizontal, tactil } from './soporte/recorrido'
 
-// El recorrido de Configuración › Leads › Tipos de seguimiento: los de fábrica con su icono, crear con un icono del catálogo, editar
+// El recorrido de Configuración › Leads › Tipos de seguimiento (una tarjeta de `/configuracion/leads` con su lista en un modal, `?panel=seguimientos`;
+// «Nuevo» y «Editar» son otro modal que la reemplaza y, al cerrarse, la lista vuelve): los de fábrica con su icono, crear con un icono del catálogo, editar
 // (nombre e icono), ordenar con el teclado, desactivar con «Deshacer», y el texto al 200 %. Con la dueña, en escritorio y celular.
 // Lo que se juzga mirando, en `E2E_CAPTURAS=e2e-capturas/config-de-leads`. Los casos no felices están en `*-casos`.
 test.describe.configure({ mode: 'serial' })
@@ -50,29 +52,17 @@ test.afterAll(async () => {
   await borrarRolesDePrueba()
 })
 
-test('de fábrica: los tipos de siempre, cada uno con su icono, y la sub-sección sigue a «Tipos de lead»', async ({
+test('de fábrica: la tarjeta abre la lista con «Editar» y cada tipo trae su icono', async ({
   page,
 }, info) => {
   await entrar(page, duena)
-  await abrirTiposDeSeguimiento(page)
-  // Las sub-secciones de Leads en su orden, en el selector de sección (está en el DOM en los dos anchos; el menú, sólo en el ancho), y la
-  // abierta es la elegida.
-  const selector = page.locator('select', {
-    has: page.locator('option', { hasText: 'Leads › Campos' }),
-  })
-  await expect(selector).toHaveValue('/configuracion/leads/seguimientos')
-  const deLeads = (await selector.locator('option').allTextContents())
-    .filter((texto) => texto.startsWith('Leads › '))
-    .map((texto) => texto.replace('Leads › ', ''))
-  expect(deLeads).toEqual([
-    'Campos',
-    'Orígenes del lead',
-    'Tipos de lead',
-    'Tipos de seguimiento',
-    'Plantilla del embudo',
-    'Mensaje del portal',
-    'Teléfonos extra',
-  ])
+  await page.goto('/configuracion/leads')
+  // La tarjeta resume los tipos activos y «Editar» abre la lista en su modal.
+  const tarjeta = page.getByRole('region', { name: 'Tipos de seguimiento', exact: true })
+  await expect(tarjeta.getByText('Llamada', { exact: true })).toBeVisible()
+  await tarjeta.getByRole('button', { name: 'Editar', exact: true }).click()
+  await expect(listaDeSeguimientos(page)).toBeVisible()
+  await expect(page).toHaveURL(/panel=seguimientos(&|$)/)
   // Los de fábrica, con el icono del catálogo al que migró el que tenían.
   expect(await iconoDeLaFila(filaDeTipoDeSeguimiento(page, 'WhatsApp'))).toBe('mensaje')
   expect(await iconoDeLaFila(filaDeTipoDeSeguimiento(page, 'Llamada'))).toBe('telefono')
@@ -100,6 +90,9 @@ test('crear uno con un icono del catálogo, editarlo (nombre e icono) y ver que 
   await capturar(page, info, 'seguimientos-nuevo-con-icono')
   await nuevo.getByRole('button', { name: 'Crear tipo' }).click()
   await expect(nuevo).toBeHidden()
+  // Al cerrarse el modal del tipo, vuelve la lista de la tarjeta.
+  await expect(listaDeSeguimientos(page)).toBeVisible()
+  await expect(page).toHaveURL(/panel=seguimientos(&|$)/)
   const fila = filaDeTipoDeSeguimiento(page, radio)
   await expect(fila).toBeVisible()
   expect(await iconoDeLaFila(fila)).toBe('megafono')
@@ -142,10 +135,12 @@ test('cerrar el modal con algo escrito pregunta; descartar o seguir editando', a
   await page.keyboard.press('Escape')
   await modal.getByRole('button', { name: 'Descartar' }).click()
   await expect(modal).toBeHidden()
-  await expect(page).not.toHaveURL(/panel=/)
+  await expect(listaDeSeguimientos(page)).toBeVisible()
+  await expect(page).toHaveURL(/panel=seguimientos(&|$)/)
   expect(await tipoDeSeguimientoEnLaBase(nombre('Sin guardar'))).toBeUndefined()
   // Un modal abierto y no tocado se cierra sin preguntar.
   await page.getByRole('button', { name: 'Nuevo tipo' }).first().click()
+  await expect(modal).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(modal).toBeHidden()
 })
@@ -208,7 +203,7 @@ test('desactivar y volver a activar con «Deshacer»; el «⋯» dice lo que se 
   await expect(fila.getByText('Desactivado')).toBeHidden()
 })
 
-test('al 200 %: la página no se ensancha y el nombre y el «⋯» de cada fila están a la vista', async ({
+test('al 200 %: la lista no se ensancha y el nombre y el «⋯» de cada fila están a la vista', async ({
   page,
 }, info) => {
   await sembrarTipoDeSeguimiento(nombre('Largo largo largo'), {
@@ -220,7 +215,7 @@ test('al 200 %: la página no se ensancha y el nombre y el «⋯» de cada fila 
     document.documentElement.style.fontSize = '200%'
   })
   await sinScrollHorizontal(page)
-  const filas = page.getByRole('button', { name: /^Más acciones de / })
+  const filas = listaDeSeguimientos(page).getByRole('button', { name: /^Más acciones de / })
   const total = await filas.count()
   expect(total).toBeGreaterThan(6)
   for (const n of [0, 1, total - 1]) {

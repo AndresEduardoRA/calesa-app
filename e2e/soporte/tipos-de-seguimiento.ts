@@ -5,6 +5,7 @@ import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 import { admin } from './base'
 import { exigir } from './leads'
+import { filaDeCatalogo } from './lista-de-catalogo'
 
 export const PREFIJO_DE_TIPO_DE_SEGUIMIENTO_E2E = 'E2E 9k'
 
@@ -93,22 +94,30 @@ export async function borrarTiposDeSeguimientoDePrueba(): Promise<void> {
 
 // --- La pantalla --------------------------------------------------------------------------------------
 
+// «Tipos de seguimiento» es una tarjeta de `/configuracion/leads`; su lista vive en un modal (`?panel=seguimientos`) y «Nuevo», «Editar» y
+// «Eliminar» son otro modal que la reemplaza y, al cerrarse, vuelve a ella.
+export const listaDeSeguimientos = (page: Page): Locator =>
+  page.getByRole('dialog', { name: 'Tipos de seguimiento', exact: true })
+
 export async function abrirTiposDeSeguimiento(page: Page): Promise<void> {
-  await page.goto('/configuracion/leads/seguimientos')
-  await expect(page.getByRole('heading', { name: 'Tipos de seguimiento', level: 1 })).toBeVisible()
+  await page.goto('/configuracion/leads?panel=seguimientos')
+  await expect(listaDeSeguimientos(page)).toBeVisible()
 }
 
-// Lo de la lista (la fila, el «⋯», los nombres, el icono) es común a las tres pestañas: `soporte/lista-de-catalogo.ts`.
+// Lo de la lista (la fila, el «⋯», el icono) es común a las tres listas: `soporte/lista-de-catalogo.ts`.
 export { elegirDelMenu, elegirIcono, iconoDeLaFila, masAccionesDe } from './lista-de-catalogo'
-import {
-  filaDeCatalogo,
-  nombresDeLaLista as nombresDe,
-  nombresEnLaLista,
-} from './lista-de-catalogo'
-
 export const filaDeTipoDeSeguimiento = filaDeCatalogo
-export const nombresDeLaLista = (page: Page): Locator => nombresDe(page, 'seguimientos')
-export const nombresDeSeguimientoEnPantalla = (page: Page) => nombresEnLaLista(page, 'seguimientos')
+export const nombresDeLaLista = (page: Page): Locator =>
+  listaDeSeguimientos(page).getByRole('button', { name: /^Abrir / })
+
+// Los nombres de las filas de la lista, en el orden en que se ven.
+export async function nombresDeSeguimientoEnPantalla(page: Page): Promise<string[]> {
+  const nombres: string[] = []
+  for (const boton of await nombresDeLaLista(page).all()) {
+    nombres.push(((await boton.getAttribute('aria-label')) ?? '').replace(/^Abrir /, ''))
+  }
+  return nombres
+}
 
 export const modalDeTipoDeSeguimiento = (
   page: Page,

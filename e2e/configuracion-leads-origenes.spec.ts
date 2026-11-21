@@ -16,8 +16,10 @@ import {
   PREFIJO_DE_ORIGEN_E2E,
   abrirOrigenes,
   borrarOrigenesDePrueba,
+  cerrarOrigenes,
   filaDeOrigen,
   grupoDelFiltro,
+  listaDeOrigenes,
   modalDeOrigen,
   nombresEnPantalla,
   origenEnLaBase,
@@ -26,7 +28,7 @@ import {
 } from './soporte/origenes-de-lead'
 import { admin } from './soporte/base'
 
-// Configuración › Leads › Orígenes del lead (9f-1) contra la app compilada y el Supabase local: crear,
+// Configuración › Leads › Orígenes del lead (9f-1: la lista, en el modal de `?panel=origenes` de la tarjeta) contra la app compilada y el Supabase local: crear,
 // renombrar (nombre vacío, repetido y con espacios), ordenar con el teclado, desactivar (el alta no lo
 // ofrece, la ficha lo conserva) y eliminar sólo sin leads. Los casos no felices, en
 // `configuracion-leads-origenes-casos.spec.ts`. Todo lo que crea lleva «E2E 9f» y se borra al terminar.
@@ -54,7 +56,7 @@ test.afterAll(async () => {
 })
 
 async function nuevoOrigen(page: Page, texto: string) {
-  await page.getByRole('button', { name: 'Nuevo origen' }).first().click()
+  await listaDeOrigenes(page).getByRole('button', { name: 'Nuevo origen' }).click()
   const modal = modalDeOrigen(page, 'Nuevo origen')
   await modal.getByLabel('Nombre').fill(texto)
   await modal.getByRole('button', { name: 'Crear origen' }).click()
@@ -79,7 +81,7 @@ test('se crea un origen, y el nombre vacío o repetido se rechaza junto al campo
   expect(nombres.at(-1)).toBe(uno)
 
   // Vacío.
-  await page.getByRole('button', { name: 'Nuevo origen' }).first().click()
+  await listaDeOrigenes(page).getByRole('button', { name: 'Nuevo origen' }).click()
   const vacio = modalDeOrigen(page, 'Nuevo origen')
   await vacio.getByRole('button', { name: 'Crear origen' }).click()
   await expect(vacio.getByText('Escribe el nombre del origen.')).toBeVisible()
@@ -102,7 +104,10 @@ test('se crea un origen, y el nombre vacío o repetido se rechaza junto al campo
   await vacio.getByRole('button', { name: 'Cancelar' }).click()
   await vacio.getByRole('button', { name: 'Descartar' }).click()
   await expect(vacio).toBeHidden()
-  expect(page.url()).not.toContain('panel=')
+  // Al cerrarse el modal del origen, vuelve la lista: la URL queda en ella, sin el modal del origen.
+  await expect(listaDeOrigenes(page)).toBeVisible()
+  await expect.poll(() => page.url()).toContain('panel=origenes')
+  expect(page.url()).not.toContain('nuevo-origen')
 })
 
 test('se renombra, y un nombre ya tomado o vacío no pasa', async ({ page }) => {
@@ -198,7 +203,8 @@ test('desactivar: el alta no lo ofrece, la ficha lo conserva y se puede editar; 
   await expect(fila.getByText('Tiene leads', { exact: true })).toBeVisible()
   expect(await origenEnLaBase(uno)).toMatchObject({ activo: false })
 
-  // El alta no lo ofrece; los demás activos, sí.
+  // El alta no lo ofrece; los demás activos, sí (con la lista cerrada: encima no se abre otra cosa).
+  await cerrarOrigenes(page)
   await abrirConN(page)
   const opciones = dialogo(page).getByLabel('Origen del lead').locator('option')
   await expect(opciones.first()).toBeAttached()

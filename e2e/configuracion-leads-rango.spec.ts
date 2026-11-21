@@ -54,7 +54,7 @@ async function abrirOtros(panel: Locator) {
 
 test('un campo con rango avisa al acotarlo y la ficha dice el motivo', async ({ page }) => {
   await entrar(page)
-  await page.goto('/configuracion/leads')
+  await page.goto('/configuracion/leads/campos')
 
   // Crear: «Mínimo» y «Máximo» aparecen al elegir «Número».
   await page.getByRole('button', { name: 'Nuevo campo' }).click()

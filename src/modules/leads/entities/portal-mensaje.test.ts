@@ -1,12 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import {
+  EJEMPLO_DEL_MENSAJE,
+  ETIQUETA_DE_VARIABLE,
   MENSAJE_DE_FABRICA,
+  OBLIGATORIAS_DEL_MENSAJE,
+  VARIABLES_DEL_MENSAJE,
   aplicarMensaje,
   avisoDelPortalAlTransferir,
   codigoDictado,
   nombreDeQuien,
   textoParaWhatsApp,
   validarMensajeDelPortal,
+  valoresDelMensaje,
 } from './portal-mensaje'
 
 describe('codigoDictado', () => {
@@ -173,6 +178,32 @@ describe('avisoDelPortalAlTransferir', () => {
     )
     expect(avisoDelPortalAlTransferir('Ana Rojas', 'Juan Pérez')).toBe(
       'Ana Rojas tiene acceso al portal: desde ahora verá a Juan Pérez como su asesor.',
+    )
+  })
+})
+
+describe('lo que el editor sabe de las variables', () => {
+  it('cada variable tiene su etiqueta y las obligatorias son dos de ellas', () => {
+    expect(Object.keys(ETIQUETA_DE_VARIABLE)).toEqual([...VARIABLES_DEL_MENSAJE])
+    expect(OBLIGATORIAS_DEL_MENSAJE).toEqual(['codigo', 'clave'])
+  })
+
+  it('valoresDelMensaje da un valor por variable, con la web de la empresa si no hay dirección', () => {
+    const valores = valoresDelMensaje({
+      ...EJEMPLO_DEL_MENSAJE,
+      cliente: '  Ana  ',
+      empresa: 'Mi Importadora',
+      direccion: null,
+    })
+    expect(Object.keys(valores)).toEqual([...VARIABLES_DEL_MENSAJE])
+    expect(valores.cliente).toBe('Ana')
+    expect(valores.direccion).toBe('la web de Mi Importadora')
+  })
+
+  it('aplicarMensaje usa esos mismos valores', () => {
+    const datos = { ...EJEMPLO_DEL_MENSAJE, empresa: 'Mi Importadora', direccion: 'https://x.test' }
+    expect(aplicarMensaje('{cliente} {codigo} {direccion}', datos)).toBe(
+      'Ana Pérez EJM-4F2K9 https://x.test',
     )
   })
 })

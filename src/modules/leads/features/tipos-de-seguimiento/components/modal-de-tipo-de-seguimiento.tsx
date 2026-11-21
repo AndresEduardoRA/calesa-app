@@ -49,6 +49,7 @@ export function ModalDeTipoDeSeguimiento({
       titulo={original ? 'Editar tipo de seguimiento' : 'Nuevo tipo de seguimiento'}
       descripcion="Es el nombre que verá el equipo al anotar un seguimiento."
       focoInicial={() => document.getElementById(IDS.nombre)}
+      focoAlCerrar={() => false}
       formulario={formulario}
       noDisponible={noDisponible}
       detalleDelConflicto="Lo que escribiste sigue acá."

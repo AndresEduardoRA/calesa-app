@@ -20,7 +20,15 @@ import { abrirConVuelta, useVueltaDelFoco } from './vuelta-del-foco'
 export function usePanelPorUrl(
   panel: string,
   claves: readonly string[] = [],
-  { clave: clavePanel = CLAVE_DE_PANEL }: { clave?: string } = {},
+  {
+    clave: clavePanel = CLAVE_DE_PANEL,
+    volverA = null,
+  }: {
+    clave?: string
+    // Un panel que sale de otro (el «Eliminar» de un ítem, que sale de la lista que lo contiene): al cerrar, en vez de quitar el panel, se
+    // vuelve a ése, en una sola escritura de la URL.
+    volverA?: string | null
+  } = {},
 ) {
   const clavesJuntas = claves.join('\u0000')
   const parsers = useMemo(
@@ -52,7 +60,10 @@ export function usePanelPorUrl(
       )
     },
     cerrar: () => {
-      void escribir(Object.fromEntries(Object.keys(parsers).map((clave) => [clave, null])))
+      void escribir({
+        ...Object.fromEntries(Object.keys(parsers).map((clave) => [clave, null])),
+        [clavePanel]: volverA,
+      })
     },
   }
 }

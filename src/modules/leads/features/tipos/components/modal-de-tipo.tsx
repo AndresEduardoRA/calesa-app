@@ -46,6 +46,7 @@ export function ModalDeTipo({ abierto, alCerrar, tipos, original, noDisponible }
       titulo={original ? 'Editar tipo' : 'Nuevo tipo'}
       descripcion="Es el nombre que verá el equipo al elegir qué es un lead."
       focoInicial={() => document.getElementById(IDS.nombre)}
+      focoAlCerrar={() => false}
       formulario={formulario}
       noDisponible={noDisponible}
       detalleDelConflicto="Lo que escribiste sigue acá."

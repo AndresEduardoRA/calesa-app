@@ -15,6 +15,7 @@ import {
   elegirDelMenu,
   lineaApagada,
   lineaDelMenu,
+  masAccionesDe,
   menuDe,
 } from './soporte/lista-de-catalogo'
 import { borrarLeadsDePrueba, crearLead } from './soporte/leads'
@@ -24,6 +25,7 @@ import {
   abrirTipos,
   borrarTiposDePrueba,
   filaDeTipo,
+  listaDeTipos,
   modalDeTipo,
   nombresEnPantalla,
   sembrarTipo,
@@ -32,10 +34,11 @@ import {
   tiposEnLaBase,
 } from './soporte/tipos-de-lead'
 
-// Configuración › Leads › Tipos de lead (9j) contra la app compilada y el Supabase local: crear (la clase se elige y es obligatoria),
+// Configuración › Leads › Tipos de lead (9j): una tarjeta de `/configuracion/leads` cuya lista vive en un modal (`?panel=tipos`) contra la app compilada y el Supabase local: crear (la clase se elige y es obligatoria),
 // renombrar (la clase se ve y no se toca), ordenar con el teclado, desactivar —con «Deshacer», y el último activo de su clase no se
 // apaga y la fila lo dice antes— y eliminar sólo sin leads. Los casos no felices, en `configuracion-leads-tipos-casos.spec.ts`;
-// cómo se nota en el alta, la ficha y el listado, en `leads-tipos-pantallas.spec.ts`. Todo lo que crea lleva «E2E 9j» y se borra.
+// cómo se nota en el alta, la ficha y el listado, en `leads-tipos-pantallas.spec.ts`. Todo lo que crea lleva «E2E 9j» y se borra. «Nuevo»,
+// «Editar» y «Eliminar» abren su propio modal en lugar de la lista y, al cerrarse, la lista vuelve.
 test.describe.configure({ mode: 'serial' })
 
 let duena = ''
@@ -96,6 +99,9 @@ test('se crea un tipo: la clase es obligatoria y el nombre vacío o repetido se 
   await elegirClase(sinClase, 'Cliente')
   await sinClase.getByRole('button', { name: 'Crear tipo' }).click()
   await expect(sinClase).toBeHidden()
+  // Al cerrarse el del ítem, vuelve la lista de la tarjeta.
+  await expect(listaDeTipos(page)).toBeVisible()
+  await expect(page).toHaveURL(/panel=tipos(&|$)/)
   await descartarAviso(page, 'Tipo creado.')
   expect(await tipoEnLaBase(uno)).toMatchObject({ activo: true, clase: 'cliente' })
   await expect(filaDeTipo(page, uno)).toBeVisible()
@@ -128,7 +134,26 @@ test('se crea un tipo: la clase es obligatoria y el nombre vacío o repetido se 
   await vacio.getByRole('button', { name: 'Cancelar' }).click()
   await vacio.getByRole('button', { name: 'Descartar' }).click()
   await expect(vacio).toBeHidden()
-  expect(page.url()).not.toContain('panel=')
+  await expect(listaDeTipos(page)).toBeVisible()
+  await expect(page).toHaveURL(/panel=tipos(&|$)/)
+})
+
+test('la tarjeta abre la lista con «Editar» y su «⋯» ofrece «Nuevo tipo»', async ({ page }) => {
+  await entrar(page, duena)
+  await page.goto('/configuracion/leads')
+  const tarjeta = page.getByRole('region', { name: 'Tipos de lead', exact: true })
+  await expect(tarjeta.getByText('Prospecto', { exact: true }).first()).toBeVisible()
+  await tarjeta.getByRole('button', { name: 'Editar', exact: true }).click()
+  await expect(listaDeTipos(page)).toBeVisible()
+  await expect(page).toHaveURL(/panel=tipos(&|$)/)
+  await page.keyboard.press('Escape')
+  await expect(listaDeTipos(page)).toBeHidden()
+  await masAccionesDe(page, 'Tipos de lead').click()
+  await menuDe(page, 'Tipos de lead').getByRole('menuitem', { name: 'Nuevo tipo' }).click()
+  const modal = modalDeTipo(page, 'Nuevo tipo')
+  await expect(modal).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(modal).toBeHidden()
 })
 
 test('se renombra y la clase se ve sin poder cambiarla; un nombre ya tomado o vacío no pasa', async ({

@@ -85,9 +85,10 @@ const PANTALLAS = [
     () => `/configuracion/origenes/${origen.id}/tablas?tabla=${tabla}&panel=columnas-de-tabla`,
   ],
   ['leads-campos', () => '/configuracion/leads/campos'],
-  ['leads-origenes', () => '/configuracion/leads/origenes'],
-  ['leads-tipos', () => '/configuracion/leads/tipos'],
-  ['leads-seguimientos', () => '/configuracion/leads/seguimientos'],
+  ['leads-tarjetas', () => '/configuracion/leads'],
+  ['leads-origenes', () => '/configuracion/leads?panel=origenes'],
+  ['leads-seguimientos', () => '/configuracion/leads?panel=seguimientos'],
+  ['leads-mensaje-del-portal', () => '/configuracion/leads?panel=portal'],
   ['catalogos-colores', () => '/configuracion/catalogos/colores'],
   ['catalogos-niveles', () => '/configuracion/catalogos/niveles'],
   ['catalogos-vigencia', () => '/configuracion/catalogos/vigencia'],
@@ -115,7 +116,7 @@ const AL_CIEN = new Set([
 ])
 
 async function selectorDeIconos(page: Page, info: Parameters<typeof capturar>[1], zoom: string) {
-  await page.goto('/configuracion/leads/seguimientos')
+  await page.goto('/configuracion/leads?panel=seguimientos')
   await page.getByRole('button', { name: 'Nuevo tipo' }).first().click()
   const modal = page.getByRole('dialog', { name: 'Nuevo tipo de seguimiento' })
   await expect(modal).toBeVisible()

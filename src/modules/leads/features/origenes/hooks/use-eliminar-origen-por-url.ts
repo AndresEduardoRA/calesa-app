@@ -10,12 +10,15 @@ import {
   motivoParaNoEliminarPorUrl,
   type OrigenDeLeadConUso,
 } from '../../../entities/origen-de-lead'
+import { PANEL_DE_ORIGENES } from '../../../entities/paneles-de-la-configuracion'
 
 // La confirmación de «Eliminar» un origen, en la URL (`?panel=eliminar-origen&origen=<id>`): se puede recargar y «atrás» la
 // cierra. Se monta una vez en la lista, no una por fila. Un origen que ya no está o que ya tiene leads no abre (se avisa y la URL
 // se limpia, escrita a mano también); mientras se va, el diálogo conserva el último que vio.
 export function useEliminarOrigenPorUrl(origenes: readonly OrigenDeLeadConUso[]) {
-  const url = usePanelPorUrl(PANEL_ELIMINAR_ORIGEN, [CLAVE_DE_ORIGEN])
+  const url = usePanelPorUrl(PANEL_ELIMINAR_ORIGEN, [CLAVE_DE_ORIGEN], {
+    volverA: PANEL_DE_ORIGENES,
+  })
   const id = url.valor(CLAVE_DE_ORIGEN)
   const apertura = useApertura(url.abierto)
   const rechazada = useRevisionAlAbrir(

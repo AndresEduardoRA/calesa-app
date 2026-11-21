@@ -24,12 +24,6 @@ export const RUTAS = {
   origenes: '/configuracion/origenes',
   configuracionDeLeads: '/configuracion/leads',
   camposDeLeads: '/configuracion/leads/campos',
-  origenesDeLeads: '/configuracion/leads/origenes',
-  tiposDeLead: '/configuracion/leads/tipos',
-  tiposDeSeguimiento: '/configuracion/leads/seguimientos',
-  plantillaDelEmbudo: '/configuracion/leads/embudo',
-  mensajeDelPortal: '/configuracion/leads/portal',
-  telefonosExtraDeLeads: '/configuracion/leads/telefonos',
   // Catálogos: lo global de la empresa (los colores, los niveles, quién crea y quién ve y la vigencia de la cotización; los puertos, las
   // navieras, las categorías de gasto y los tipos de documento de toda la empresa; las tablas compartidas). Lo de cada origen vive en su página.
   catalogos: '/configuracion/catalogos',

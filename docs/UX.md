@@ -538,18 +538,19 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
     de distinto alto), con, por sección, su título (el enlace), una frase y **lo que falta**, en la sección donde se resuelve: una línea por origen en Orígenes («China: falta configurar el flujo y publicar la
     fórmula», enlazada a la pestaña del primer paso), «Falta activar apibara» una vez en Empresa; sólo de orígenes activos y lo que la persona puede hacer (no el paso de los
     permisos), con su enlace al paso; hasta 3 y «Y N más». Llega después de las tarjetas; si no se puede leer, la tarjeta queda con su frase.
-- **Leads (config)** — `/configuracion/leads` (`leads.campos.gestionar` o `leads.configurar`), siete sub-rutas en el menú de Configuración
-  (`configuracion/leads/seccion.ts`), sin sub-sección índice: la raíz abre la primera que la persona puede abrir. «Campos» (`/campos`,
-  `leads.campos.gestionar`; `?campo=`), «Orígenes del lead» (`/origenes`; `?panel=nuevo-origen`/`editar-origen&origen=<id>`), «Tipos de
-  lead» (`/tipos`; `?panel=nuevo-tipo`/`editar-tipo&tipo=<id>`/`eliminar-tipo&tipo=<id>`), «Tipos de seguimiento» (`/seguimientos`),
-  «Plantilla del embudo» (`/embudo`: editor de etapas en la página, «Restablecer» con `?panel=restablecer-embudo`), «Mensaje del portal»
-  (`/portal`: `<Textarea>` que parte del texto de fábrica con sus variables, vista previa con un cliente, código y clave de ejemplo, rechazo
-  junto al campo; en blanco remite a «Restablecer», `?panel=restablecer-portal`) y «Teléfonos extra» (`/telefonos`: «Máximo de teléfonos
-  extra» de 0 a 20, el interruptor «Los teléfonos extra cuentan como el principal»; con la regla guardada y encendida, «Números repetidos»:
-  enmascarados con enlace a los leads que ves, «Ver más» / «Seguir buscando», «No hay números repetidos entre leads.» si no hay); las seis
-  últimas con `leads.configurar`. La que no puedes abrir va apagada en el menú con «Te falta el permiso «…».» y su URL abre la primera
-  habilitada. Un `?seccion=` viejo va a su sub-ruta con todos los demás parámetros (`?panel=`, `?campo=`…), o a la primera sin ellos si
-  apunta a una apagada. Sin ninguno de los dos permisos, «No tienes permiso» y la sección no está en el menú ni en el inicio.
+- **Leads (config)** — `/configuracion/leads` (`leads.configurar`: la página de tarjetas; `leads.campos.gestionar`: «Campos»), con «Campos» como única
+  sub-sección del menú de Configuración (`configuracion/leads/seccion.ts`). Seis tarjetas con `<TarjetasDeAjustes>`, cada una con «Editar» (y en su «⋯») que
+  abre su modal por `?panel=`: «Tipos de lead» (`tipos`), «Orígenes del lead» (`origenes`) y «Tipos de seguimiento» (`seguimientos`), con la insignia o los
+  primeros ítems y «y N más» (las listas, en el modal, con «Nuevo …» en el pie; Nuevo/Editar/Eliminar son otro modal que vuelve a la lista:
+  `?panel=nuevo-origen`/`editar-origen&origen=<id>`, `nuevo-tipo`/`editar-tipo&tipo=<id>`/`eliminar-tipo&tipo=<id>`…); «Embudo» (`embudo`: la plantilla como mini-kanban
+  con «Inicial», «Ganada» y «Perdida»; el modal se titula «Plantilla del embudo»; «Restablecer» en el «⋯», `?panel=restablecer-embudo`, apagado con «Ya son las etapas de
+  fábrica.»); «Mensaje del portal» (`portal`: el texto con sus variables como pastillas; el modal usa el editor con variables: botones que insertan en el cursor,
+  vista previa con un cliente, código y clave de ejemplo, aviso en vivo de una variable que no existe; en blanco remite a «Restablecer», `?panel=restablecer-portal`)
+  y «Teléfonos extra» (`telefonos`: «Máximo de teléfonos extra» de 0 a 20 y el interruptor «Los teléfonos extra cuentan como el principal»; con la regla guardada y
+  encendida, la tarjeta ofrece «Números repetidos», `?panel=numeros-repetidos`: enmascarados con enlace a los leads que ves, «Ver más» / «Seguir buscando»,
+  «No hay números repetidos entre leads.»). Sin `leads.configurar`, sólo «Campos» (la raíz lleva a ella); «Campos» sin su permiso va apagada con «Te falta el permiso
+  «…».» y su URL lleva a las tarjetas. Las URL viejas (`/origenes`, `/tipos`, `/seguimientos`, `/embudo`, `/portal`, `/telefonos` y `?seccion=`) redirigen con el panel y el resto de la
+  consulta. Sin ninguno de los dos permisos, «No tienes permiso» y la sección no está en el menú ni en el inicio.
 - **Empresa** — `/configuracion/empresa` (`empresa.*`), cuatro sub-rutas en el menú de Configuración (`configuracion/empresa/seccion.ts`):
   «Datos de la empresa» (la índice, `/configuracion/empresa`: el formulario y los íconos), «Monedas y tipos de cambio» (`/monedas`: la **moneda base** arriba con «Cambiar»,
   un grupo por **par de monedas** con sus tipos de cambio como tarjetas —valor, quién y cuándo, «En la barra» con su tope de 3— y «Tipo de cambio» por par, y abajo
@@ -960,19 +961,18 @@ se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «R
   Fijos: teléfono, nombre, tipo y que el lead tenga origen.
 - **Impacto, siempre con números y dentro del panel:** volver requerido (cuántos leads no podrán guardarse hasta completarlo); cambiar el
   tipo o eliminar con datos; sacar una opción en uso; dejar de ser «solo la cartera». Conflicto con «Recargar».
-- **Orígenes del lead, tipos de lead y tipos de seguimiento** (`/origenes|tipos|seguimientos`, patrón de `shared/ui/lista`, sin título
-  propio: arriba de la lista sólo «Nuevo origen» / «Nuevo tipo»; en el vacío lo lleva el estado vacío): icono
+- **Orígenes del lead, tipos de lead y tipos de seguimiento** (modales `?panel=origenes|tipos|seguimientos`, patrón de `shared/ui/lista`, sin título
+  propio: la lista y, en el pie del modal, «Nuevo origen» / «Nuevo tipo»; en el vacío lo lleva el estado vacío): icono
   y nombre, «Subir»/«Bajar» (con teclado), estado y «⋯» (Editar · Activar/Desactivar con «Deshacer» · Eliminar); lo imposible, apagado con
-  motivo. Modal por URL (nombre ≤ 40, sin repetidos). Eliminar, apagado si algo lo usa (la papelera cuenta). Tope 100.
+  motivo. Modal por URL (nombre ≤ 40, sin repetidos). Eliminar, apagado si algo lo usa (la papelera cuenta). Tope 100: al llegar, «Nuevo» apagado con su motivo.
 - **Origen por defecto:** a lo sumo uno, siempre activo; no se apaga ni elimina mientras lo sea. **Tipo de lead:** su clase
   («Prospecto»/«Cliente») se elige al crear y no cambia; el último activo de una clase no se desactiva ni elimina. **Tipo de seguimiento:**
   cualquiera se apaga.
 - **Dónde se nota:** el alta ofrece los activos (si el elegido se apaga mientras se escribe, el guardado falla y lo demás queda); la ficha
   conserva uno apagado como «(inactivo)»; el CSV acepta nombre o clave de un activo y nunca crea.
-- **Plantilla del embudo, mensaje del portal y teléfonos extra:** formularios con la barra de cambios sin guardar («Tienes cambios sin
-  guardar» · «Descartar» · «Guardar»), que aparece al cambiar algo; «Descartar» repone lo guardado; mientras guarda, apagada; salir con
-  cambios (menú, selector, «‹ Configuración», un enlace) pregunta. «Restablecer» sigue en su fila. En «Teléfonos extra» la barra va al final
-  de la página, debajo de «Números repetidos». `PT409` con «Recargar» arriba del formulario; la barra sigue.
+- **Embudo, mensaje del portal y teléfonos extra:** un modal de formulario por tarjeta (`ModalDeFormulario`): «Guardar» apagado mientras guarda, cambios sin guardar
+  preguntan antes de cerrar, el rechazo junto al campo y `PT409` con «Recargar» dentro del modal (lo escrito queda). «Restablecer» es una confirmación aparte desde la
+  tarjeta; apagada si ya es lo de fábrica. «Números repetidos»: cargando, error con «Reintentar» y lista.
 
 ### Flujos: configuración (estados propios)
 

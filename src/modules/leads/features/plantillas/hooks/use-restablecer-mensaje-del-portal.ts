@@ -48,11 +48,10 @@ export function useRestablecerMensajeDelPortal(portal: AjustesDeLeads['portal'])
 
   return {
     abierto: url.abierto && !rechazada,
-    abrir: () => {
+    cerrar: () => {
       setRechazo(null)
-      url.abrir()
+      url.cerrar()
     },
-    cerrar: url.cerrar,
     confirmar,
     enCurso: guardar.isPending,
     rechazo,
