@@ -1,5 +1,4 @@
 import 'server-only'
-import { Bloque } from '@/shared/ui/bloque'
 import { leerApagadosDePush, leerMisSuscripciones } from '../../../composicion'
 import { SeccionDeNotificacionesDiferida } from '../../push/components/diferidos'
 
@@ -10,8 +9,8 @@ type Props = {
   clavePublica: string | null
 }
 
-// El bloque «Notificaciones» de `/perfil` (ancla `#notificaciones`). Lee sus dos cosas en el servidor y, si una falla, la
-// sección dibuja el error con «Reintentar» sin tumbar el perfil.
+// La tarjeta «Notificaciones» de `/perfil` (el ancla `#notificaciones` abre su modal). Lee sus dos cosas en el servidor y, si una falla, la
+// tarjeta dibuja el error con «Reintentar» sin tumbar el perfil. Dibuja dentro del tablero de tarjetas de la página.
 export async function NotificacionesDelPerfil({
   usuarioId,
   tienePermiso,
@@ -23,19 +22,12 @@ export async function NotificacionesDelPerfil({
     leerApagadosDePush(usuarioId),
   ])
   return (
-    <div id="notificaciones" className="scroll-mt-4">
-      <Bloque
-        titulo="Notificaciones"
-        descripcion="Los avisos push llegan a tu navegador aunque tengas la app cerrada."
-      >
-        <SeccionDeNotificacionesDiferida
-          tienePermiso={tienePermiso}
-          integracionActiva={integracionActiva}
-          clavePublica={clavePublica}
-          suscripciones={suscripciones.ok ? suscripciones.data : null}
-          apagados={apagados.ok ? apagados.data : null}
-        />
-      </Bloque>
-    </div>
+    <SeccionDeNotificacionesDiferida
+      tienePermiso={tienePermiso}
+      integracionActiva={integracionActiva}
+      clavePublica={clavePublica}
+      suscripciones={suscripciones.ok ? suscripciones.data : null}
+      apagados={apagados.ok ? apagados.data : null}
+    />
   )
 }

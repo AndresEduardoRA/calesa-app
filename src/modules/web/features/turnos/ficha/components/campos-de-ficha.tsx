@@ -8,19 +8,13 @@ import {
   ESPECIALIDADES_MAX,
   HANDLE_MAX,
   PRESENTACION_MAX,
-  textoDeEspecialidades,
-  type MiFichaEnLaWeb,
 } from '../../../../entities/turnos/ficha'
-import type { ErroresDeFicha } from '../hooks/use-guardar-ficha'
+import type { FichaEnModal } from '../hooks/use-envio-de-ficha'
 
-// Los cinco campos de texto de la ficha: sin estado propio, el formulario los lee por su `name` al guardar.
-export function CamposDeFicha({
-  ficha,
-  errores,
-}: {
-  ficha: MiFichaEnLaWeb
-  errores: ErroresDeFicha
-}) {
+// Los cinco campos de texto de la ficha, controlados por `useEnvioDeFicha`: lo escrito es del estado, no del DOM.
+export function CamposDeFicha({ modal }: { modal: FichaEnModal }) {
+  const { escrito, cambiar } = modal
+  const errores = modal.formulario.errores
   return (
     <>
       <Campo
@@ -30,8 +24,11 @@ export function CamposDeFicha({
         inputMode="tel"
         autoComplete="tel"
         placeholder="+59170000000"
-        defaultValue={ficha.whatsapp ?? ''}
-        ayuda="Escríbelo con el código del país, por ejemplo +591…. Lo necesitas para recibir turnos de la web."
+        value={escrito.whatsapp}
+        onChange={(evento) => {
+          cambiar('whatsapp', evento.target.value)
+        }}
+        ayuda="Con el código del país, por ejemplo +591…. Lo necesitas para recibir turnos de la web."
         error={errores['whatsapp']}
       />
       <Campo
@@ -40,7 +37,10 @@ export function CamposDeFicha({
         autoComplete="off"
         autoCapitalize="none"
         maxLength={HANDLE_MAX + 10}
-        defaultValue={ficha.handle ?? ''}
+        value={escrito.handle}
+        onChange={(evento) => {
+          cambiar('handle', evento.target.value)
+        }}
         ayuda="Es tu dirección en la web: minúsculas, números y . _ -. Nadie más puede tener el mismo."
         error={errores['handle']}
       />
@@ -49,7 +49,10 @@ export function CamposDeFicha({
         etiqueta="Cargo"
         autoComplete="off"
         maxLength={CARGO_MAX + 10}
-        defaultValue={ficha.cargo ?? ''}
+        value={escrito.cargo}
+        onChange={(evento) => {
+          cambiar('cargo', evento.target.value)
+        }}
         error={errores['cargo']}
       />
       <div className="grid gap-1.5">
@@ -59,7 +62,10 @@ export function CamposDeFicha({
           name="presentacion"
           rows={4}
           maxLength={PRESENTACION_MAX + 50}
-          defaultValue={ficha.presentacion ?? ''}
+          value={escrito.presentacion}
+          onChange={(evento) => {
+            cambiar('presentacion', evento.target.value)
+          }}
           aria-invalid={errores['presentacion'] ? true : undefined}
           aria-describedby={errores['presentacion'] ? 'presentacion-error' : undefined}
         />
@@ -73,7 +79,10 @@ export function CamposDeFicha({
         nombre="especialidades"
         etiqueta="Especialidades"
         autoComplete="off"
-        defaultValue={textoDeEspecialidades(ficha.especialidades)}
+        value={escrito.especialidades}
+        onChange={(evento) => {
+          cambiar('especialidades', evento.target.value)
+        }}
         ayuda={`Separadas por coma, hasta ${String(ESPECIALIDADES_MAX)}.`}
         error={errores['especialidades']}
       />

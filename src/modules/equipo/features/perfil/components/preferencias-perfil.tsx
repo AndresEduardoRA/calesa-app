@@ -2,27 +2,13 @@
 
 import { useTheme } from 'next-themes'
 import { useSyncExternalStore } from 'react'
-import { Bloque } from '@/shared/ui/bloque'
-import { useDensidad, type Densidad } from '@/shared/ui/densidad'
+import { useDensidad } from '@/shared/ui/densidad'
 import { Opciones } from '@/shared/ui/opciones'
 import { TAMANOS_DE_PAGINA, TAMANO_DE_PAGINA_POR_DEFECTO } from '@/shared/lib/paginacion'
 import { usePorPagina } from '@/shared/ui/por-pagina'
 import { avisarError } from '@/shared/ui/toasts'
-import { TEMAS, type Tema } from '../../../entities/preferencias'
-
-const OPCIONES_TEMA = [
-  { valor: 'light', etiqueta: 'Claro' },
-  { valor: 'dark', etiqueta: 'Oscuro' },
-  { valor: 'system', etiqueta: 'Como el dispositivo' },
-] as const satisfies readonly { valor: Tema; etiqueta: string }[]
-
-type OpcionDensidad = Densidad | 'automatica'
-
-const OPCIONES_DENSIDAD = [
-  { valor: 'automatica', etiqueta: 'Automática' },
-  { valor: 'compacta', etiqueta: 'Compacta' },
-  { valor: 'comoda', etiqueta: 'Cómoda' },
-] as const satisfies readonly { valor: OpcionDensidad; etiqueta: string }[]
+import { TEMAS } from '../../../entities/preferencias'
+import { OPCIONES_DE_DENSIDAD, OPCIONES_TEMA } from '../../../entities/resumen-de-preferencias'
 
 const OPCIONES_POR_PAGINA = TAMANOS_DE_PAGINA.map((tamano) => ({
   valor: String(tamano),
@@ -31,8 +17,8 @@ const OPCIONES_POR_PAGINA = TAMANOS_DE_PAGINA.map((tamano) => ({
 
 const sinSuscripcion = () => () => undefined
 
-// Guardar no hace falta: cada cambio se aplica al instante y lo persiste <ProveedorPreferencias>.
-export function PreferenciasPerfil() {
+// Tema, densidad e ítems por página, dentro del modal «Preferencias». Guardar no hace falta: cada cambio se aplica al instante y lo persiste <ProveedorPreferencias>.
+export function ControlesDePreferencias() {
   const { theme, setTheme } = useTheme()
   const { preferencia, cambiar } = useDensidad()
   const porPagina = usePorPagina()
@@ -45,12 +31,12 @@ export function PreferenciasPerfil() {
   const tema = montado ? (TEMAS.find((opcion) => opcion === theme) ?? null) : null
 
   return (
-    <Bloque titulo="Preferencias" descripcion="Valen para tu cuenta, en cualquier dispositivo.">
+    <>
       <Opciones etiqueta="Tema" opciones={OPCIONES_TEMA} valor={tema} alCambiar={setTheme} />
       <Opciones
         etiqueta="Densidad"
         ayuda="Automática: compacta con mouse, cómoda en pantallas táctiles."
-        opciones={OPCIONES_DENSIDAD}
+        opciones={OPCIONES_DE_DENSIDAD}
         valor={preferencia ?? 'automatica'}
         alCambiar={(valor) => {
           cambiar(valor === 'automatica' ? null : valor)
@@ -73,6 +59,6 @@ export function PreferenciasPerfil() {
           })
         }}
       />
-    </Bloque>
+    </>
   )
 }
