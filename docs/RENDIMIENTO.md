@@ -651,6 +651,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   Los orígenes que la persona abre entran al menú como sub-ítems de «Orígenes» al pedir la página (`getOrigenes(true)`, con `cache()`, tope 20 con
   «Ver todos»): no cruzan como código, son enlaces del mismo menú.
 - Configuración › Empresa (tarjetas de ajustes, cada modal con `diferido()` al abrirse por primera vez): JS en frío (KB gz, `.next-e2e`) `/empresa` 228,4, `/empresa/integraciones` 228,4, `/empresa/comprobantes` 358,9 (sin tope propio).
+- Configuración › Leads (seis tarjetas, cada modal con `diferido()` al abrirse por primera vez; sin tope propio): JS en frío (KB gz, `.next-e2e`, 2026-11-20) `/configuracion/leads` 405,1 contra 458,9 de `/configuracion/empresa` medida en la misma corrida.
 - La página de un origen y Catálogos: cada pestaña y cada catálogo carga sólo su pantalla (`pantallas/origen-*`, `formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
   JS en frío (KB gz, `medirJsEnFrio()` sobre `.next-e2e`): `/configuracion/origenes/<id>/datos` 390,1, `/campos` 392,4, `/categorias` 390,4, `/formula` 470,6,
   `/formula/hoja` 387,3 (dnd-kit y el editor del diseño, en su `diferido()`), `/formula/tarjeta` 392,6 (la pestaña dibuja en frío el aviso de menos de 1.024 px

@@ -74,11 +74,8 @@ test('la dueña cambia el mensaje del portal con el editor de variables', async 
 
   // Los botones insertan la variable donde está el cursor y una desconocida se avisa al escribirla.
   await campo.fill('Hola , bienvenido.')
-  await campo.evaluate((el: HTMLTextAreaElement) => {
-    el.focus()
-    el.setSelectionRange(5, 5)
-    el.dispatchEvent(new Event('select', { bubbles: true }))
-  })
+  await campo.press('Control+Home')
+  for (let i = 0; i < 5; i++) await campo.press('ArrowRight')
   await modal.getByRole('button', { name: /^Insertar Cliente/ }).click()
   await expect(campo).toHaveValue('Hola {cliente}, bienvenido.')
   await campo.fill('Hola {foo}')
