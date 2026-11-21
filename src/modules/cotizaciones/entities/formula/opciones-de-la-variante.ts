@@ -18,6 +18,9 @@ export type VarianteEnBorrador = {
 
 export const OPCION_NUEVA: OpcionEnBorrador = { clave: '', etiqueta: '', titulo: '' }
 
+// «Se cotiza en par» (glosario: «Variante en par»): sólo una variante de dos opciones (`par_sin_dos_opciones`). Desmarcada, el nodo no lleva la clave.
+export const MOTIVO_SIN_DOS_OPCIONES = 'Sólo una variante de dos opciones se cotiza en par.'
+
 // La clave de una opción nueva: como el id de una fila, pero sin el prefijo `fila_` (si no empieza por una letra, `opcion_`).
 const claveDe = (etiqueta: string, ocupadas: ReadonlySet<string>) =>
   idDeFilaNueva(/^\p{L}/u.test(etiqueta) ? etiqueta : `opcion ${etiqueta}`, ocupadas)

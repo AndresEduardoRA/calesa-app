@@ -1,36 +1,10 @@
-// «Sumar fila» del editor de la fórmula (4.21-3a-2, P4 y P6): una fila nueva debajo de otra, cálculo o constante, con su etiqueta y un nombre (id) propuesto desde ella que
-// se puede cambiar antes de crearla. Puro: el id y el pedido se resuelven aquí; compilar el texto es de `compilarFila()` (4.21-1). Una fila con otro nombre es una fila
-// nueva, nunca el cambio de id de una que ya existe (P4).
-import type { CatalogoDeTablas } from '../compilador'
+// El nombre (id) de una fila nueva de la fórmula: lo propone su etiqueta y no choca con nada de la fórmula. Lo usan insertar y duplicar una fila, una banda,
+// un bucket y una opción de la variante nuevos; el id nunca se ve en la planilla. Puro.
 import type { Formula } from '../formula'
-import { compilarFila, type ErrorDeFila } from './compilar-fila'
 
 export const MAXIMO_DE_LA_ETIQUETA = 60
 // El tope de `esquemaId`: una letra y hasta 40 más.
 const MAXIMO_DEL_ID = 41
-
-export type TipoDeFilaNueva = 'calculo' | 'constante'
-export type CampoDeFilaNueva = 'etiqueta' | 'id' | 'texto'
-
-export type PedidoDeFilaNueva = {
-  // La fila tras la que va (y tras sus auxiliares).
-  despuesDe: string
-  etiqueta: string
-  id: string
-  tipo: TipoDeFilaNueva
-  texto: string
-  // El catálogo de tablas del origen, para BUSCARV.
-  tablas?: CatalogoDeTablas
-}
-
-export type ErrorDeFilaNueva = {
-  codigo: 'etiqueta_vacia' | 'etiqueta_larga' | 'tipo_distinto' | ErrorDeFila['codigo']
-  mensaje: string
-  // Junto a qué campo del formulario se dice.
-  campo: CampoDeFilaNueva
-}
-export type ResultadoDeFilaNueva =
-  { ok: true; formula: Formula; soltados: string[] } | { ok: false; error: ErrorDeFilaNueva }
 
 // Lo que un nombre nuevo no puede ser: un nodo, una constante, un grupo, un bucket o la clave de un tipo de cambio (el compilador los prohíbe, `compilador-nombres.ts`).
 export function ocupadosDe(formula: Formula): ReadonlySet<string> {
@@ -66,51 +40,4 @@ export function idDeFilaNueva(etiqueta: string, ocupados: ReadonlySet<string>): 
     candidato = `${sinGuionesEnLasPuntas(base.slice(0, MAXIMO_DEL_ID - sufijo.length))}${sufijo}`
   }
   return candidato
-}
-
-const REGLA_DEL_ID =
-  ' Usa minúsculas sin tildes, números y _, hasta 41 caracteres, empezando por una letra.'
-const SOLO_UN_NUMERO = 'Un número solo es una constante: elige «Constante» o escribe una operación.'
-const MAS_QUE_UN_NUMERO = 'Una constante es un número solo: elige «Cálculo» para una operación.'
-
-const campoDelError = (codigo: ErrorDeFila['codigo']): CampoDeFilaNueva =>
-  codigo === 'id_invalido' || codigo === 'id_ocupado' || codigo === 'fila_inexistente'
-    ? 'id'
-    : 'texto'
-
-const error = (
-  codigo: ErrorDeFilaNueva['codigo'],
-  mensaje: string,
-  campo: CampoDeFilaNueva,
-): ResultadoDeFilaNueva => ({ ok: false, error: { codigo, mensaje, campo } })
-
-// Crea la fila: la etiqueta, el compilador (con su destino nuevo) y que lo compilado sea el tipo que se eligió. Nunca lanza.
-export function sumarFila(formula: Formula, pedido: PedidoDeFilaNueva): ResultadoDeFilaNueva {
-  const etiqueta = pedido.etiqueta.trim()
-  if (etiqueta === '') return error('etiqueta_vacia', 'Escribe cómo se llama la fila.', 'etiqueta')
-  if (etiqueta.length > MAXIMO_DE_LA_ETIQUETA) {
-    return error(
-      'etiqueta_larga',
-      `La etiqueta pasa de ${String(MAXIMO_DE_LA_ETIQUETA)} caracteres.`,
-      'etiqueta',
-    )
-  }
-  const r = compilarFila(formula, {
-    destino: { id: pedido.id, etiqueta, despuesDe: pedido.despuesDe },
-    texto: pedido.texto,
-    ...(pedido.tablas === undefined ? {} : { tablas: pedido.tablas }),
-  })
-  if (!r.ok) {
-    const mensaje =
-      r.error.codigo === 'id_invalido' ? r.error.mensaje + REGLA_DEL_ID : r.error.mensaje
-    return error(r.error.codigo, mensaje, campoDelError(r.error.codigo))
-  }
-  const compilada = r.nodos.find((n) => n.id === pedido.id)
-  if (compilada?.tipo === 'constante' && pedido.tipo === 'calculo') {
-    return error('tipo_distinto', SOLO_UN_NUMERO, 'texto')
-  }
-  if (compilada?.tipo !== 'constante' && pedido.tipo === 'constante') {
-    return error('tipo_distinto', MAS_QUE_UN_NUMERO, 'texto')
-  }
-  return { ok: true, formula: r.formula, soltados: r.soltados }
 }

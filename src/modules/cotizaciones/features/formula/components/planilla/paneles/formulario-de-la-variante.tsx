@@ -3,8 +3,8 @@
 import { useId, useState } from 'react'
 import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
 import { Checkbox } from '@/shared/ui/checkbox'
-import { MOTIVO_SIN_DOS_OPCIONES } from '../../../../../entities/formula/en-par-del-editor'
 import {
+  MOTIVO_SIN_DOS_OPCIONES,
   pedidoDeLaVariante,
   type VarianteEnBorrador,
 } from '../../../../../entities/formula/opciones-de-la-variante'
