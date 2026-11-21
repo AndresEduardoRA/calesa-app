@@ -10,7 +10,7 @@ semilla: semilla/
 repos:
   - rol: app
     nombre: calesa-app
-    github: AndresEduardoRA/calesa-app   # hoy calesa.app: se renombra (REORGANIZACION.md, paso 4)
+    github: imandresalpiri/calesa-app
     etapa: mantenimiento
     semilla: null                        # nació antes de las semillas; su historia está en la etiqueta fases-0-9
     puertos:
@@ -20,7 +20,7 @@ repos:
 
   - rol: web
     nombre: calesa-web
-    github: AndresEduardoRA/calesa-web   # se rehace desde el kit nuevo; el repo viejo pasa a calesa-web-piloto
+    github: imandresalpiri/calesa-web   # se rehace desde el kit nuevo; el repo viejo pasa a calesa-web-piloto
     etapa: construccion
     semilla: null
     puertos:

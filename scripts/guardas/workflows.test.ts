@@ -115,8 +115,9 @@ describe('ci.yml por niveles', () => {
 
   it('el PR elige sus e2e con scripts/e2e-dirigidos.mjs, y la matriz y los specs salen de esa elección', () => {
     expect(job('cambios')).toContain(
-      'node scripts/e2e-dirigidos.mjs --rango "$BASE_PR...HEAD" --github',
+      'node scripts/e2e-dirigidos.mjs --rango "$desde...HEAD" --github',
     )
+    expect(job('cambios')).toContain('desde=$BASE_PR')
     expect(job('e2e')).toContain('fromJSON(needs.cambios.outputs.e2e_bloques')
     expect(job('e2e')).toContain('"${especs[@]}"')
     for (const nombre of ['e2e', 'e2e-build']) {
@@ -134,6 +135,12 @@ describe('ci.yml por niveles', () => {
     // Una sola vez: el job de lint y tipos no repite la suite entera, sólo test:kit.
     expect(job('nivel-1')).not.toMatch(/^\s*- run: pnpm test\s*$/m)
     expect(job('nivel-1')).toMatch(/^\s*- run: pnpm test:kit$/m)
+  })
+
+  it('la cola de integración corre el CI sobre el commit del grupo (merge_group) y `listo` es su check', () => {
+    expect(ci).toMatch(/^ {2}merge_group:\n {4}types: \[checks_requested\]$/m)
+    expect(job('listo')).toMatch(/^ {4}if: always\(\)$/m)
+    expect(leer('scripts/ci-cambios.sh')).toMatch(/merge_group\) desde=/)
   })
 
   it('cada noche corre el completo (schedule), sólo si hubo commits', () => {

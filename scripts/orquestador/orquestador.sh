@@ -8,8 +8,10 @@
 # área libre, carril libre):
 #   1. crea su worktree desde origin/main (en .orquestador/worktrees/) y lo vuelve un carril (scripts/worktree/preparar.sh);
 #   2. si la spec lo pide, una sesión de `claude -p` en modo plan escribe el plan (el nivel capaz);
-#   3. una sesión nueva de `claude -p` implementa, verifica y publica el PR con auto-merge (`publicar.sh --sin-esperar`);
-#   4. suelta el carril y vigila el PR: integrado → borra el worktree y sigue la cola; CI rojo o choque → sesión de arreglo.
+#   3. una sesión nueva de `claude -p` implementa, verifica y publica el PR con auto-merge (`publicar.sh --sin-esperar`): en verde
+#      entra a la cola de integración, que lo prueba combinado con main y lo integra (integracion.sh);
+#   4. suelta el carril y vigila el PR: integrado → borra el worktree y sigue la cola; CI rojo, choque o sacado de la cola de
+#      integración → sesión de arreglo.
 # Cada sesión arranca desde cero (nada de contexto heredado). Si se corta (límite del plan, reinicio, tiempo), se retoma desde lo
 # commiteado en la rama. El estado vive en .orquestador/estado/<ID>/ como archivos de texto: sobrevive a reinicios. Lo que la spec
 # pide hacer al integrarse (`al_integrar: etiquetar <nombre>`) lo hace al integrar y, si GitHub falla, lo reintenta el espejo (al-integrar.sh).
@@ -106,9 +108,12 @@ source "$ORQ/kit.sh"
 source "$ORQ/cierre-tanda.sh"
 # shellcheck source=cierre-main.sh
 source "$ORQ/cierre-main.sh"
-# Integrar sin la rama al día: los PR con migraciones entran al día, y main en rojo frena lo nuevo.
+# main en rojo frena lo nuevo: la red de seguridad si algo entra roto.
 # shellcheck source=main-en-tanda.sh
 source "$ORQ/main-en-tanda.sh"
+# La cola de integración: encender el auto-merge, seguir el puesto y atender la salida de la cola.
+# shellcheck source=integracion.sh
+source "$ORQ/integracion.sh"
 
 # ------------------------------------------------------------------------------------------------------------------ utilidades
 
@@ -374,7 +379,7 @@ cola_terminada() {
 # -------------------------------------------------------------------------------------------------------------- vigilar los PR
 
 vigilar_prs() {
-  local id pr j state mergeable merge_state listo
+  local id pr j state mergeable listo
   for id in $(ids); do
     [ "$(estado_de "$id")" = esperando_ci ] || continue
     pr=$(est_get "$id" pr)
@@ -382,7 +387,6 @@ vigilar_prs() {
     j=$(ghr pr view "$pr" --json state,mergeable,mergeStateStatus,statusCheckRollup,headRefOid 2>/dev/null) || continue
     state=$(jq -r .state <<<"$j")
     mergeable=$(jq -r .mergeable <<<"$j")
-    merge_state=$(jq -r .mergeStateStatus <<<"$j")
     listo=$(jq -r '[.statusCheckRollup[]? | select(.__typename == "CheckRun" and (.name | startswith("Listo"))) | .conclusion] | last // ""' <<<"$j")
     case "$state" in
       MERGED) integrada "$id" "$pr"; continue ;;
@@ -395,53 +399,26 @@ vigilar_prs() {
         a_arreglar "$id" "El PR #$pr choca con main (conflicto de merge). Lo integrado mientras tanto en main tocó lo mismo." choque
     elif [ "$listo" = FAILURE ] || [ "$listo" = CANCELLED ]; then
       migraciones_tras_main "$id" "$pr" || reintentar_ci_ajeno "$id" "$pr" "$j" || a_arreglar "$id" "$(motivo_ci "$pr" "$j")"
-    elif [ "$listo" = SUCCESS ] && con_migraciones "$pr"; then
-      # Sin auto-merge (publicar.sh): entra en verde y al día con main, para que su migración no quede antes de una más nueva.
-      integrar_con_migraciones "$id" "$pr" "$j"
+    elif [ "$listo" = SUCCESS ]; then
+      # En verde: la cola de integración lo prueba combinado con main y lo integra (integracion.sh).
+      atender_la_cola_de_integracion "$id" "$pr" "$j"
     elif [ -z "$listo" ] && cayo_lo_del_pr "$id" "$j"; then
       # El CI sigue en los e2e, pero ya cayó lo que es del PR: la sesión empieza ahora (su push cancela la corrida vieja).
       migraciones_tras_main "$id" "$pr" || a_arreglar "$id" "$(motivo_ci "$pr" "$j")"
-    elif [ "$merge_state" = BEHIND ]; then
-      # main exige la rama al día: GitHub la pone al día con un merge (nunca fuerza). Una vez cada 15 min como mucho. Si la rama
-      # trae migraciones y main integró una más nueva, el merge lo hace el orquestador y las renombra (si no, el CI cae por el orden).
-      local ult
-      ult=$(est_get "$id" puesta_al_dia)
-      if [ "$(date +%s)" -gt $((${ult:-0} + 900)) ]; then
-        est_set "$id" puesta_al_dia "$(date +%s)"
-        migraciones_tras_main "$id" "$pr" && continue
-        # gh 2.46 no trae `pr update-branch`: va la API (merge, nunca fuerza; expected_head_sha evita pisar un push nuevo).
-        local sha salida
-        sha=$(jq -r .headRefOid <<<"$j")
-        if salida=$(ghr api -X PUT "repos/{owner}/{repo}/pulls/$pr/update-branch" -f expected_head_sha="$sha" 2>&1); then
-          log "$id: PR #$pr puesto al día con main"
-        else
-          log "$id: no se pudo poner al día el PR #$pr: $(head -c 300 <<<"$salida")"
-        fi
-      fi
     fi
   done
 }
 
 # La primera línea nombra los jobs caídos: es la que llevan el log, el aviso al celular y el resumen de la tanda.
 motivo_ci() { # pr json → texto con los jobs caídos y el final del log de cada uno (no el del agregador «Listo», que no dice nada)
-  local pr=$1 j=$2 nombre job run ver n=0 caidos filtro
+  local pr=$1 j=$2 caidos filtro
   filtro='.statusCheckRollup[]? | select(.__typename == "CheckRun" and (.conclusion == "FAILURE" or .conclusion == "CANCELLED") and ((.name | startswith("Listo")) | not))'
   caidos=$(jq -r "[$filtro | .name] | join(\", \")" <<<"$j")
   echo "El CI del PR #$pr cayó: ${caidos:-ningún job en rojo a la vista (sólo el agregador)}."
   echo
   echo "Jobs en rojo:"
   jq -r "$filtro | \"- \\(.name) (\\(.conclusion)): \\(.detailsUrl)\"" <<<"$j"
-  while IFS=$'\t' read -r nombre job run; do
-    [ -n "$run" ] || continue
-    n=$((n + 1))
-    [ "$n" -le 3 ] || break
-    echo
-    if [ -n "$job" ]; then ver="--job $job"; else ver=$run; fi
-    echo "### Final del log de «$nombre» (completo: gh run view $ver --log-failed)"
-    echo '```'
-    log_del_job "$job" "$run" | tail -n 120 | cut -c1-400
-    echo '```'
-  done < <(jobs_caidos "$j")
+  finales_de_logs "$(jobs_caidos "$j")"
 }
 
 # id motivo [choque] — un choque con main lo causa lo que otra tarea integró: no gasta un intento de MAX_ARREGLOS (que es para lo
@@ -1048,6 +1025,9 @@ cmd_verificar() {
   token_gh
   if ghr api user --jq .login >/dev/null 2>&1; then echo "✓ gh con la cuenta $(ghr api user --jq .login)"; else echo "✗ gh sin sesión para $(dueno_del_repo) (gh auth login)"; ok=0; fi
   if [ "$(ghr api 'repos/{owner}/{repo}' --jq .allow_auto_merge 2>/dev/null)" = true ]; then echo "✓ auto-merge permitido en el repo"; else echo "✗ el repo no permite auto-merge"; ok=0; fi
+  # No frena: sin la cola, el auto-merge integra como siempre (el kit decide si es opcional).
+  if [ "$(cd "$REPO" && cola_activa)" = true ]; then echo "✓ main exige la cola de integración"
+  else echo "· main no exige la cola de integración: el PR entra sin probarse combinado (docs/FLUJO.md › «GitHub»)"; fi
   echo "== Cola en los issues"
   if [ "${ORQ_SOLO_LOCAL:-0}" = 1 ]; then
     echo "· ORQ_SOLO_LOCAL=1: la cola es sólo local (.orquestador/cola/)"
