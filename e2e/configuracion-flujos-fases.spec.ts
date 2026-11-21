@@ -57,7 +57,8 @@ const nombresEnPantalla = (page: Page) => page.locator('[data-abre-resumen]')
 
 // «Nueva fase» con su nombre y su tipo; devuelve el modal (cerrado si salió bien, abierto con su motivo si no).
 async function crearFase(page: Page, nombre: string, tipo: 'Intermedia' | 'Inicial' | 'Final') {
-  await page.getByRole('button', { name: 'Nueva fase' }).click()
+  // Sin fases, el vacío ofrece «Empezar en blanco» (si hay otro origen con fases de donde copiar) en lugar de «Nueva fase».
+  await page.getByRole('button', { name: /^(Nueva fase|Empezar en blanco)$/ }).click()
   const modal = page.getByRole('dialog', { name: 'Nueva fase' })
   await expect(modal).toBeVisible()
   await expect(page).toHaveURL(/panel=nueva-fase/)

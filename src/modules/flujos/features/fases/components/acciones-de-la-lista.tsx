@@ -7,35 +7,46 @@ import { motivoParaNoAbrirNuevaFase } from '../../../entities/fases/panel-de-fas
 import type { FlujoParaConfigurar } from '../../../entities/flujo'
 import { useEliminarFasePorUrl } from '../hooks/use-eliminar-fase-por-url'
 import { useListaDeFases } from '../hooks/use-lista-de-fases'
+import { useModalDeCopiarFases } from '../hooks/use-modal-de-copiar-fases'
 import { useModalDeNuevaFase } from '../hooks/use-modal-de-nueva-fase'
-import { ConfirmarEliminarFaseDiferido, ModalDeNuevaFaseDiferido } from './diferidos'
+import {
+  ConfirmarEliminarFaseDiferido,
+  ModalDeCopiarFasesDiferido,
+  ModalDeNuevaFaseDiferido,
+} from './diferidos'
 
 type Props = { flujo: FlujoParaConfigurar }
 
 const ID_DEL_MOTIVO = 'motivo-de-nueva-fase'
 
-// El hueco `accionesDeLaLista` de la pantalla de flujos: «Nueva fase» a la derecha del título, y —una vez por pantalla— el modal que abre y la
-// confirmación de «Jubilar o eliminar», que se abren por la URL y se piden con `diferido()` la primera vez. Sin permiso no hay nada que apagar: la página
-// del flujo sólo se abre a quien lo configura (D1).
+// El hueco `accionesDeLaLista` de la pantalla de flujos: «Nueva fase» a la derecha del título, y —una vez por pantalla— el modal que abre, el de
+// «Empezar con las fases de…» y la confirmación de «Jubilar o eliminar», que se abren por la URL y se piden con `diferido()` la primera vez. Sin fases,
+// «Nueva fase» no está en la barra: el vacío ofrece cómo empezar (`EmpezarElFlujo`). Sin permiso no hay nada que apagar: la página del flujo sólo se
+// abre a quien lo configura (D1).
 export function AccionesDeLaLista({ flujo }: Props) {
   const lista = useListaDeFases(flujo)
   const modal = useModalDeNuevaFase(flujo)
   const montarModal = useAbiertoAlgunaVez(modal.abierto)
   const quitar = useEliminarFasePorUrl(flujo)
   const montarQuitar = useAbiertoAlgunaVez(quitar.abierto)
+  const copia = useModalDeCopiarFases(flujo)
+  const montarCopia = useAbiertoAlgunaVez(copia.abierto)
   const motivo = motivoParaNoAbrirNuevaFase(flujo)
+  const sinFases = flujo.fases.length === 0
 
   return (
     <div className="grid justify-items-end gap-1">
-      <Button
-        className="h-11 md:h-8"
-        disabled={motivo !== null}
-        aria-describedby={motivo === null ? undefined : ID_DEL_MOTIVO}
-        onClick={modal.abrir}
-      >
-        <PlusIcon aria-hidden />
-        Nueva fase
-      </Button>
+      {sinFases ? null : (
+        <Button
+          className="h-11 md:h-8"
+          disabled={motivo !== null}
+          aria-describedby={motivo === null ? undefined : ID_DEL_MOTIVO}
+          onClick={modal.abrir}
+        >
+          <PlusIcon aria-hidden />
+          Nueva fase
+        </Button>
+      )}
       {motivo === null ? null : (
         <p id={ID_DEL_MOTIVO} className="text-(length:--text-sm) text-(--color-ink-faint)">
           {motivo}
@@ -47,6 +58,14 @@ export function AccionesDeLaLista({ flujo }: Props) {
           abierto={modal.abierto}
           alCerrar={modal.alCerrar}
           lista={lista}
+        />
+      ) : null}
+      {montarCopia ? (
+        <ModalDeCopiarFasesDiferido
+          key={copia.apertura}
+          abierto={copia.abierto}
+          alCerrar={copia.alCerrar}
+          flujo={flujo}
         />
       ) : null}
       {montarQuitar ? (

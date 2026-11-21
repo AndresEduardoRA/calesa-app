@@ -3,6 +3,7 @@ import {
   AccionesDeLaLista,
   AccionesDelPanel,
   DatosDeLaFase,
+  EmpezarElFlujo,
   ProveedorDeOrden,
   ReglasDeLaFase,
 } from '@/modules/flujos/pantallas/fases'
@@ -12,12 +13,14 @@ import { FranjaDeRevisar, ProveedorDeRevisar } from '@/modules/flujos/pantallas/
 import { BloqueDeSalidas, SalidasDeLaFila } from '@/modules/flujos/pantallas/transiciones'
 
 // Lo que cada área de `flujos` pone en el editor del flujo (`HuecosDelFlujo`): «Revisar» (su lectura única y la franja), el orden de las fases, la barra,
-// el «⋯» y las salidas de cada fila de la lista, y los bloques del panel de una fase. Son componentes de cliente.
+// el vacío de un flujo sin fases (cómo empezarlo), el «⋯» y las salidas de cada fila de la lista, y los bloques del panel de una fase. Son componentes
+// de cliente.
 export const HUECOS_DE_FLUJOS: HuecosDelFlujo = {
   proveedorDeRevisar: ProveedorDeRevisar,
   franjaDeRevisar: FranjaDeRevisar,
   ordenDeFases: ProveedorDeOrden,
   accionesDeLaLista: AccionesDeLaLista,
+  sinFases: EmpezarElFlujo,
   accionesDeFila: AccionesDeFila,
   salidasDeFila: SalidasDeLaFila,
   bloques: {

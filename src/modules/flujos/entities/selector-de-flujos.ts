@@ -63,3 +63,45 @@ export function textoSinFlujo(fijo: FlujoFijo): string {
     ? 'Este origen todavía no tiene flujo.'
     : 'Todavía no hay flujo de repuestos.'
 }
+
+// Un flujo del que se pueden copiar las fases («Empezar con las fases de…»): el de un origen, con su nombre y su color. Sólo strings: cruza del servidor
+// al cliente.
+export type FlujoParaCopiar = { flujoId: string; origenId: string; titulo: string; color: string }
+
+// De dónde puede copiar las fases el flujo `flujoId`: los flujos de vehículos que quien mira configura (las entradas ya vienen filtradas por permisos),
+// menos el propio y menos los que no tienen ninguna fase activa (`conFases`), en el orden de las entradas. El de repuestos nunca: sólo entre vehículos.
+export function flujosParaCopiar(
+  entradas: readonly EntradaDelSelector[],
+  flujoId: string,
+  conFases: ReadonlySet<string>,
+): FlujoParaCopiar[] {
+  return entradas.flatMap((entrada) => {
+    const { flujo } = entrada
+    if (
+      flujo.ambito !== 'vehiculos' ||
+      flujo.origenId === null ||
+      flujo.id === flujoId ||
+      !conFases.has(flujo.id)
+    ) {
+      return []
+    }
+    return [
+      {
+        flujoId: flujo.id,
+        origenId: flujo.origenId,
+        titulo: entrada.titulo,
+        color: entrada.color ?? '',
+      },
+    ]
+  })
+}
+
+// Los flujos que vale la pena preguntar si tienen fases: los de vehículos de las entradas, menos el propio.
+export function candidatosParaCopiar(
+  entradas: readonly EntradaDelSelector[],
+  flujoId: string,
+): string[] {
+  return entradas
+    .filter((e) => e.flujo.ambito === 'vehiculos' && e.flujo.id !== flujoId)
+    .map((e) => e.flujo.id)
+}

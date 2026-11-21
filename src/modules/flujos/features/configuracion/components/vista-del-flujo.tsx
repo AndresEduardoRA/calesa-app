@@ -18,8 +18,8 @@ type Props = {
   alAbrir: (faseId: string) => void
 }
 
-// Las fases del flujo: el diagrama (desde 768 px, si no se eligió la lista) o la lista; sin fases, el vacío (sin pedir el código del diagrama). Debajo, los
-// avisos de lo que no se leyó entero.
+// Las fases del flujo: el diagrama (desde 768 px, si no se eligió la lista) o la lista; sin fases, el hueco `sinFases` o el vacío (sin pedir el código
+// del diagrama). Debajo, los avisos de lo que no se leyó entero.
 export function VistaDelFlujo({
   flujo,
   nombreDelFlujo,
@@ -29,10 +29,15 @@ export function VistaDelFlujo({
   alAbrir,
 }: Props) {
   const { vista } = useVistaDelFlujo()
+  const SinFases = huecos.sinFases
   return (
     <>
       {flujo.fases.length === 0 ? (
-        <EstadoVacio compacto titulo={`El flujo de ${nombreDelFlujo} todavía no tiene fases.`} />
+        SinFases ? (
+          <SinFases flujo={flujo} nombreDelFlujo={nombreDelFlujo} />
+        ) : (
+          <EstadoVacio compacto titulo={`El flujo de ${nombreDelFlujo} todavía no tiene fases.`} />
+        )
       ) : vista === 'diagrama' ? (
         <DiagramaDelFlujoDiferido
           flujo={flujo}
