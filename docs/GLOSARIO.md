@@ -660,6 +660,12 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   en ceros como las «Cifras de prueba» y no se guarda.
 - **Barra de fórmula** — `BarraDeFormula`, arriba de la tabla de la planilla: el texto de la fila elegida, que se edita y se aplica como en el Modo
   avanzado (una fila a la vez).
+- **Referencia (de la planilla)** — `C5`, `B9` (`entities/formula/referencias-a1.ts`): cómo un cálculo de la planilla nombra otra fila, como en
+  Excel: `C<n>` es el valor de la fila n y `B<n>` su %. Se guarda el id del nodo (`nodo.texto` con ids) y se muestra como A1 (`aA1()`); lo tipeado
+  pasa a ids antes de compilar (`deA1()`). Insertar, mover o borrar filas cambia lo que se muestra, nunca lo guardado. No distingue mayúsculas; los
+  `$` se aceptan y se ignoran.
+- **Rango (de la planilla)** — `C5:C9`: las filas seguidas de la columna C, sólo dentro de `SUMA`, `MAX` o `MIN`. Se guarda como la lista de ids
+  (`SUMA(a; b; c)`) y una función con 3 filas o más muestra cada corrida de filas seguidas como rango. No es el **Rango (de la tarjeta)**.
 - **Cifras de prueba** — `calcularLaVistaPrevia()`, «Vista previa» del editor: `evaluar()` con datos en 0, opciones apagadas, variante por
   defecto, tipos de cambio de hoy y tablas vivas; no se guarda.
 - **Texto vigente** — `textoVigente()` (`entities/formula/texto-vigente.ts`): el texto de una fila con el valor del ⚙ de una constante escrito
