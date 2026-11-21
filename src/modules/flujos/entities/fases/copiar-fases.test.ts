@@ -71,7 +71,7 @@ describe('motivoDelRechazoDeCopiar', () => {
       'Este flujo ya tiene fases: recarga para verlas.',
     )
     expect(motivoDelRechazoDeCopiar('22023', 'desde')).toBe(
-      'Ese origen ya no tiene fases para copiar.',
+      'Ya no se puede copiar de ese origen: recarga para ver de cuáles sí.',
     )
     expect(motivoDelRechazoDeCopiar('22023', 'tipos_documento')).toBe(
       'No caben más tipos de documento en este flujo.',

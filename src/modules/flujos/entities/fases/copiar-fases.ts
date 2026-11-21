@@ -99,7 +99,8 @@ export function motivoDelRechazoDeCopiar(
     return 'Este flujo ya tiene fases: recarga para verlas.'
   }
   if (codigo === '22023') {
-    if (hint === 'desde') return 'Ese origen ya no tiene fases para copiar.'
+    if (hint === 'desde')
+      return 'Ya no se puede copiar de ese origen: recarga para ver de cuáles sí.'
     if (hint === 'tipos_documento') return 'No caben más tipos de documento en este flujo.'
     if (hint === 'destino') return 'Sólo se copian fases entre flujos de vehículos.'
   }
