@@ -1,19 +1,15 @@
 import 'server-only'
 import type { DisenoParaEditar } from '../../entities/diseno/edicion-del-diseno'
-import { ok, type Resultado } from '@/shared/lib/errores'
+import type { Resultado } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/server'
-import { leerFormulaDeTrabajoSobre } from '../queries/formula-de-trabajo'
 import { leerDisenoSobre, leerNivelesSobre } from './lectura-del-diseno'
 import { leerTonosSobre } from './lectura-de-tonos'
 
-// El diseño de la fórmula de trabajo de un origen para editarlo, con la sesión de quien mira; nulo si el origen todavía no tiene fórmula.
+// El diseño de una fórmula del origen para editarlo, con la sesión de quien mira; nulo si la fórmula todavía no tiene ninguna versión.
 export async function leerDisenoDelOrigen(
-  origenId: string,
+  formulaDelOrigenId: string,
 ): Promise<Resultado<DisenoParaEditar | null>> {
-  const cliente = await createClient()
-  const deTrabajo = await leerFormulaDeTrabajoSobre(cliente, origenId)
-  if (!deTrabajo.ok) return deTrabajo
-  return deTrabajo.data === null ? ok(null) : leerDisenoSobre(cliente, deTrabajo.data.id)
+  return leerDisenoSobre(await createClient(), formulaDelOrigenId)
 }
 
 // Los niveles que el diseño puede nombrar, con la sesión de quien mira.

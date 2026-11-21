@@ -36,7 +36,7 @@ export const FRASE_DEL_PASO: Record<ClaveDePaso, string> = {
   datos: 'Activa apibara para traer sus subastas',
   campos: 'Sin campos activos: la ficha muestra sólo lo básico',
   flujo: 'Sin fases: sus vehículos no se pueden mover',
-  formula: 'Sin publicar: no se puede cotizar',
+  formula: 'Sin fórmula activa: no se puede cotizar',
   tarjeta: 'Sin publicar: se usa la tarjeta de siempre',
 }
 
@@ -82,7 +82,7 @@ const FALTA_EN_LA_TARJETA: Record<ClaveDePaso, string> = {
   datos: 'Falta activar apibara',
   campos: 'Sin campos activos',
   flujo: 'Sin fases',
-  formula: 'Falta publicar la fórmula',
+  formula: 'Falta activar una fórmula',
   tarjeta: 'Falta publicar la tarjeta',
 }
 

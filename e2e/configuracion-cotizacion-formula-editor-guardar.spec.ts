@@ -24,6 +24,7 @@ import {
   textoGuardado,
 } from './soporte/formula-editor-guardar'
 import { sql, literal } from './soporte/sql'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // «Guardar el borrador» del editor de la fórmula (4.21-3b-1, `docs/UX.md` › «Cotización: fórmula (estados propios)»): sobre la publicada crea el borrador con su
 // diseño; sobre el borrador lo pisa con su hora, sin releer la fila; guarda el texto que reescribió el ⚙ (4-5); si otra persona guardó o empezó un borrador, dice
@@ -83,8 +84,8 @@ const guardar = (page: Page) =>
 const estado = (page: Page) => editor(page).locator('[data-guardado] [role="status"]')
 
 async function abrirFormula(page: Page, origenId: string) {
-  await page.goto(`/configuracion/origenes/${origenId}/formula`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origenId, 'planilla')
+  await enLaPestana(page, 'Planilla')
 }
 
 async function abrirSobreLaPublicada(page: Page, origenId: string) {

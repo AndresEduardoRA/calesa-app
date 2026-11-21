@@ -18,6 +18,7 @@ import {
   sembrarTabla,
   sembrarTipoDeCambio,
 } from './soporte/formula-editor-previa'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // «Sumar fila» del editor de la fórmula (4.21-3a-2, P4 y P6, `docs/UX.md` › «Cotización: fórmula (estados propios)»): una fila nueva debajo de otra, cálculo o
 // constante, con su etiqueta y un nombre propuesto desde ella que se puede cambiar. Cada error se dice junto a su campo y lo escrito queda; hay una sola cosa abierta a
@@ -61,8 +62,8 @@ const sumar = (page: Page, etiqueta: string) =>
   page.getByRole('button', { name: `Sumar fila debajo de ${etiqueta}`, exact: true })
 
 async function abrirEditor(page: Page, origenId = origen.id) {
-  await page.goto(`/configuracion/origenes/${origenId}/formula`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origenId, 'planilla')
+  await enLaPestana(page, 'Planilla')
   await abrirModoAvanzado(page)
   await expect(filas(page)).toBeVisible()
 }

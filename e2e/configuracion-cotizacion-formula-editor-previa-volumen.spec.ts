@@ -17,6 +17,7 @@ import {
   sembrarBorradorDeLaDefinicion,
   sembrarTablaDeVolumen,
 } from './soporte/formula-editor-previa'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // La vista previa con volumen (4.21-3a-2, C1 y C8): lo de prueba son pocos pedidos, constantes en el tiempo y no por fila, aunque la fórmula tenga 600 filas; y PostgREST
 // no da más de 1.000 filas por pedido (`max_rows`), así que una tabla se lee si cabe: 999 sí, 1.000 y 1.001 no (con su aviso), y dos de 600 se leen enteras en dos pedidos.
@@ -93,8 +94,8 @@ function contar(page: Page) {
 }
 
 async function abrirEditor(page: Page, origenId: string) {
-  await page.goto(`/configuracion/origenes/${origenId}/formula`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origenId, 'planilla')
+  await enLaPestana(page, 'Planilla')
   await abrirModoAvanzado(page)
   await expect(filas(page)).toBeVisible()
 }

@@ -1,4 +1,4 @@
-// La pregunta antes de reemplazar los borradores del origen con una plantilla de V1, o nula si no hay ninguno. Pura. La tarjeta no guarda quién la editó: su
+// La pregunta antes de reemplazar los borradores de una fórmula del origen con una plantilla de V1 (`origen`: cómo se nombra lo que los tiene), o nula si no hay ninguno. Pura. La tarjeta no guarda quién la editó: su
 // parte dice cuándo se guardó. docs/UX.md › «Cotización: empezar desde una plantilla (estados propios)».
 import { fechaRelativa } from '@/shared/lib/fechas'
 

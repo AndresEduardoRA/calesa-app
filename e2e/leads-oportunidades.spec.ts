@@ -109,7 +109,7 @@ test('editar con versión: otra pestaña la cambió y se ofrece «Recargar» sin
   await panel.getByRole('button', { name: 'Guardar' }).click()
   await expect(panel.getByText(/Cambiaste esta oportunidad .* desde otra ventana/)).toBeVisible()
   await expect(panel.getByLabel('Título')).toHaveValue(`${titulo} 2`)
-  await expect(panel.getByRole('button', { name: 'Recargar' })).toBeVisible()
+  await expect(panel.getByRole('button', { name: 'Recargar', exact: true })).toBeVisible()
 })
 
 test('mover desde la ficha la pasa a la columna de su etapa (también a una ganada); eliminar ofrece «Deshacer»', async ({

@@ -5,6 +5,7 @@ import type { PedidoDePaquete } from '../../entities/plantillas-de-v1/pedido'
 import { aplicarPlantillaDeV1, leerEstadoParaPlantillasDeV1 } from './plantillas-de-v1'
 
 const ORIGEN = '11111111-1111-4111-8111-111111111111'
+const FDO = '77777777-7777-4777-8777-777777777777'
 const ANA = '22222222-2222-4222-8222-222222222222'
 const HORA = '2026-11-19T20:00:00.123456+00:00'
 
@@ -92,6 +93,7 @@ describe('aplicarPlantillaDeV1', () => {
     )
     const r = await aplicarPlantillaDeV1(cliente, {
       origenId: ORIGEN,
+      formulaDelOrigenId: FDO,
       pedido,
       formulaEsperada: null,
       plantillaEsperada: HORA,
@@ -105,6 +107,7 @@ describe('aplicarPlantillaDeV1', () => {
           p_paquete: pedido,
           p_formula_esperada: null,
           p_plantilla_esperada: HORA,
+          p_formula_del_origen: FDO,
         },
       ],
     ])
@@ -115,6 +118,7 @@ describe('aplicarPlantillaDeV1', () => {
     const { cliente } = clienteFalso({}, { data: null, error })
     return aplicarPlantillaDeV1(cliente, {
       origenId: ORIGEN,
+      formulaDelOrigenId: FDO,
       pedido,
       formulaEsperada: null,
       plantillaEsperada: null,

@@ -54,6 +54,10 @@ export const MODALES: Record<string, RegistroDeModal> = {
       'sólo confirma una consulta a apibara («Sí, actualizar» / «No, volver»); nada tipeado que se pierda al cerrar',
   },
   // --- shell
+  'src/shared/ui/modal-del-enlace.tsx': {
+    sinFormulario:
+      'muestra el enlace de esta página, de sólo lectura, para copiarlo a mano cuando el portapapeles falla: nada tipeado que se pierda al cerrar',
+  },
   'src/app/(app)/_shell/nuevo/modal-de-nuevo.tsx': {
     sinFormulario:
       '«Nuevo» de la barra: lista lo que se puede crear y, para un seguimiento o un recordatorio, busca y elige un lead; el texto de búsqueda no se guarda y elegir actúa al instante',

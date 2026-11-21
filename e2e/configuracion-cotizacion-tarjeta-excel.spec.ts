@@ -9,6 +9,7 @@ import {
   prepararTerrenoExcel,
   type TerrenoExcel,
 } from './soporte/tarjeta-excel'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; por debajo, un aviso y la tarjeta en sólo lectura
 
@@ -45,7 +46,7 @@ const tarjeta = (page: Page) => page.locator('[data-tarjeta-de-cotizacion]')
 const anuncio = (page: Page) => page.locator('[data-anuncio-del-editor]')
 
 async function abrirElEditor(page: Page, origenId: string) {
-  await page.goto(`/configuracion/origenes/${origenId}/formula/tarjeta`)
+  await abrirLaFormula(page, origenId, 'tarjeta')
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(lienzo(page)).toBeVisible()
 }

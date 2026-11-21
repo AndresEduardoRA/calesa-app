@@ -56,8 +56,9 @@ describe('un origen en el menú', () => {
   }
   const subrutas = [marcaDe(origen), `/configuracion/origenes/${otro}`]
 
-  it('se marca en todas sus pestañas, también en las sub-pestañas de Fórmula', () => {
-    for (const pestana of ['datos', 'campos', 'flujo', 'formula', 'formula/hoja', 'tablas']) {
+  it('se marca en todas sus pestañas, también en el editor de una fórmula', () => {
+    const formula = `formulas/${otro}`
+    for (const pestana of ['datos', 'campos', 'flujo', 'formulas', `${formula}/hoja`, 'tablas']) {
       const actual = `/configuracion/origenes/${id}/${pestana}`
       expect(marcaDelEnlace(actual, marcaDe(origen)), pestana).toBe('page')
       expect(marcaDelEnlace(actual, '/configuracion/origenes', subrutas), pestana).toBe('true')

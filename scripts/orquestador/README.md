@@ -32,6 +32,7 @@ Nunca toca el árbol de trabajo de la principal: crea sus worktrees en `.orquest
 | `scripts/orquestador/al-integrar.sh`             | Lo que una tarea pide hacer al integrarse (`al_integrar: etiquetar <nombre>`): crear la etiqueta, sin pisar una que ya exista, y reintentar si GitHub falla                                                                                                                                                                                                                                                                                                                                                                               |
 | `scripts/orquestador/sin-sesion.sh`              | Lo que se arregla sin abrir una sesión: relanzar lo caído por algo ajeno al PR, unir un choque que es sólo de docs y llevar las migraciones de la rama después de las de main                                                                                                                                                                                                                                                                                                                                                             |
 | `scripts/orquestador/ajeno-de-main.sh`           | Un e2e que cae también en main: lo que hace con el `RESULTADO: AJENO` de una sesión de arreglo (su tarea urgente, la espera de quien lo encontró y ponerla al día cuando se integra)                                                                                                                                                                                                                                                                                                                                                      |
+| `scripts/orquestador/integracion.sh`             | La cola de integración de GitHub: anota el puesto del PR, le enciende el auto-merge si le falta y, si la cola lo saca, renombra sus migraciones, lo vuelve a encolar o lo manda a arreglo                                                                                                                                                                                                                                                                                                                                                 |
 | `scripts/orquestador/kit.sh`                     | El flujo entre el kit y este proyecto: la tarea semanal de traer el flujo del kit y, al integrar un PR que toca flujo, su tarea en el kit                                                                                                                                                                                                                                                                                                                                                                                                 |
 | `scripts/orquestador/cierre-tanda.sh`            | El cierre de la tanda: cuándo hay una que cerrar, la tarea del cierre y, al integrarse, la poda de los transcriptos; la verificación de main antes de cerrar (y la tarea urgente si sale roja), en `cierre-main.sh`                                                                                                                                                                                                                                                                                                                       |
 | `scripts/orquestador/resumen-tanda.mjs`          | El resumen de una tanda en Markdown (≤ 6 KB) que lleva la tarea del cierre: totales, trabas, arreglos, choques y los comandos más repetidos y más lentos, el contexto por turno y las compactaciones, y al final cada tarea; lo de cada sesión, en `resumen-sesion.mjs`                                                                                                                                                                                                                                                                   |
@@ -212,9 +213,9 @@ PR o el spec corrido sobre `origin/main`) no lo arregla ni se traba: termina con
   retiene sus llaves de área (la urgente podría necesitarlas). Mientras la urgente no se integre, el rojo de su PR no abre sesión; `plan` y
   `estado` dicen «espera a T<m> (e2e roto en main: <spec>:<línea>; T<m> está <estado>)». Avisa «T<n> espera a T<m> (e2e roto en main: <spec>)».
   Una urgente trabada no la suelta: sigue esperando.
-- **La retoma sin sesión:** integrada (u omitida) la urgente, pone la rama al día con main (`poner_al_dia_sin_sesion`, o la API si no hay
-  worktree limpio) y vuelve a esperar al CI; unos 10 minutos no mira el rojo viejo que GitHub aún muestra. Si después cae otra cosa, sigue
-  el camino de siempre (una sesión de arreglo).
+- **La retoma sin sesión:** integrada (u omitida) la urgente, pone la rama al día con main (`poner_al_dia_sin_sesion`, el merge en su
+  worktree limpio) y vuelve a esperar al CI; unos 10 minutos no mira el rojo viejo que GitHub aún muestra. Sin worktree limpio, o si
+  después cae otra cosa, sigue el camino de siempre (una sesión de arreglo, que trae main).
 - **Un AJENO no gasta un intento de `MAX_ARREGLOS`:** cuenta aparte, con `MAX_AJENOS` (3) por tarea; a la siguiente, trabada. También
   es una trabada un `AJENO` sin spec y línea válidos, o fuera de una sesión de arreglo. Sin red al crear el issue, la tarea queda esperando y
   se reintenta en la vuelta siguiente (`vigilar`).
@@ -338,21 +339,26 @@ Si el servicio no encuentra `claude`, `pnpm` o `node`, agrega sus rutas a `PATH_
   `scripts/orquestador/` que la que cargó al arrancar (alguien la trajo a mano), se relanza con `exec` antes de lanzar nada (mismo PID
   y mismo candado: las sesiones en curso siguen). En otra rama, con cambios o con commits que `origin/main` no tiene, no la
   toca: lo dice una vez en el log y `plan` lo muestra en una línea. Sin red, lo reintenta en la vuelta siguiente.
-- **Publica** con `publicar.sh --sin-esperar`: el PR queda con auto-merge (salvo con migraciones nuevas) y el carril se suelta mientras
-  corre el CI.
+- **Publica** con `publicar.sh --sin-esperar`: el PR queda siempre con auto-merge (en verde entra a la cola de integración) y el carril se
+  suelta mientras corre el CI.
 - **Vigila** el PR cada minuto: integrado → borra worktree y rama. CI rojo o choque con main → una sesión de arreglo con el final del
   log de cada job caído, no el del agregador «Listo» (desde el 3.er intento, con el nivel `NIVEL_ARREGLAR_DIFICIL`). Un job que no es
   un bloque de e2e (lint, tipos, pruebas, base, el build) caído sin la firma de la máquina no espera a «Listo»: la sesión empieza en
-  cuanto cae (`cayo_lo_del_pr`), sin los ~20 min de los e2e. Rama atrasada → la
-  pone al día (merge, nunca fuerza). main no exige la rama al día (`main-en-tanda.sh`): un PR con migraciones nuevas, sin auto-merge,
-  lo integra el orquestador en verde y al día (`integrar_con_migraciones`); y cada 5 min mira el CI del push a main: en rojo, la tarea
-  urgente de dejarlo verde (`plantillas/main-en-rojo-en-tanda.md`, una vez por sha) y ninguna tarea nueva arranca hasta verlo verde. Un choque con main lo causa otra tarea: gasta un intento de `MAX_CHOQUES`, no de `MAX_ARREGLOS`.
+  cuanto cae (`cayo_lo_del_pr`), sin los ~20 min de los e2e. Nadie trae main a la rama: en verde, la **cola de integración** lo prueba
+  combinado con main y los PR de delante y lo integra (`integracion.sh`). En la cola anota el puesto; fuera de ella y sin auto-merge
+  (GitHub lo apaga al sacarlo, o lo empujó un arreglo) lo enciende una vez por punta. Si la cola lo saca: sus migraciones quedaban antes
+  de una de main → las renombra sin sesión; todo lo caído del grupo es ajeno al PR (la máquina del CI, un e2e que no toca) → lo vuelve a
+  encolar, con los mismos topes que el relanzamiento de abajo; sin una corrida del grupo en rojo (otro motivo de GitHub) → lo vuelve a
+  encolar una vez por punta; si no → una sesión de arreglo con «La cola de integración sacó el PR #N…» y el final del log de cada job del
+  grupo. Cada 5 min mira el CI del push a main (`main-en-tanda.sh`, la red de seguridad): en rojo, la tarea urgente de dejarlo verde
+  (`plantillas/main-en-rojo-en-tanda.md`, una vez por sha) y ninguna tarea nueva arranca hasta verlo verde. Un choque con main o un
+  grupo de la cola en rojo con el PR en verde lo causa otra tarea: gasta un intento de `MAX_CHOQUES`, no de `MAX_ARREGLOS`.
   - **Sin sesión** cuando no pide criterio (`sin-sesion.sh`): si todo lo caído es ajeno al PR (bloques de e2e en specs que el PR no
     toca, o un log con la firma de la máquina del CI: Docker, la red, el runner), relanza lo caído hasta `REINTENTOS_CI_POR_PUNTA`
-    veces por punta (con un bloque de e2e entre lo caído, una sola vez por tarea: ya cayó dos veces y cada puesta al día es otra
+    veces por punta (con un bloque de e2e entre lo caído, una sola vez por tarea: ya cayó dos veces y cada arreglo es otra
     punta); si el PR choca con main sólo en docs Markdown, hace el merge con la unión de las dos partes en esos docs; si main
-    integró una migración más nueva que las de la rama (rama atrasada o el CI rojo por el orden), hace el merge y renombra las de la
-    rama, en su orden, con la hora de ahora (`chore(db): llevar las migraciones…`). Commitea y empuja: el CI vuelve a correr.
+    integró una migración más nueva que las de la rama (el CI rojo por el orden, o la cola que lo sacó), hace el merge y renombra las
+    de la rama, en su orden, con la hora de ahora (`chore(db): llevar las migraciones…`). Commitea y empuja: el CI vuelve a correr.
   - **Un e2e roto en main** (`ajeno-de-main.sh`): si la sesión de arreglo termina en `RESULTADO: AJENO — <spec>:<línea> [<proyecto>] — <evidencia>`,
     el orquestador encola la urgente que arregla ese spec, deja esperando a la tarea (`plan` dice a quién) y, integrada la urgente, la
     pone al día con main y vuelve a esperar al CI, sin otra sesión (abajo, «Un e2e roto en main»).

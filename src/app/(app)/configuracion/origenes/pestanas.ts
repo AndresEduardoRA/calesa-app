@@ -1,5 +1,5 @@
 import type { ClavePermiso } from '@/shared/lib/permisos'
-import { PARTES_DEL_ORIGEN, type ParteDelOrigen } from '@/shared/lib/rutas'
+import { PARTES_DEL_ORIGEN, type ParteDeLaFormula, type ParteDelOrigen } from '@/shared/lib/rutas'
 
 // Las pestañas de la página de un origen (`/configuracion/origenes/<id>/<pestana>`): su título, la frase que dice la página bajo las
 // pestañas, lo que alguien escribiría para buscarla, el permiso que pide en ese origen y el motivo de la apagada. Datos, Campos y
@@ -48,10 +48,22 @@ const DE_CADA_PESTANA: Record<ParteDelOrigen, Omit<PestanaDelOrigen, 'clave'>> =
     permiso: 'flujos.configurar',
     motivo: MOTIVO_SIN_CONFIGURAR_EL_FLUJO,
   },
-  formula: {
-    titulo: 'Fórmula',
-    descripcion: 'Qué se calcula.',
-    palabras: ['cálculo', 'costo', 'margen', 'publicar', 'hoja', 'tarjeta', 'cotizador'],
+  formulas: {
+    titulo: 'Fórmulas',
+    descripcion: 'Las fórmulas del origen: la activa es la que se cotiza.',
+    palabras: [
+      'fórmula',
+      'cálculo',
+      'costo',
+      'margen',
+      'publicar',
+      'activar',
+      'copiar',
+      'planilla',
+      'hoja',
+      'tarjeta',
+      'cotizador',
+    ],
     permiso: 'cotizaciones.configurar',
     motivo: MOTIVO_SIN_CONFIGURAR_EL_COTIZADOR,
   },
@@ -73,11 +85,11 @@ export function pestanaDelOrigen(clave: ParteDelOrigen): PestanaDelOrigen {
   return { clave, ...DE_CADA_PESTANA[clave] }
 }
 
-// Las sub-pestañas de Fórmula (`…/formula`, `…/formula/hoja`, `…/formula/tarjeta`), con la frase de cada una.
+// Las sub-pestañas del editor de una fórmula (`…/formulas/<fórmula>/planilla|hoja|tarjeta`), con la frase de cada una.
 export const SUBPESTANAS_DE_LA_FORMULA = [
-  { clave: 'formula', titulo: 'Fórmula', descripcion: 'Qué se calcula.' },
+  { clave: 'planilla', titulo: 'Planilla', descripcion: 'Qué se calcula.' },
   { clave: 'hoja', titulo: 'Hoja', descripcion: 'Cómo se ve y se llena la cotización.' },
   { clave: 'tarjeta', titulo: 'Tarjeta', descripcion: 'La imagen que recibe el cliente.' },
-] as const
+] as const satisfies readonly { clave: ParteDeLaFormula; titulo: string; descripcion: string }[]
 
 export type SubpestanaDeLaFormula = (typeof SUBPESTANAS_DE_LA_FORMULA)[number]['clave']

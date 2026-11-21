@@ -20,6 +20,7 @@ import {
 } from './soporte/diseno-editor'
 import { capturar, sinScrollHorizontal, textoGrandeAlCargar } from './soporte/recorrido'
 import { literal, sql } from './soporte/sql'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // La rejilla de la hoja (docs/UX.md › «Cotización: hoja (estados propios)»; docs/GLOSARIO.md › «Aspecto» y «Rejilla de la hoja»): en el editor, el ancho de una
 // celda a 8 de 12, el orden de las secciones arrastrando y con el teclado, la densidad compacta y un tono en una sección, en vivo en la vista previa, y el borrador
@@ -148,7 +149,7 @@ test('G1: el ancho de 8 de 12, el orden arrastrando y con el teclado, la densida
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/origenes/${editor.id}/formula/hoja`)
+  await abrirLaFormula(page, editor.id, 'hoja')
   await enLaPestana(page, 'Hoja')
 
   // «Base» a lo ancho (12 columnas) y «Precio» en 8 de 12.

@@ -17,6 +17,7 @@ import {
   textoGrandeAlCargar,
   type TerrenoDelRecorrido,
 } from './soporte/recorrido'
+import { urlDeLaFormula } from './soporte/rutas-de-la-formula'
 
 // Las capturas de la sesión de defectos al 200 % (`E2E_CAPTURAS=e2e-capturas/defectos-200/{antes,despues}`): cada pantalla de Configuración,
 // el menú de cada persona del equipo, la matriz de Roles, el interruptor, el selector de iconos desplazado y la ficha de un lead con el
@@ -75,7 +76,8 @@ const PANTALLAS = [
   ['origen-campos', () => `/configuracion/origenes/${origen.id}/campos`],
   ['origen-categorias', () => `/configuracion/origenes/${origen.id}/categorias`],
   ['origen-flujo', () => `/configuracion/origenes/${origen.id}/flujo`],
-  ['origen-formula', () => `/configuracion/origenes/${origen.id}/formula`],
+  ['origen-formulas', () => `/configuracion/origenes/${origen.id}/formulas`],
+  ['origen-formula', () => urlDeLaFormula(origen.id, 'planilla')],
   ['origen-tablas', () => `/configuracion/origenes/${origen.id}/tablas`],
   ['origen-tablas-nueva', () => `/configuracion/origenes/${origen.id}/tablas?panel=nueva-tabla`],
   [

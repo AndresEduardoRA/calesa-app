@@ -16,8 +16,10 @@ import { afterAll, beforeEach } from 'vitest'
 // El banco de las pruebas de `publicar.sh` (publicar.test.ts, publicar-ci.test.ts): `publicar.sh` publica la rama como un PR con auto-merge (docs/FLUJO.md). Se prueba con un repo temporal, un `origin` de verdad
 // (bare) y `gh` y `pnpm` falsos que registran lo que se les pide: lo que niega (main, árbol sucio, sin commits, título inválido) y el
 // camino feliz (empuja sin forzar, abre el PR con el título, enciende el auto-merge y, ya integrado, vuelve a main). El guion se
-// ubica por su propia carpeta: se copia al repo temporal y se corre desde ahí, como en un proyecto.
+// ubica por su propia carpeta: se copia al repo temporal (con la biblioteca de la cola de integración) y se corre desde ahí, como en
+// un proyecto. El `gh` falso de siempre no responde nada a `api graphql`, `rules` ni `run`: «sin cola» es el camino por defecto.
 const GUION_DEL_KIT = resolve('scripts/flujo/publicar.sh')
+const COLA_DEL_KIT = resolve('scripts/flujo/cola-de-integracion.sh')
 const raices: string[] = []
 export let raiz = ''
 export let repo = ''
@@ -48,6 +50,7 @@ beforeEach(() => {
   mkdirSync(join(repo, 'scripts/flujo'), { recursive: true })
   writeFileSync(join(repo, 'scripts/flujo/limpiar-ramas.mjs'), 'console.log("limpiar")\n')
   copyFileSync(GUION_DEL_KIT, join(repo, 'scripts/flujo/publicar.sh'))
+  copyFileSync(COLA_DEL_KIT, join(repo, 'scripts/flujo/cola-de-integracion.sh'))
   git('add', '.')
   git('commit', '-q', '-m', 'chore: inicio')
   git('push', '-q', '-u', 'origin', 'main')

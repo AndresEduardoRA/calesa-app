@@ -11,12 +11,12 @@ export type LecturaDePlantillasDeV1 =
 
 // Las cuatro plantillas de V1 con lo que tiene el origen, pedidas al montarse el modal (una vez por apertura, sin caché: llevan los borradores) y otra vez con
 // «Reintentar» o «Recargar». Cerrar el modal corta el pedido en vuelo.
-export function usePlantillasDeV1(origenId: string) {
+export function usePlantillasDeV1(origenId: string, formulaDelOrigenId: string) {
   const [vuelta, setVuelta] = useState(0)
   const [lectura, setLectura] = useState<LecturaDePlantillasDeV1>({ estado: 'cargando' })
   useEffect(() => {
     const control = new AbortController()
-    void pedirPlantillasDeV1(origenId, control.signal).then((r) => {
+    void pedirPlantillasDeV1(origenId, formulaDelOrigenId, control.signal).then((r) => {
       if (control.signal.aborted) return
       setLectura(
         r.ok
@@ -25,7 +25,7 @@ export function usePlantillasDeV1(origenId: string) {
       )
     })
     return () => control.abort()
-  }, [origenId, vuelta])
+  }, [origenId, formulaDelOrigenId, vuelta])
   return {
     lectura,
     recargar: () => {
