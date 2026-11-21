@@ -92,6 +92,11 @@ const ENTIDADES: Readonly<Record<string, Entidad>> = {
     enFrase: 'una integración',
     configuracion: RUTAS.empresa,
   },
+  flujos: {
+    icono: 'configuracion',
+    enFrase: 'el flujo de un origen',
+    configuracion: RUTAS.origenes,
+  },
   leads_campos: {
     icono: 'configuracion',
     enFrase: 'un campo de lead',
