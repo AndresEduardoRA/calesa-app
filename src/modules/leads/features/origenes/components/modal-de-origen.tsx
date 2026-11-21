@@ -44,6 +44,8 @@ export function ModalDeOrigen({ abierto, alCerrar, origenes, original, noDisponi
       titulo={original ? 'Editar origen' : 'Nuevo origen'}
       descripcion="Es el nombre que verá el equipo al elegir de dónde llegó un lead."
       focoInicial={() => document.getElementById(IDS.nombre)}
+      // Al cerrarse vuelve la lista de orígenes, que lleva su propio foco.
+      focoAlCerrar={() => false}
       formulario={formulario}
       noDisponible={noDisponible}
       detalleDelConflicto="Lo que escribiste sigue acá."

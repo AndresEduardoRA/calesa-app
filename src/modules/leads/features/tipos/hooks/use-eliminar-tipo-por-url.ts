@@ -10,12 +10,13 @@ import {
   motivoParaNoEliminarPorUrl,
   type TipoDeLeadConUso,
 } from '../../../entities/tipo-de-lead'
+import { PANEL_DE_TIPOS } from '../../../entities/paneles-de-la-configuracion'
 
 // La confirmación de «Eliminar» un tipo, en la URL (`?panel=eliminar-tipo&tipo=<id>`): se puede recargar y «atrás» la
 // cierra. Se monta una vez en la lista, no una por fila. Un tipo que ya no está o que ya tiene leads no abre (se avisa y la URL
 // se limpia, escrita a mano también); mientras se va, el diálogo conserva el último que vio.
 export function useEliminarTipoPorUrl(tipos: readonly TipoDeLeadConUso[]) {
-  const url = usePanelPorUrl(PANEL_ELIMINAR_TIPO, [CLAVE_DE_TIPO])
+  const url = usePanelPorUrl(PANEL_ELIMINAR_TIPO, [CLAVE_DE_TIPO], { volverA: PANEL_DE_TIPOS })
   const id = url.valor(CLAVE_DE_TIPO)
   const apertura = useApertura(url.abierto)
   const rechazada = useRevisionAlAbrir(

@@ -13,7 +13,9 @@ import {
   PREFIJO_DE_TIPO_E2E,
   abrirTipos,
   borrarTiposDePrueba,
+  cerrarLaListaDeTipos,
   filaDeTipo,
+  listaDeTipos,
   modalDeTipo,
   tipoEnLaBase,
 } from './soporte/tipos-de-lead'
@@ -74,14 +76,17 @@ test('A · la dueña crea un tipo de la clase cliente, lo usa en un alta y lo de
   await capturar(page, info, 'duena-nuevo-tipo')
   await modal.getByRole('button', { name: 'Crear tipo' }).click()
   await expect(modal).toBeHidden()
+  // Al cerrarse el modal del tipo, vuelve la lista.
+  await expect(listaDeTipos(page)).toBeVisible()
   await expect(filaDeTipo(page, mayorista()).getByText('Sin leads')).toBeVisible()
   // Ya hay dos activos de la clase cliente: «Cliente» se puede apagar.
   expect(await lineaApagada(page, 'Cliente', 'Desactivar')).toBe(false)
   await capturar(page, info, 'duena-con-el-nuevo')
 
-  // El alta lo ofrece y guarda un lead con él.
+  // El alta lo ofrece y guarda un lead con él (con la lista cerrada: `N` busca «el» diálogo).
   const codigo = await codigoDePaisDeLaEmpresa()
   const numero = telefonoAlAzar()
+  await cerrarLaListaDeTipos(page)
   await abrirConN(page)
   const panel = dialogo(page)
   await panel.getByLabel('Teléfono principal').fill(numero)
@@ -105,6 +110,7 @@ test('A · la dueña crea un tipo de la clase cliente, lo usa en un alta y lo de
   await capturar(page, info, 'duena-desactivado-con-leads')
 
   // Ya no se ofrece en un alta nueva, pero el lead lo conserva en la ficha: «(inactivo)».
+  await cerrarLaListaDeTipos(page)
   await abrirConN(page)
   await expect(
     dialogo(page).getByLabel('Tipo').locator('option', { hasText: mayorista() }),
@@ -175,7 +181,7 @@ test('C · la asesora no ve la pantalla, y su alta ofrece los tipos activos', as
 }, info) => {
   await page.context().clearCookies()
   await entrar(page, asesora, { fresco: true })
-  await page.goto('/configuracion/leads/tipos')
+  await page.goto('/configuracion/leads?panel=tipos')
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
   await capturar(page, info, 'asesora-sin-permiso')
 

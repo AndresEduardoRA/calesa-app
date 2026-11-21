@@ -73,11 +73,9 @@ test('E2E el buscador encuentra por nombre y por palabra clave, y Enter abre el 
   await buscador(page).fill('origenes')
   await expect(resultados(page).getByRole('link').first()).toHaveText('Orígenes')
 
-  // Por palabra clave de una sub-sección, con su camino.
+  // Por palabra clave de una tarjeta: lleva a la sección que la contiene.
   await buscador(page).fill('whatsapp')
-  await expect(
-    resultados(page).getByRole('link', { name: 'Leads › Mensaje del portal' }),
-  ).toBeVisible()
+  await expect(resultados(page).getByRole('link', { name: 'Leads', exact: true })).toBeVisible()
 
   // Enter abre el primero.
   await buscador(page).fill('logo')
@@ -112,7 +110,6 @@ test('E2E dentro de una sección el buscador va arriba del menú y sólo la secc
     'aria-current',
     'page',
   )
-  await expect(menu(page).getByRole('link', { name: 'Tipos de lead' })).toBeVisible()
   await expect(menu(page).getByRole('link', { name: 'Datos de la empresa' })).toBeHidden()
 
   // Buscar desde el menú cambia de sección y la búsqueda se vacía al llegar.

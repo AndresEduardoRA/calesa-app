@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from './soporte/prueba'
+import { expect, test, type Page } from './soporte/prueba'
 import { entrar } from './soporte/alta'
 import { admin } from './soporte/base'
 import { exigir } from './soporte/leads'
@@ -47,52 +47,58 @@ test.afterAll(async () => {
   await limpiarPortal(t)
 })
 
-const irA = async (page: Page, seccion: 'portal' | 'embudo') => {
+const irA = async (page: Page) => {
   await entrar(page, t.personas.duena)
-  await page.goto(`/configuracion/leads/${seccion}`)
+  await page.goto('/configuracion/leads')
 }
 
-// La barra de cambios sin guardar: aparece al cambiar algo y su «Guardar» envía el formulario.
-const barraDe = (page: Page) => page.getByRole('region', { name: 'Cambios sin guardar' })
-const guardarDe = (page: Page) => barraDe(page).getByRole('button', { name: 'Guardar' })
+const tarjeta = (page: Page, titulo: string) =>
+  page.getByRole('region', { name: titulo, exact: true })
 
-// Un `fill` antes de hidratar escribe en el HTML del servidor y React no se entera: la barra no aparece y no hay qué guardar. Se reescribe
-// hasta que el formulario nota el cambio (el `fill` de después de hidratar reemplaza todo el valor).
-async function escribirYEsperarElCambio(campo: Locator, texto: string) {
-  await expect(async () => {
-    await campo.fill(texto)
-    await expect(barraDe(campo.page())).toBeVisible({ timeout: 500 })
-  }).toPass()
+async function abrirModal(page: Page, titulo: string, dialogo: string) {
+  await tarjeta(page, titulo).getByRole('button', { name: 'Editar', exact: true }).click()
+  const modal = page.getByRole('dialog', { name: dialogo, exact: true })
+  await expect(modal).toBeVisible()
+  return modal
 }
 
-test('la dueña cambia el mensaje del portal', async ({ page }) => {
+test('la dueña cambia el mensaje del portal con el editor de variables', async ({ page }) => {
   const empresa = await nombreDeLaEmpresa()
-  await irA(page, 'portal')
-  const campo = page.getByLabel('Texto para WhatsApp')
-  // Parte del de fábrica, con sus variables; sin cambios no hay barra ni nada que guardar.
+  await irA(page)
+  const tarjetaDelPortal = tarjeta(page, 'Mensaje del portal')
+  // Parte del de fábrica: la tarjeta lo dice y «Restablecer» no tiene qué hacer.
+  await expect(tarjetaDelPortal).toContainText('De fábrica')
+  const modal = await abrirModal(page, 'Mensaje del portal', 'Mensaje del portal')
+  const campo = modal.getByLabel('Texto para WhatsApp')
   await expect(campo).toHaveValue(/^Hola, \{cliente\}\.\n/)
-  await expect(page.getByText('Es el texto de fábrica: nadie lo cambió todavía.')).toBeVisible()
-  await expect(barraDe(page)).toHaveCount(0)
-  const guardar = guardarDe(page)
 
-  // Sin {clave} el motivo sale junto al campo y no se envía.
-  await escribirYEsperarElCambio(campo, 'Hola {cliente}, tu código es {codigo}.')
-  await guardar.click()
+  // Los botones insertan la variable donde está el cursor y una desconocida se avisa al escribirla.
+  await campo.fill('Hola , bienvenido.')
+  await campo.press('Control+Home')
+  for (let i = 0; i < 5; i++) await campo.press('ArrowRight')
+  await modal.getByRole('button', { name: /^Insertar Cliente/ }).click()
+  await expect(campo).toHaveValue('Hola {cliente}, bienvenido.')
+  await campo.fill('Hola {foo}')
+  await expect(modal.getByText(/^\{foo\} no es una variable de este texto\./)).toBeVisible()
+
+  // Sin {codigo} y {clave} el motivo sale junto al campo y no se guarda.
+  await campo.fill('Hola {cliente}, tu código es {codigo}.')
+  await modal.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(
-    page.getByText(
+    modal.getByText(
       'El mensaje tiene que llevar {codigo} y {clave}: sin ellos el cliente no puede entrar.',
     ),
   ).toBeVisible()
 
   await campo.fill(PROPIO)
-  await expect(page.getByLabel('Vista previa del mensaje')).toHaveText(
+  await expect(modal.getByRole('group', { name: 'Vista previa' })).toHaveText(
     `Hola Ana Pérez, entra a la web de ${empresa} con el código EJM-4F2K9 y la clave K7M2Q9XWPR. — ${empresa}`,
   )
-  await guardar.click()
+  await modal.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Mensaje del portal guardado.')).toBeVisible()
-  await expect(barraDe(page)).toHaveCount(0)
-  await expect(page.getByRole('button', { name: 'Restablecer' })).toBeEnabled()
-  await expect(page.getByText('Es el texto de fábrica: nadie lo cambió todavía.')).toHaveCount(0)
+  await expect(modal).toBeHidden()
+  await expect(tarjetaDelPortal).not.toContainText('De fábrica')
+  await expect(tarjetaDelPortal.getByText(/entra a/)).toBeVisible()
 })
 
 test('al dar acceso, el texto para WhatsApp sale del mensaje de la empresa', async ({
@@ -120,54 +126,27 @@ test('al dar acceso, el texto para WhatsApp sale del mensaje de la empresa', asy
 })
 
 test('la plantilla del embudo se guarda y se restablece', async ({ page }) => {
-  await irA(page, 'embudo')
-  const fabrica = page.getByText('Son las etapas de fábrica: nadie cambió la plantilla todavía.')
-  const segunda = page.getByLabel('Nombre de la etapa 2')
-  await expect(fabrica).toBeVisible()
-  await expect(segunda).toHaveValue('Contactado')
-  await expect(page.getByRole('button', { name: 'Restablecer' })).toBeDisabled()
+  await irA(page)
+  const tarjetaDelEmbudo = tarjeta(page, 'Embudo')
+  await expect(tarjetaDelEmbudo).toContainText('De fábrica')
+  await expect(tarjetaDelEmbudo).toContainText('Contactado')
 
-  await escribirYEsperarElCambio(segunda, 'Llamado')
-  await guardarDe(page).click()
+  const modal = await abrirModal(page, 'Embudo', 'Plantilla del embudo')
+  await modal.getByLabel('Nombre de la etapa 2').fill('Llamado')
+  await modal.getByRole('button', { name: 'Guardar', exact: true }).click()
   await expect(page.getByText('Plantilla del embudo guardada.')).toBeVisible()
-  await expect(barraDe(page)).toHaveCount(0)
+  await expect(modal).toBeHidden()
   await page.reload()
-  await expect(page.getByLabel('Nombre de la etapa 2')).toHaveValue('Llamado')
-  await expect(fabrica).toHaveCount(0)
+  await expect(tarjetaDelEmbudo).toContainText('Llamado')
+  await expect(tarjetaDelEmbudo).not.toContainText('De fábrica')
 
-  await page.getByRole('button', { name: 'Restablecer' }).click()
+  await page.getByRole('button', { name: 'Más acciones de Embudo' }).click()
+  await page.getByRole('menuitem', { name: 'Restablecer' }).click()
   await expect(page).toHaveURL(/panel=restablecer-embudo/)
   const dialogo = page.getByRole('dialog', { name: 'Restablecer la plantilla del embudo' })
   await dialogo.getByRole('button', { name: 'Restablecer' }).click()
   await expect(page.getByText('La plantilla volvió a las etapas de fábrica.')).toBeVisible()
   await expect(page).not.toHaveURL(/panel=/)
-  await expect(page.getByLabel('Nombre de la etapa 2')).toHaveValue('Contactado')
-  await expect(fabrica).toBeVisible()
-})
-
-test('con cambios, «Descartar» repone lo guardado y salir por el menú pregunta', async ({
-  page,
-}) => {
-  await irA(page, 'portal')
-  const campo = page.getByLabel('Texto para WhatsApp')
-  const guardado = await campo.inputValue()
-  await escribirYEsperarElCambio(campo, `${guardado} Hasta pronto.`)
-  await barraDe(page).getByRole('button', { name: 'Descartar' }).click()
-  await expect(campo).toHaveValue(guardado)
-  await expect(barraDe(page)).toHaveCount(0)
-
-  // Salir con cambios por el menú de Configuración: pregunta en la barra y, al seguir editando, lo escrito queda.
-  await escribirYEsperarElCambio(campo, `${guardado} Hasta pronto.`)
-  const menu = page.getByRole('navigation', { name: 'Secciones de Configuración' })
-  await menu.getByRole('link', { name: 'Plantilla del embudo' }).click()
-  await expect(barraDe(page).getByText('Tienes cambios sin guardar.')).toBeVisible()
-  await barraDe(page).getByRole('button', { name: 'Seguir editando' }).click()
-  await expect(page).toHaveURL('/configuracion/leads/portal')
-  await expect(campo).toHaveValue(`${guardado} Hasta pronto.`)
-
-  // Descartar desde la pregunta sale a donde iba.
-  await menu.getByRole('link', { name: 'Plantilla del embudo' }).click()
-  await barraDe(page).getByRole('button', { name: 'Descartar' }).click()
-  await expect(page).toHaveURL('/configuracion/leads/embudo')
-  await expect(page.getByRole('heading', { name: 'Plantilla del embudo', level: 1 })).toBeVisible()
+  await expect(tarjetaDelEmbudo).toContainText('Contactado')
+  await expect(tarjetaDelEmbudo).toContainText('De fábrica')
 })

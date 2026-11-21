@@ -2,6 +2,7 @@
 // texto listo para WhatsApp. El texto sale del mensaje del portal de la empresa (`ajustes_leads.portal_mensaje`,
 // Configuración › Leads › «Mensaje del portal»); si es nulo, del de fábrica de acá, en español neutro. La dirección
 // de la web va sólo si está configurada.
+import { PATRON_DE_VARIABLE } from '@/shared/lib/texto-con-variables'
 import type { PersonaDelAcceso } from './portal'
 
 // Cómo se dice cada símbolo del código por teléfono. La parte al azar no tiene I, O, 0 ni 1; el
@@ -67,8 +68,27 @@ export const VARIABLES_DEL_MENSAJE = ['cliente', 'empresa', 'codigo', 'clave', '
 export type VariableDelMensaje = (typeof VARIABLES_DEL_MENSAJE)[number]
 export const LARGO_MAXIMO_DEL_MENSAJE = 1000
 
-// Toda `{…}` cuenta como variable, como en la base (`\{([^{}]*)\}`): una errata como `{Codigo}` se rechaza, no sale literal.
-const VARIABLE = /\{([^{}]*)\}/g
+// Cómo se llama cada variable en su botón del editor, en el orden en que se ofrecen.
+export const ETIQUETA_DE_VARIABLE: Readonly<Record<VariableDelMensaje, string>> = {
+  cliente: 'Cliente',
+  empresa: 'Empresa',
+  codigo: 'Código',
+  clave: 'Clave',
+  direccion: 'Dirección',
+}
+
+// Lo que se dice al intentar guardar el mensaje en blanco: volver al de fábrica es otra acción, que confirma.
+export const MOTIVO_DE_MENSAJE_EN_BLANCO = 'Para volver al texto de fábrica, usa «Restablecer».'
+
+// Sin ellas el cliente no puede entrar.
+export const OBLIGATORIAS_DEL_MENSAJE: readonly VariableDelMensaje[] = ['codigo', 'clave']
+
+// Un cliente, un código y una clave de ejemplo, fijos: la vista previa nunca muestra una clave real.
+export const EJEMPLO_DEL_MENSAJE = {
+  cliente: 'Ana Pérez',
+  codigo: 'EJM-4F2K9',
+  clave: 'K7M2Q9XWPR',
+}
 
 // El de fábrica, con sus variables: lo que el editor muestra para partir. Con un cliente con nombre, aplicarlo da lo mismo
 // que `textoParaWhatsApp` sin plantilla.
@@ -100,7 +120,7 @@ export function validarMensajeDelPortal(
       motivo: `El mensaje lleva hasta ${String(LARGO_MAXIMO_DEL_MENSAJE)} caracteres.`,
     }
   }
-  for (const [, nombre = ''] of v.matchAll(VARIABLE)) {
+  for (const [, nombre = ''] of v.matchAll(PATRON_DE_VARIABLE)) {
     if (!esVariable(nombre)) {
       return {
         ok: false,
@@ -118,20 +138,30 @@ export function validarMensajeDelPortal(
   return { ok: true, texto: v }
 }
 
-// Cada variable por su valor, en una sola pasada: un valor que trae `{clave}` o `$&` sale tal cual. Lo que no es una variable queda
-// literal. Sin dirección, `{direccion}` dice «la web de <empresa>»; un cliente sin nombre, vacío.
-export function aplicarMensaje(
-  plantilla: string,
-  { cliente, empresa, codigo, clave, direccion }: Omit<DatosDelMensaje, 'plantilla'>,
-): string {
-  const valores: Record<VariableDelMensaje, string> = {
+// El valor de cada variable. Sin dirección, `{direccion}` dice «la web de <empresa>»; un cliente sin nombre, vacío.
+export function valoresDelMensaje({
+  cliente,
+  empresa,
+  codigo,
+  clave,
+  direccion,
+}: Omit<DatosDelMensaje, 'plantilla'>): Record<VariableDelMensaje, string> {
+  return {
     cliente: cliente.trim(),
     empresa,
     codigo,
     clave,
     direccion: direccion ?? `la web de ${empresa}`,
   }
-  return plantilla.replace(VARIABLE, (entera, nombre: string) =>
+}
+
+// Cada variable por su valor, en una sola pasada: un valor que trae `{clave}` o `$&` sale tal cual. Lo que no es una variable queda literal.
+export function aplicarMensaje(
+  plantilla: string,
+  datos: Omit<DatosDelMensaje, 'plantilla'>,
+): string {
+  const valores = valoresDelMensaje(datos)
+  return plantilla.replace(PATRON_DE_VARIABLE, (entera, nombre: string) =>
     esVariable(nombre) ? valores[nombre] : entera,
   )
 }

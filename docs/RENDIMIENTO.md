@@ -140,7 +140,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
 - Teléfonos extra: ≤ 20 por lead (el `check` de `telefonos_extra_maximo`), una sola respuesta con la lista entera, `leads_telefonos_unico (lead_id, telefono)`.
   El panel de edición, un pedido (`lead_ficha()` ya trae los extras y el máximo). Con «Los teléfonos extra cuentan como el principal» encendida,
   `_lead_verificar()` suma una búsqueda por `leads_telefonos_telefono_idx` sólo si el número no es principal de nadie.
-- Choques de teléfonos (Configuración › Leads › «Teléfonos extra»): `telefonos_extra_choques()` por cursor sobre `leads_telefonos_pkey`, de a 20 (hasta 50),
+- Choques de teléfonos (Configuración › Leads › tarjeta «Teléfonos extra» › «Números repetidos», leídos desde el navegador al abrir el modal): `telefonos_extra_choques()` por cursor sobre `leads_telefonos_pkey`, de a 20 (hasta 50),
   con tope de recorrido de 10.000 filas por llamada («Seguir buscando») y `limit n + 1`, sin total; cada fila busca su choque por `leads_telefono_unico`
   y `leads_telefonos_telefono_idx`. Mide: `MEDIR_SOLO=medir-telefonos-choques pnpm db:medir:volumen` (los buffers por relación no crecen con N): peor caso ≈ 90 ms con 30.000 extras y ≈ 105 ms con 60.000 (tope 400 ms), la página con choques ≈ 70 ms.
 - Quien tiene pocos leads («la chica»): «míos» por `leads_cartera_vista` e
@@ -651,6 +651,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   Los orígenes que la persona abre entran al menú como sub-ítems de «Orígenes» al pedir la página (`getOrigenes(true)`, con `cache()`, tope 20 con
   «Ver todos»): no cruzan como código, son enlaces del mismo menú.
 - Configuración › Empresa (tarjetas de ajustes, cada modal con `diferido()` al abrirse por primera vez): JS en frío (KB gz, `.next-e2e`) `/empresa` 228,4, `/empresa/integraciones` 228,4, `/empresa/comprobantes` 358,9 (sin tope propio).
+- Configuración › Leads (seis tarjetas, cada modal con `diferido()` al abrirse por primera vez; sin tope propio): JS en frío (KB gz, `.next-e2e`, 2026-11-20) `/configuracion/leads` 405,1 contra 458,9 de `/configuracion/empresa` medida en la misma corrida.
 - La página de un origen y Catálogos: cada pestaña y cada catálogo carga sólo su pantalla (`pantallas/origen-*`, `formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
   JS en frío (KB gz, `medirJsEnFrio()` sobre `.next-e2e`): `/configuracion/origenes/<id>/datos` 390,1, `/campos` 392,4, `/categorias` 390,4, `/formulas` 393,6
   (la lista y el «⋯» de cada fila en frío; los paneles de nueva, renombrar, activar, archivar y eliminar, y las archivadas, por `diferido()`), y el editor de

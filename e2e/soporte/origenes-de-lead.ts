@@ -1,11 +1,11 @@
-// Lo que los e2e de Configuración › Leads › Orígenes preparan y miran en la base del Supabase LOCAL.
+// Lo que los e2e de Configuración › Leads › Orígenes del lead preparan y miran en la base del Supabase LOCAL.
 // Todo origen que crea un e2e lleva este prefijo en su nombre: es lo único que la limpieza borra.
 import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 import { admin } from './base'
 import { esMovil } from './inventario'
 import { exigir } from './leads'
-import { filaDeCatalogo, nombresEnLaLista } from './lista-de-catalogo'
+import { filaDeCatalogo } from './lista-de-catalogo'
 
 export const PREFIJO_DE_ORIGEN_E2E = 'E2E 9f'
 
@@ -79,15 +79,39 @@ export async function borrarOrigenesDePrueba(): Promise<void> {
 
 // --- La pantalla --------------------------------------------------------------------------------------
 
+// Los orígenes viven en la tarjeta «Orígenes del lead» de `/configuracion/leads`; su lista, en el modal de `?panel=origenes`. «Nuevo», «Editar» y
+// «Eliminar» son un modal hermano que, al cerrarse, devuelve a esa lista.
+export const URL_DE_ORIGENES = '/configuracion/leads?panel=origenes'
+
+export const listaDeOrigenes = (page: Page): Locator =>
+  page.getByRole('dialog', { name: 'Orígenes del lead' })
+
 export async function abrirOrigenes(page: Page): Promise<void> {
-  await page.goto('/configuracion/leads/origenes')
-  await expect(page.getByRole('heading', { name: 'Orígenes del lead', level: 1 })).toBeVisible()
+  await page.goto(URL_DE_ORIGENES)
+  await expect(listaDeOrigenes(page)).toBeVisible()
 }
 
-// Lo de la lista (la fila, el «⋯», los nombres) es común a las tres pestañas: `soporte/lista-de-catalogo.ts`.
+// Cierra la lista (Esc) y espera a que se haya ido: lo que sigue (el alta con `N`, otra pantalla) no se encuentra con ella encima.
+export async function cerrarOrigenes(page: Page): Promise<void> {
+  await page.keyboard.press('Escape')
+  await expect(listaDeOrigenes(page)).toBeHidden()
+}
+
+// Lo de la lista (la fila, el «⋯», los nombres) es común a las tres listas: `soporte/lista-de-catalogo.ts`.
 export const filaDeOrigen = filaDeCatalogo
-export const nombresEnPantalla = (page: Page): Promise<string[]> =>
-  nombresEnLaLista(page, 'origenes')
+
+// Los botones con el nombre de cada fila de la lista abierta.
+export const nombresDeOrigenes = (page: Page): Locator =>
+  listaDeOrigenes(page).getByRole('button', { name: /^Abrir / })
+
+// Los nombres de las filas, en el orden en que se ven.
+export async function nombresEnPantalla(page: Page): Promise<string[]> {
+  const nombres: string[] = []
+  for (const boton of await nombresDeOrigenes(page).all()) {
+    nombres.push(((await boton.getAttribute('aria-label')) ?? '').replace(/^Abrir /, ''))
+  }
+  return nombres
+}
 
 export const modalDeOrigen = (page: Page, titulo: 'Nuevo origen' | 'Editar origen'): Locator =>
   page.getByRole('dialog', { name: titulo })

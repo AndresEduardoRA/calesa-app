@@ -12,7 +12,8 @@ vista y un modal para editar. Sólo dibuja: no lee la base ni guarda nada.
   - `<ValoresDeLaTarjeta filas>`: el `dl` con «etiqueta, valor»; `valor: null` dice «Sin dato».
   - `<MuestraDeColor color>`: un color como cuadrito y su hex en texto.
   - `<TarjetaEditable titulo panel motivo abrir estado? extra?>`: `'use client'`; la tarjeta de lo que se edita en un modal: «Editar» a la vista y como primera
-    línea del «⋯» (apagada, dice el `motivo`), con `extra` después. La usan Empresa, Sitio web y Legales.
+    línea del «⋯» (apagada, dice el `motivo`), con `extra` después. La usan Empresa, Sitio web, Legales y Leads.
+  - `<ListaCorta filas tope vacio>`: las primeras `tope` activas de un catálogo (icono, nombre, insignias de texto) y «y N más · M desactivados»; sin `'use client'`. La usa Leads.
   - `<BotonDeLaTarjeta panel etiqueta deshabilitado?>`: `'use client'`; abre `?panel=<panel>` con `usePanelPorUrl()`.
 - Aparte, en `src/shared/ui/`: `use-envio-con-version.ts` (`useEnvioConVersion()`, el guardado de un modal con versión) y
   `esqueletos/esqueleto-tarjetas.tsx` (`<EsqueletoTarjetas tarjetas>`, la misma grilla para `loading.tsx`).
