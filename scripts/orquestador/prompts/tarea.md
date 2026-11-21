@@ -42,13 +42,13 @@ y los codemods siguen bloqueados.
   `bash scripts/mapa.sh --check`, y si el árbol es el que ya pasó, dice «ya verificado» y no corre nada; `--forzar` lo corre igual). No
   repitas los comandos sueltos ni lo corras tras cada commit. Con `supabase/` tocado: migración nueva (`pnpm exec supabase migration new`), `pnpm db:reset`,
   `pnpm db:types`, `pnpm db:probar:rapido`, `pnpm db:lint`; con dinero, RLS o permisos de por medio, también `pnpm db:carreras`.
-- Los e2e de lo tocado, nombrados: los nuevos de esta tarea y los existentes del módulo (`pnpm test:e2e <specs> --project escritorio`;
-  y `--project movil` si tocaste interfaz). No corras `test:e2e:completo` salvo que la spec lo pida (el cierre de la construcción corre el Nivel 3): si la tarea
-  dispara el Nivel 2, lo corre el CI. Todos los specs en **una** corrida en segundo plano y un solo aviso al terminar: cada aviso de un
-  proceso en segundo plano relee todo el contexto de la sesión.
-- Si tocaste lo que viaja en toda pantalla (`src/shared/`, `src/app/(app)/layout.tsx`, `src/app/(app)/_shell/`), corre también los specs
-  que miden presupuestos (`grep -l presupuestos e2e/*.spec.ts`): el Nivel 2 los deja al CI y un tope pasado por pocos bytes vuelve como
-  un arreglo entero.
+- Los e2e afectados, sin elegirlos a mano: `node scripts/e2e-afectados.mjs --correr` (los dirigidos, que ya incluyen los nuevos de esta
+  tarea; los que nombran un texto visible que la rama agrega, quita o cambia, o que un texto nuevo vuelve ambiguo; los de las pantallas de
+  un compartido tocado y, si tocaste el marco, los que miden presupuestos), en `escritorio` y, si tocaste interfaz, también en `movil`.
+  Pasados 40 corre los más ligados y dice cuáles quedaron fuera: si uno de esos es claramente de lo tuyo, córrelo también. No corras
+  `test:e2e:completo` salvo que la spec lo pida (el cierre de la construcción corre el Nivel 3): si la tarea dispara el Nivel 2, lo corre
+  el CI. Todo en **una** corrida en segundo plano y un solo aviso al terminar: cada aviso de un proceso en segundo plano relee todo el
+  contexto de la sesión.
 - Lo temporal (logs, capturas, guiones de prueba) va en `$TMPDIR`, que es de esta tarea; nunca en `/tmp`, que es de toda la máquina.
 - Nadie prueba a mano. Lo que sería «pruébalo tú» es un e2e. En las pantallas nuevas o rehechas, además, haz tú el recorrido
   (levanta la app del carril, entra con una cuenta creada como en los e2e, toma capturas en escritorio y celular y míralas) y di en el PR qué viste.
