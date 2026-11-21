@@ -10,7 +10,7 @@
 #     scripts/guardas/orden-de-migraciones.test.ts) → merge de main y las de la rama renombradas, en su orden, con la hora de ahora.
 # Lo carga orquestador.sh con `source`; usa sus `EST`, `WTS`, `log`, `est_get`, `est_set`, `ghr` y `campo`/`spec_de`.
 
-# Los nombres de los jobs de e2e del CI (`e2e · bloque i de 4`; `e2e · compilar la app` no: si no compila, es del PR).
+# Los nombres de los jobs de e2e del CI (`e2e · bloque i de n`; `e2e · compilar la app` no: si no compila, es del PR).
 ES_JOB_DE_E2E='^e2e · bloque '
 # Lo que en el log de un job caído dice que cayó la máquina del CI y no el PR. Estrecho a propósito: un falso positivo cuesta una vuelta
 # del CI; uno que falta, una sesión.
