@@ -302,13 +302,13 @@ las trampas, en `docs/LECCIONES.md`.
   le roba ancho y no entra al 200 %), puntos en vez de tira (no dejan elegir entre 24), «Ver más» como acordeón (alarga la columna), la ficha completa como
   drawer (poco lugar para fotos grandes), la subasta como tabla de datos, pestañas, tres columnas, índice vertical y un bloque «Lead» aparte.
 - **A la derecha de la ficha del vehículo, sólo lo de ventas**, sin repetir la izquierda: «Cotizaciones de este vehículo», «Relacionados», «Actividad
-  reciente» y «Vitrina», con el índice pegajoso; cada uno por su permiso y «Vitrina» siempre (sólo lectura sin `vehiculos.vitrina`), para que el índice no
-  quede vacío. La ficha entera está en «Ver más» de la izquierda; lo de logística (fase, qué falta, documentos) y lo de repuestos tiene su página y se
+  reciente», con el índice pegajoso; cada uno por su permiso (sin ninguno, la derecha queda vacía y sin índice). La vitrina no es un bloque: se publica en el
+  panel «Publicar en la web…» (`?panel=vitrina`) y se ve en el ícono de la foto (ficha y lista) y en la insignia de la izquierda; `?seccion=vitrina` abre ese
+  panel. La ficha entera está en «Ver más» de la izquierda; lo de logística (fase, qué falta, documentos) y lo de repuestos tiene su página y se
   llega por los enlaces cortos de la cabecera. Los enlaces viejos redirigen reemplazando la entrada (`secciones-viejas.ts`): `?seccion=ficha` a
-  `?ver=ficha`, `fotos` al visor, `documentos` y `fase` a la unidad (con `logistica.ver` del origen), `repuestos` al proyecto (con `repuestos.ver` y si
+  `?ver=ficha`, `vitrina` a `?panel=vitrina`, `fotos` al visor, `documentos` y `fase` a la unidad (con `logistica.ver` del origen), `repuestos` al proyecto (con `repuestos.ver` y si
   tiene); sin el permiso o sin proyecto, la ficha se queda arriba (no hay destino que mostrar). «Crear proyecto de repuestos» no se ofrece en la ficha:
-  vive en `/repuestos?panel=nuevo-proyecto&vehiculo=<id>`. Las cotizaciones son la fila de tarjetas (ver «Las cotizaciones de las fichas, en una fila de tarjetas»), no el historial de 500. Descartados: la vista previa de la vitrina siempre abierta (la tarjeta con foto mide más que la
-  columna y repite el precio), «Comparar» junto a «Cotizar» en el título (dos acciones en un título; va en su fila, con su ayuda) y mantener el historial
+  vive en `/repuestos?panel=nuevo-proyecto&vehiculo=<id>`. Las cotizaciones son la fila de tarjetas (ver «Las cotizaciones de las fichas, en una fila de tarjetas»), no el historial de 500. Descartados: un bloque «Vitrina» (repetía el drawer y el ícono de la foto), «Comparar» junto a «Cotizar» en el título (dos acciones en un título; va en su fila, con su ayuda) y mantener el historial
   de 500 (otra lista para lo mismo).
 - **Las cotizaciones de las fichas, en una fila de tarjetas.** La ficha del lead y la del vehículo muestran las últimas 10 que quien mira ve como
   `TarjetaEnLaLista` (la del listado) en una fila con desplazamiento horizontal, y una última tarjeta «Ver más» a `/cotizaciones?lead=` o `?vehiculo=`: la
@@ -324,8 +324,6 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Actividad reciente» de la ficha del vehículo se lee desde el navegador al acercarse**, con su código por `diferido()`: dibujada en el servidor,
   sus cinco frases sumaban unos 13 KB al documento de la ficha (RSC y HTML) y lo pasaban de su presupuesto. La pieza del servidor sigue para
   `/actividad/reciente`; las dos comparten el marco y las filas.
-- **La vista previa del bloque «Vitrina» va plegada en un `<details>` nativo**: sin JS, no pide la foto hasta abrirse y no repite el precio, que va
-  arriba con `<Monto>`. El motivo de «Publicado, no visible» va escrito a la vista, no sólo en el `title` de la insignia.
 - **La izquierda de la ficha dice lo mismo que la tarjeta de la lista sobre la subasta y el costo.** Un solo bloque reemplaza a «Cotización aprobada» y a
   «Subasta»: la cuenta regresiva del cierre (sólo «En subasta»; el mismo componente y un solo temporizador por página) y filas fijas con los mismos
   componentes de la lista (`RotuloDePrecioDeTarjeta`, `CeldaDeCompraDirecta`, `CostoEstimado`), así que nada se dice dos veces distinto. La puja y la compra

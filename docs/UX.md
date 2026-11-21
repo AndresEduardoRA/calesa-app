@@ -308,13 +308,11 @@ al volver la red. El ancho no se anima y los avisos no se mueven. `Ctrl/Cmd+B` n
   este vehículo y la vuelta a la ficha, sólo con `cotizaciones.crear` del origen; aprobar ahí pone al día el «Costo estimado» de la izquierda; ver
   «Cotizaciones del lead y del vehículo»), **«Relacionados»** compacto (`leads.ver`: el vinculado con «Desvincular» confirmado, los interesados y lo cotizado;
   ver «Relacionados (estados propios)»), **«Actividad reciente»** (`actividad.ver`: los últimos 5 cambios del vehículo como frases y «Ver toda la actividad»,
-  `/actividad?entidad=vehiculos&registro=<id>`) y **«Vitrina»** (siempre; en sólo lectura sin `vehiculos.vitrina`: publicado, la insignia «En vitrina» o
-  «Publicado, no visible» con el motivo escrito, «Precio público» —«Consultar» sin precio— y «Así lo verá el visitante» plegado, con «Editar» en el título;
-  sin publicar, «No está en la web» con «Publicar en la web…»; los dos abren `?panel=vitrina`). Lo de logística y repuestos no tiene bloque: lo enlazan
+  `/actividad?entidad=vehiculos&registro=<id>`); la vitrina no es un bloque: se publica en «Publicar en la web…» (`?panel=vitrina`) y se ve en el botón de la foto y en la insignia. Lo de logística y repuestos no tiene bloque: lo enlazan
   «Ver en logística» y «Repuestos · Proyecto #N» de la cabecera; la ficha entera está en «Ver más» de la izquierda. Un bloque sin permiso no está, tampoco
   en el índice. Arriba de las dos columnas, «Volver» y los avisos (limpieza, situación). En el celular y con el texto al 200 %, una columna en el mismo
-  orden. `?seccion=cotizaciones|relacionados|actividad|vitrina` lleva a su bloque (si no lo ve, se queda arriba). Los enlaces viejos a secciones que la ficha no tiene
-  redirigen reemplazando la entrada del historial: `?seccion=ficha` abre la ficha completa (`?ver=ficha`), `?seccion=fotos` el visor en la primera foto
+  orden. `?seccion=cotizaciones|relacionados|actividad` lleva a su bloque (si no lo ve, se queda arriba). Los enlaces viejos a secciones que la ficha no tiene
+  redirigen reemplazando la entrada del historial: `?seccion=ficha` abre la ficha completa (`?ver=ficha`), `?seccion=vitrina` el panel (`?panel=vitrina`), `?seccion=fotos` el visor en la primera foto
   (`?visor=<id>&foto=1`), `?seccion=documentos` va a `/logistica/vehiculo/<id>?hueco=documentos` y `?seccion=fase` a `/logistica/vehiculo/<id>` (con
   `logistica.ver` del origen), `?seccion=repuestos` al proyecto `/repuestos/<id>` (con `repuestos.ver` y si tiene); sin el permiso o sin proyecto, la
   ficha se queda arriba. `?panel=desvincular|vincular-lead|marcar-interesado` y `?relacionados=<tipo>` llevan a «Relacionados» y abren lo suyo; `?editar=`,
@@ -914,9 +912,8 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
   «Cotizaciones de este vehículo» ni el grupo Cotizado ni la fila «Costo estimado»; sin `cotizaciones.crear`, sin «Cotizar» en el título; sin
   `cotizaciones.aprobar`, «Aprobar esta» apagado con su motivo; un `PT409` al aprobar dice quién y cuándo; sin `leads.ver`, sin «Relacionados»; sin
   `actividad.ver`, sin «Actividad reciente»; sin `repuestos.ver` o sin proyecto, sin «Repuestos · Proyecto #N» (y `?seccion=repuestos` se queda arriba);
-  el índice siempre tiene «Vitrina». «Actividad reciente»: esqueleto, «Sin cambios en los últimos N días.», «No se pudo cargar la actividad» con
-  «Reintentar». **«Vitrina»**: sin `vehiculos.vitrina`, sin «Editar» ni «Publicar en la web…» (el botón de la foto dice el motivo); si la vista previa no
-  se pudo leer, «No pudimos cargar «Vitrina».» con «Reintentar»; en Modo Live, el precio público tapado (`<Monto>`). La foto: sin fotos, el recuadro 4:3
+  sin ninguno de los tres bloques, la derecha queda vacía y sin índice. «Actividad reciente»: esqueleto, «Sin cambios en los últimos N días.», «No se pudo cargar la actividad» con
+  «Reintentar». La foto: sin fotos, el recuadro 4:3
   con su ícono (el «⋯» y la vitrina igual encima) y sin tira; con una, sin tira ni flechas; si la lectura falla, la portada en su lugar y el visor dice «No
   se pudieron cargar las fotos.» con «Reintentar». La vitrina de la foto sin `vehiculos.vitrina`: apagada (`aria-disabled`) con el motivo para el lector y
   en un aviso al tocarla. Subasta y costo: mientras se lee, su esqueleto; sin aprobada, «Costo estimado» dice «—» (y «Cotizar»); en Modo Live, el costo no es botón
