@@ -15,8 +15,8 @@ import { expect, test, type Page } from './soporte/prueba'
 import { literal, sql } from './soporte/sql'
 
 // La cotización privada (glosario: «Cotización privada», `docs/COTIZADOR.md` › «Cotizaciones privadas»): Ana la hace privada desde el «⋯» de su guardada; Luis
-// (ve todas las del origen) no la ve en el listado ni por su URL; Marta (además, las privadas) la ve con la insignia en la tabla y en el resumen; la dueña la aprueba
-// (la pregunta dice que deja de ser privada) y Luis ya la ve. Al final, el cuadro «Quién crea y quién ve» le da las privadas al rol de Luis. La base decide quién ve
+// (ve todas las del origen) no la ve en el listado ni por su URL; Marta (además, las privadas) la ve con la insignia en la tabla y en el resumen; en la ficha del vehículo
+// su tarjeta lleva la insignia y «Aprobar esta» pregunta antes; la dueña la aprueba (la pregunta dice que deja de ser privada) y Luis ya la ve. Al final, el cuadro «Quién crea y quién ve» le da las privadas al rol de Luis. La base decide quién ve
 // (`supabase/tests/areas/cotizaciones/privadas.sql`); esto recorre lo que la pantalla ofrece. El vehículo tiene dos: la de la dueña, más antigua, es la aprobada.
 test.describe.configure({ mode: 'serial' })
 
@@ -147,6 +147,29 @@ test('E2E Marta la ve, con la insignia en la tabla y en el resumen', async ({ pa
   const resumen = page.getByRole('dialog', { name: `Cotización n.º ${numeroDe(t.deAna)}` })
   await expect(resumen).toBeVisible()
   await expect(resumen.getByText('Privada', { exact: true })).toBeVisible()
+})
+
+test('E2E en la ficha del vehículo su tarjeta lleva la insignia y «Aprobar esta» pregunta antes', async ({
+  page,
+}) => {
+  await abrir(page, t.duena, `/vehiculos/${t.vehiculoId}?seccion=cotizaciones`)
+  const tarjeta = page
+    .getByRole('list', { name: 'Cotizaciones de este vehículo' })
+    .locator('article', { hasText: t.titulo })
+  await expect(tarjeta).toBeVisible()
+  await expect(tarjeta.getByText('Privada', { exact: true })).toBeVisible()
+  // La tarjeta no pregunta por la marca leída: la base rechaza sin el aviso y la ficha abre su pregunta (`desde=ficha`). Cancelar la deja como estaba.
+  await tarjeta.getByRole('button', { name: 'Aprobar esta' }).click()
+  const pregunta = page.getByRole('dialog', {
+    name: `Aprobar la cotización n.º ${numeroDe(t.deAna)}`,
+  })
+  await expect(pregunta).toBeVisible()
+  await expect(page).toHaveURL(/panel=aprobar-privada.*desde=ficha/)
+  await expect(pregunta.getByText(/Al aprobarla deja de ser privada/)).toBeVisible()
+  await pregunta.getByRole('button', { name: 'Cancelar' }).click()
+  await expect(pregunta).toBeHidden()
+  expect(privadaEnLaBase()).toBe('true')
+  expect(aprobadaDelVehiculo()).toBe(t.deLaDuena)
 })
 
 test('E2E la dueña la aprueba: la pregunta avisa, la insignia se va y Luis ya la ve', async ({
