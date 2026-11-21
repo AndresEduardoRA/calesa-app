@@ -254,7 +254,8 @@ motor lo ignora; otro nodo con `texto` es `forma`.
   todo asociativo a la izquierda; `a<b<c` es `comparacion_encadenada`. Un texto entre comillas (`"fletes"`) sólo va en BUSCARV o frente a
   la variante con `=`/`<>` (`variante="b"`); en otro lugar, `texto_fuera_de_lugar`. No hay `MULTIPLICAR`/`RESTAR`/`DIVIDIR` ni `HOY()`.
   Un literal es una `constante` en `params`. El compilador sólo lee ids: las referencias A1 y los rangos (`C5`, `C5:C9`) los traduce a
-  ids la planilla antes de compilar (`deA1()`, «El editor»); el `:` suelto es `caracter_invalido`.
+  ids la planilla antes de compilar (`deA1()`, «La planilla»); el léxico lee el `:` (`T.DOS_PUNTOS`) y el compilador lo
+  rechaza suelto (`caracter_invalido`).
 - **Las diez funciones** (argumentos con `;`, el nombre en mayúsculas o minúsculas): `SUMA(grupo)` (sus miembros) o `SUMA(a; b; …)`
   (uno o más valores; un grupo junto a otros es `grupo_con_otros`); `SI(condición; x[; y])` (con una
   bandera y dos argumentos es el `si` de siempre; si no, `elegir`); `Y(c1; c2; …)` y `O(…)` (dos o más condiciones); `MAX(a; b; …)` y
@@ -296,28 +297,69 @@ Lo puro en `entities/formula/`: nunca lanza, no toca lo que recibe y es lineal c
 - **Las filas sembradas** no traen texto: `textoDeNodo()` lo escribe (`a+b+c`, `SI(b; x)`, `a>b`, `v<>"b"`, `Y(a; b)`, `SI(p; x; y)`,
   `MAX(a; b)`, sin «=») sólo si compilarlo da exactamente ese nodo; si no, `null` y la fila se muestra por sus campos. Una búsqueda no se
   escribe: la fila con BUSCARV nació de su texto.
-- **La pantalla:** la **planilla** (`features/formula/components/planilla/`, la vista por defecto) y el **Modo avanzado** (`components/editor/`,
-  `?panel=editar-formula`), sobre la fórmula del origen de la URL, una sola copia de trabajo que tiene la sesión (`components/sesion/`, `useEditorDeLaFormula` una vez): compila al
-  aplicar con `compilarFila()` (sin `validarFormula()` si la fila da error), valida la fórmula de trabajo tras cada cambio (el rechazo, en su fila) y
-  la guarda con `formula_guardar_borrador()`. La sesión se vuelve a montar con «Recargar» o si la versión cambia por algo que no hizo ella
-  (`otraSesion()`: publicar, descartar, revertir); guardar sobre la publicada no la vuelve a montar.
-- **La planilla:** `bandasDeLaPlanilla()` (`planilla.ts`) reparte las filas en bandas (tipo de cambio, unidad de ejemplo, variante, un grupo por banda
-  y «Sin grupo»; cada fila una vez, numeradas en el orden en que se dibujan); `celdaB()` y `editableEnC()` dicen qué celdas se editan.
-  `deDondeSale()` (`de-donde-sale.ts`) dice cada fila en palabras con las etiquetas (nunca ids): una frase por tipo de nodo y por operación, las
-  auxiliares en línea (una constante con su valor, un cálculo entre paréntesis, una comparación auxiliar sin ellos, una búsqueda como «de la
-  tabla `<clave>` por …», con la clave de la tabla y no su nombre), nunca lanza y es lineal. `cambiarValorDeConstante()`
-  (`valor-en-la-planilla.ts`) escribe `params[id]` como el ⚙ y reescribe el texto de la fila que la contiene (`textoVigente()`); si el texto no
-  puede decirlo queda `no_manda`. La **unidad de ejemplo** (`unidad-de-ejemplo.ts`: `inputs`, `banderas`, `vehiculo` por campo y la variante) se
-  calcula con `calcularLaVistaPrevia(formula, terreno, unidad, modo)`: `entradaDeLaUnidad()` suelta lo que la fórmula ya no tiene, `modoDelMotor()`
-  pasa el modo del diseño al motor y un modo que no cubre un bucket da `no_calcula`. `totalesDeLaUnidad()` arma «Totales» y `calculoDeLaUnidad()`
-  la tarjeta en vivo (sólo los ids que su lectura nombra).
+- **La pantalla:** la **planilla** (`features/formula/components/planilla/`, «La planilla», abajo), sobre la fórmula del origen de la URL, una sola
+  copia de trabajo que tiene la sesión (`components/sesion/`, `useEditorDeLaFormula` una vez): compila al aplicar con `compilarFila()` (sin
+  `validarFormula()` si la fila da error), valida la fórmula de trabajo tras cada cambio (el rechazo, en su fila, en la cabecera de su banda o
+  arriba) y la guarda con `formula_guardar_borrador()`. La sesión se vuelve a montar con «Recargar» o si la versión cambia por algo que no hizo
+  ella (`otraSesion()`: publicar, descartar, revertir); guardar sobre la publicada no la vuelve a montar. No hay otro editor:
+  `?panel=editar-formula` responde 308 a la misma planilla (`destinoSinElModoAvanzado()`).
 - **Vista previa** (`calcularLaVistaPrevia()`): `evaluar()` con `entradaDePrueba()` (datos en 0, banderas apagadas, variante por defecto,
   sin overrides) y los tipos de cambio y tablas que lee el navegador (`consulta-del-terreno-de-prueba.ts`: la del origen gana a la
-  compartida, páginas de 1.000 filas); la congelada manda. «Sumar fila» (`sumarFila()`, `idDeFilaNueva()`) compila con un destino nuevo y
-  revisa que salga el tipo elegido.
-- **Los grupos** (`aplicarGrupo()`): edita etiqueta, plazo, tono, bucket y miembros de un grupo existente sin tocar texto, auxiliares ni
-  orden; sólo suman raíces que `validarFormula()` acepta (`puedeSumarAlGrupo()`); una fila quitada queda sin `grupo`. No crea ni quita
-  grupos ni edita `buckets`, `total_en` o modos. Mover una fila a otro bucket cambia el total en Bs en su USD × (tc nuevo − tc viejo).
+  compartida, páginas de 1.000 filas); la congelada manda. La unidad de ejemplo de la planilla calcula sobre ella.
+
+### La planilla
+
+Como una hoja de cálculo: se ven celdas A1 y se guardan ids. Lo puro en `entities/formula/`, O(filas), se recalcula con cada cambio de la
+fórmula de trabajo.
+
+- **La hoja** (`hojaDeLaPlanilla()`): las filas en el orden de evaluación (`definicion.nodos`), numeradas de 1 a n. Es el único orden, porque
+  «una fórmula sólo usa filas de arriba» sólo es cierto si se ve ese; el tipo de cada fila lo dice el color de su celda, no una banda.
+  Columnas: A concepto, B %, C valor y D de dónde sale. **La B absorbe el %:** una constante `pct` raíz que sólo nombra un `porcentaje_de`
+  raíz como su `pct` no tiene fila propia; se ve y se escribe en la B de esa fila y se mueve, duplica y borra con ella (`pctAbsorbidas()`).
+  Un `pct` compartido o que es un `input` conserva su fila. Una **banda** es un tramo de filas seguidas con el mismo `grupo`, con su
+  cabecera (etiqueta, plazo y tipo de cambio) y sin número; un grupo partido en dos tramos lleva dos cabeceras.
+- **Referencias** (`referencias-a1.ts`, `de-a1.ts`): `C<n>` es el valor de la fila n y `B<n>` su %. `aA1()` muestra el texto guardado
+  (`remate+fees`) como `=C5+C7`; `deA1()` traduce lo tipeado a ids antes de `compilarFila()` y devuelve cada tramo de error al texto
+  tipeado (`tramoEnLoTipeado()`). No distingue mayúsculas, `$` se acepta y se ignora, un nombre con forma A1 siempre es una celda y un id
+  tipeado sin esa forma se acepta. Insertar, mover o borrar filas no toca ningún texto. `deA1()` rechaza con su tramo una fila de más abajo
+  (con «Mover esta fila debajo de la N» si `puedeMover()`), la propia fila, una que no existe, las columnas A y D y una B sin % o con un %
+  escrito en la fórmula. Los mensajes del compilador y de `validarFormula()` nombran «C5 (Remate)» (`nombrar` del contexto, `mensajeEnA1()`).
+- **Rangos:** `C5:C9`, sólo dentro de `SUMA`, `MAX` y `MIN`, en la columna C y con filas de arriba. Se guarda la lista de ids
+  (`SUMA(a; b; c)`) y al mostrar tres o más filas seguidas vuelven a ser un rango. No hay recálculo automático: con una fila insertada en
+  medio se ve `SUMA(C5:C6; C8:C10)`.
+- **Escribir** (`textoDeLaCelda()` abre la edición, `aplicarLoEscrito()` la aplica): A, el concepto (hasta 80 caracteres); B, el % de la
+  fila; C según su tipo de celda. Con `=` se compila: una constante, una fila del asesor, un dato del vehículo, un interruptor o una variante
+  pasan a cálculo. Sin `=`, el valor de una constante (un cálculo pasa a valor fijo) o el de la unidad de ejemplo. Un tipo de cambio y una
+  tabla no se escriben en C y D nunca. Mientras el cursor espera un operando, un clic en otra celda inserta su referencia (Shift+clic, un
+  rango); cada referencia lleva su color en el orden en que aparece (`referenciasTipeadas()`, `--viz-series-*` en ciclo), la leyenda y el
+  borde de su celda. El autocompletar (`sugerencias()`) ofrece las funciones, los conceptos de arriba («Remate → C5»), las bandas («Primer
+  pago → SUMA(primer_pago)») y, en BUSCARV, las tablas y sus columnas; «¿Cómo se escribe?» explica las diez (`FUNCIONES_DE_LA_AYUDA`).
+- **Filas:** `insertarFila()` (arriba o abajo: un «Valor fijo» en 0 llamado «Fila nueva», con la banda de la de referencia; el id sale de
+  `idDeFilaNueva()` y nunca se ve), `duplicarFila()` (id nuevo, el texto recompilado en su lugar y la `pct` absorbida clonada),
+  `moverFila()` (Alt+↑/↓, arrastrar el número y «Mover esta fila debajo de la N»: bajar r debajo de t vale si ninguna fila de (r, t] la
+  nombra; subirla, si ella no nombra ninguna de las que salta; se mueve el bloque, la `pct` absorbida, las auxiliares y la raíz) y
+  `eliminarFila()`, rechazada con su motivo (`motivoParaNoEliminar()`): la usa otra fila, es el tipo de cambio de una banda, un bucket o el
+  total, es la fila del total o la única de su banda, la muestra la hoja (`nodosDelDiseno()`) o la nombra la tarjeta de trabajo
+  (`NombradoPorLaTarjeta`). Eliminar una fila y quitar una banda se deshacen una vez, desde su aviso.
+- **Tipo de celda** (`tipoDeCelda()`, `cambiarTipo()`): los ocho del glosario. Cambiarlo conserva id, etiqueta, descripción, salida y banda (si
+  la fila sigue sumando) y se aplica sólo si `validarFormula()` sigue valiendo. Una sola variante por fórmula.
+- **Bandas y tipos de cambio** (`bandas.ts`, `buckets.ts`, `total-de-la-formula.ts`): crear una banda (al final de `grupos`, con al menos una
+  fila y, si la fórmula no tiene, el tipo de cambio del total), quitarla (sus filas quedan sin banda; rechazado si un texto la nombra o la
+  tarjeta de trabajo la usa), editar su etiqueta, plazo, color y tipo de cambio (`aplicarGrupo()`) y poner o sacar una fila (`ponerEnBanda()`;
+  arrastrarla a otro tramo hace lo mismo). El tipo de cambio de una banda es una fila `tipo_cambio`: se usa el bucket que ya apunta a ella o
+  se crea uno con su clave (`bucketPara()`). Con modos en la hoja no se crea ninguno, porque los modos llenan exactamente los buckets de la
+  fórmula; sin modos, los que quedan sin uso se limpian (`sinBucketsSueltos()`). «Total y tipos de cambio» edita `total_en`, la fila del
+  total (`salida: 'total'`) y el tipo de cambio de cada bucket. Mover una fila a otro bucket cambia el total en Bs en su USD × (tc nuevo −
+  tc viejo); el doble conteo lo dice la validación.
+- **De dónde sale** (`deDondeSale()`): cada fila en palabras con las etiquetas (nunca ids): una frase por tipo de nodo y por operación, las
+  auxiliares en línea (una constante con su valor, un cálculo entre paréntesis, una comparación auxiliar sin ellos, una búsqueda como «de la
+  tabla `<clave>` por …», con la clave de la tabla y no su nombre); nunca lanza y es lineal. `cambiarValorDeConstante()`
+  (`valor-en-la-planilla.ts`) escribe `params[id]` como el ⚙ y reescribe el texto de la fila que la contiene (`textoVigente()`); si el texto
+  no puede decirlo queda `no_manda`.
+- **La unidad de ejemplo** (`unidad-de-ejemplo.ts`: `inputs`, `banderas`, `vehiculo` por campo y la variante) se calcula con
+  `calcularLaVistaPrevia(formula, terreno, unidad, modo)`: `entradaDeLaUnidad()` suelta lo que la fórmula ya no tiene, `modoDelMotor()` pasa
+  el modo del diseño al motor y un modo que no cubre un bucket da `no_calcula`. `totalesDeLaUnidad()` arma «Totales» y `calculoDeLaUnidad()`
+  la tarjeta en vivo (sólo los ids que su lectura nombra).
 
 ## Tipos de cambio y modos (D7, H1)
 

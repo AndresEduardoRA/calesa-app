@@ -24,7 +24,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** El dato del vehículo de una tabla (4.14-2c3) no se elige en el panel de una guardada: el lector de opciones lee `cotizacion_tabla` con la hoja abierta, que una guardada no tiene — falta uno por cotización (la celda dice «Falta un dato del vehículo.»).
 - **[4-72]** Quien ve una cotización pero no su vehículo no puede recalcularla («No se pudo recalcular») — que el recálculo de una guardada no dependa del vehículo, o que la pantalla diga por qué.
 - **[T310]** Una plantilla de la forma 1 que ya no se convierte (un `{{` en una etiqueta, leyenda o nota, que la forma 1 admite como texto, o una fórmula con más de 120 filas convertidas) pasa a `sin_plantilla` sin aviso: la tarjeta va por omisión — que el editor o publicar la fórmula lo digan.
-- **[—]** Editor de la fórmula: sumar o quitar grupos y editar `buckets`, `total_en` y los modos — espera a que la plantilla de la tarjeta se edite junto con la fórmula.
+- **[—]** Los modos de tipo de cambio se editan en «Hoja», no en la planilla de la fórmula.
 - **[T402]** Editor de la tarjeta: arrastrar el borde de una fila del lienzo para cambiar su alto (hoy, el campo «Alto» del panel) — sin tarea que lo tome.
 - **[T403]** Una bandera que sólo lee la `prueba` de un `elegir` o un término de `Y`/`O` (`SI(nuevo; 100; 50)`) no pide su interruptor en el diseño al publicar (§5 de `validar_diseno()` y `revisarCobertura()` sólo cuentan la `condicion`): decidir si una condición también lo exige.
 - **[—]** Editor del diseño: sumar y quitar secciones o ítems, y pasar un ítem de una sección a otra (hoy se ordena dentro de la suya) — sin tarea que lo tome.
@@ -88,6 +88,9 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[—]** `cotizacion_evaluar` con la hoja abierta reconstruye las tarifas en cada recálculo: una que confirma después de abrir la hoja con `cambiado_en` anterior cambia el cálculo sin aviso hasta guardar (crear sí compara la huella) — compararla también al recalcular, midiendo antes `medir-cotizacion-hoja.sql`.
 - **[—]** Un pago confirmado con `confirmado_en` nulo (filas anteriores al sellado) no entra al «Margen del mes» ni a «sin venta» — un `check` con relleno, mirando antes los datos de producción.
 - **[—]** Gastos y pagos viejos en otra moneda sin `tipo_cambio_id`: al corregirlos la base pide el tipo (`23502`, hint `tipo_cambio`) — revisar antes de cargar datos reales.
+- **[T408]** `formula_publicar()` no revisa que la tarjeta publicada de esa fórmula siga calzando con la versión nueva: la planilla lo evita al
+  eliminar filas y quitar bandas (las rechaza si la tarjeta de trabajo las nombra), pero una RPC a mano no — que publicar valide la plantilla
+  publicada contra la versión nueva, como `formula_del_origen_activar`.
 
 ## Errores conocidos
 
@@ -124,7 +127,7 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 - **[5a-40]** La baja de 200.000 leads tarda 9 corridas y 15 s porque ningún update de `cartera` es HOT (11 btree) — un índice que sostenga lo ajeno sin nombrar la cartera, sin romper `medir-escala.sql`; la persona aceptó el número actual.
 - **[6-5]** Medir `gastos_listar` y `pagos_listar` con volumen (≈ 50.000 filas, dueña con «todos» y una persona con «propios»): el filtro `en_cartera` por fila puede ir descartando al profundizar.
 - **[8-13c]** Índice `(fase_id, fase_desde, id)` en `repuestos_items` si la Cadena de repuestos y los bloques de Inicio llegan a miles — hoy alcanza `repuestos_items_fase_id_idx`.
-- **[—]** La planilla y el editor de la fórmula tardan ≈ 1 s en abrir con 600 filas y ≈ 2 s con 2.000 (O(filas × nodos), al abrir la pestaña) — una versión por lote de `textoVigente()`/`textoDeNodo()`.
+- **[—]** La planilla de la fórmula tarda ≈ 1 s en abrir con 600 filas y ≈ 2 s con 2.000 (O(filas × nodos), al abrir la pestaña) — una versión por lote de `textoVigente()`/`textoDeNodo()`.
 - **[—]** El job de la papelera toma siempre los 50 lotes vencidos más viejos: 50 que no se pueden purgar del todo (pago, portal, comprobante) frenan para siempre a los nuevos; vale para los tres tipos.
 - **[—]** `vehiculos_papelera_listar()` y `leads_papelera_listar()` usan el mismo `exists` por lote: sin medir si con poco volumen leen el índice entero.
 - **[—]** `limpieza_avisar()` no tiene tope de filas revisadas — si crecen los retenidos, cota inferior o índice parcial.
@@ -148,9 +151,11 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ### Limpieza y código
 
+- **[T408]** `docs/GLOSARIO.md` tiene una segunda copia, más vieja, de casi todo el glosario (desde el choque con main de #462, a partir de la línea ≈ 1.000):
+  borrarla dejando la primera.
 - **[T406]** `chore/quitar-plantillas-de-v1` también borra la ruta `src/app/(app)/configuracion/cotizacion/[origen]/plantillas-de-v1/` (lo único que
   queda bajo `/configuracion/cotizacion` además de su `route.ts` de URL vieja) y «Empezar desde una plantilla» de `origenes/[id]/formula/cabeza-de-la-formula.tsx`.
-- **[—]** La vista previa del diseño de la hoja (Configuración › Hoja) no dibuja la variante en par (`hojaDeLaVistaPrevia()` no trae `par`); la planilla de la fórmula sí la muestra (sus dos opciones con «Se cotiza en par»).
+- **[—]** La vista previa del diseño de la hoja (Configuración › Hoja) no dibuja la variante en par (`hojaDeLaVistaPrevia()` no trae `par`); la planilla de la fórmula sí la dice («Se cotiza en par» en «Tipo de celda › Variante»).
 - **[—]** En la vista previa de las hermanas, «Copiar texto» copia sólo el de la tarjeta de la cotización abierta (no une los dos).
 - **[—]** `medir-cotizacion-crear.sql` y `medir-cotizacion-guardar.sql` no tienen un caso en par: crear y guardar en par llaman dos veces a lo que ya miden.
 - **[4-45]** `cotizaciones.moneda_mostrar` y `cotizaciones.plantilla_id` no tienen uso real (`moneda_mostrar` sólo viaja por `cotizaciones_listado()`) — migración que la recree sin ellas, con su medición y `db:types`.

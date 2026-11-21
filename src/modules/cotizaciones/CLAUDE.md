@@ -351,6 +351,13 @@ puedeRetocar }`, de `HojaDeUnaGuardada`; la hoja nueva no lo pasa) y el modelo l
   `casos-del-motor.json`.
 - Validación: `entities/validar*.ts` espeja `validar_formula()` (`docs/COTIZADOR.md` › «Las reglas») y `validar-diseno*.ts` a `validar_diseno()` (con el
   tope de 40 ítems, `demasiados_items`, primero tras la forma); juegos `casos-de-{formula,diseno}.json` (regla nueva = su caso).
+- La planilla de la fórmula (área `formula`; `docs/COTIZADOR.md` › «La planilla»), pura y con su test: `entities/formula/hoja-de-la-planilla.ts` (la hoja
+  numerada, la `pct` que absorbe la B y los tramos de banda), `referencias-a1.ts` y `de-a1.ts` (ids ↔ A1, con el mapa de los tramos de error),
+  `referencias-tipeadas.ts` (colores, leyenda y bordes de lo tipeado), `autocompletar.ts` y `ayuda-de-funciones.ts`, `texto-de-la-celda.ts` y
+  `escrito-en-la-celda.ts` (qué abre y qué hace lo escrito en cada columna), `teclas-de-la-cuadricula.ts`, `filas-a-la-vista.ts` (buscar y el tope sin
+  renumerar), las operaciones de fila (`insertar-fila.ts`, `mover-fila.ts` y `eliminar-fila.ts` sobre `usos-de-la-fila.ts`), `tipo-de-celda.ts` y
+  `tipo-de-celda-nodos.ts`, `opciones-de-la-variante.ts`, las bandas (`bandas.ts`, `buckets.ts`, `total-de-la-formula.ts`), `mensaje-en-a1.ts` y
+  `params-para-validar.ts`; en el núcleo, `entities/nodos-del-diseno.ts` (lo que la hoja muestra: la planilla no lo borra).
 - La plantilla: `validar_plantilla()` (`docs/COTIZADOR.md` › «Plantilla de tarjeta (PDF)»), espejo `entities/plantilla/validar-plantilla.ts` (code points,
   `btrim`, orden C, tope en bytes del texto jsonb, sin prototipo) con su juego `casos-de-plantilla.json`; dos formas: la de grupos (`forma-de-plantilla.ts`,
   `nodos-de-plantilla.ts`) y la cuadrícula (`forma-de-cuadricula.ts`, `celdas-de-cuadricula.ts`, `condiciones-de-cuadricula.ts` —la forma de la lista de

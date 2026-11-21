@@ -655,7 +655,8 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 - La página de un origen y Catálogos: cada pestaña y cada catálogo carga sólo su pantalla (`pantallas/origen-*`, `formula|diseno|plantilla|tablas|diseno-colores|configuracion`).
   JS en frío (KB gz, `medirJsEnFrio()` sobre `.next-e2e`): `/configuracion/origenes/<id>/datos` 390,1, `/campos` 392,4, `/categorias` 390,4, `/formulas` 393,6
   (la lista y el «⋯» de cada fila en frío; los paneles de nueva, renombrar, activar, archivar y eliminar, y las archivadas, por `diferido()`), y el editor de
-  una fórmula, `/formulas/<fórmula>/planilla` 476,7, `/hoja` 392,4 (dnd-kit y el editor del diseño, en su `diferido()`), `/tarjeta` 398,9 (la
+  una fórmula (2026-11-21), `/formulas/<fórmula>/planilla` 478,3 (la planilla, por `PlanillaDiferida`; sus paneles y «¿Cómo se escribe?», en
+  su `diferido()`; el arrastre del número va con eventos de puntero, sin dnd-kit), `/hoja` 393,4 (dnd-kit y el editor del diseño, en su `diferido()`), `/tarjeta` 400,4 (la
   pestaña dibuja en frío el aviso de menos de 1.024 px y arma la lectura del lienzo; el editor llega por `diferido()`; la cabeza del editor, con el nombre, el estado y el «⋯» de la fórmula, suma ≈ 6 KB a cada parte y
   pasa su meta por ≤ 1 %: regla del 5 %), `/tablas` 392,5 («Nueva tabla» y el «⋯» de cada tabla en frío; sus paneles, por `diferido()`); `/configuracion/catalogos/colores` 356,8, `/niveles` 366,7,
   `/vigencia` 359,3, `/puertos`, `/navieras` y `/categorias-de-gasto` 356,4, `/tipos-de-documento` 370,4, `/tablas` 368,1. El marco del origen (encabezado,
@@ -762,19 +763,21 @@ fallar.
   autor (`perfiles_pkey`), el de la tarjeta (`plantillas_borrador_unico`, `limit 1`) y el catálogo de colores (`limit 48`), más los tipos de cambio y los campos del
   origen; responde ≤ 80 KB sin comprimir con las cuatro lecturas de la tarjeta (lo fijan `route.test.ts` y `plantillas-de-v1.test.ts`). Se dibujan cuatro
   tarjetas de a lo sumo 54 celdas. Aplicar escribe dos borradores y ≤ 48 colores: ninguna lectura crece con los datos.
-- Planilla y editor de la fórmula (`e2e/configuracion-cotizacion-formula-editor.spec.ts`): abrir la pestaña lee una fila de `formulas` por `formulas_pkey`
-  (`definicion`, `params`, `estado`, `diseno`, `nota`) desde el navegador: con 600 filas ≤ 80.900 B; también el terreno de la vista previa (abajo) y el
-  catálogo de colores (≤ 48 filas, seis columnas de colores); en el servidor, en paralelo con la fórmula, la plantilla de la tarjeta (la lectura de la
-  pestaña «Tarjeta»). Nada se relee al tipear ni al aplicar, ni al pasar al Modo avanzado (la misma sesión). La planilla y el Modo avanzado dibujan
-  hasta 500 (`TOPE_DE_LO_CARGADO`) con `<AvisoDeTope>` y «Buscar fila»: ≤ 6.300 nodos cada uno; la sesión, la planilla, el Modo avanzado y la tarjeta en
-  vivo van por `diferido()`. Tipear en la unidad de ejemplo o cambiar el modo sólo vuelve a correr `evaluar()` (lineal); «de dónde sale» y las bandas,
-  una vez por fórmula de trabajo. El estado de las filas es O(filas × nodos), una vez por fórmula de trabajo; filtrar y
-  tipear no lo recalculan (`use-editor-de-la-formula.soporte.escala.test.ts`: razón cuadrática ≤ 1,1). Abierto: con miles de filas pasa de
-  1 s. Compilar y validar corren en el navegador al aplicar, con `diferido()`. La vista previa: 3 pedidos en el caso habitual (tipos de
-  cambio; tablas vivas; sus filas por páginas de `limit(1000)` por `tablas_referencia_filas_tabla_orden_idx`) y ≤ 8, constantes
-  (`e2e/configuracion-cotizacion-formula-editor-previa-volumen.spec.ts`); una tabla se lee si tiene ≤ 999 filas, ≤ 40 tablas. Falta el
-  `EXPLAIN` de esas lecturas en `db:medir:volumen`. Guardar el borrador es una Server Action sin releer; un diseño de 2.000 ítems queda bajo
-  el tope de 1 MB de una Server Action (`use-guardar-borrador.soporte.test.ts`).
+- Planilla de la fórmula (`e2e/configuracion-cotizacion-formula-planilla-volumen.spec.ts`): abrir la pestaña lee una fila de `formulas` por
+  `formulas_pkey` (`definicion`, `params`, `estado`, `diseno`, `nota`) desde el navegador: con 600 filas ≤ 80.900 B; también el terreno de la
+  vista previa (abajo) y el catálogo de colores (≤ 48 filas, seis columnas de colores); en el servidor, en paralelo con la fórmula, la plantilla de
+  la tarjeta (la lectura de la pestaña «Tarjeta», con lo que nombra). Nada se relee al tipear, al aplicar ni al insertar, mover o eliminar una
+  fila. Dibuja hasta 500 filas (`TOPE_DE_LO_CARGADO`) con `<AvisoDeTope>` y «Buscar fila»: ≤ 6.300 nodos. El «⋯» y el clic derecho de las filas,
+  las sugerencias y los bordes de las referencias son una sola instancia, no uno por fila; la sesión, la planilla, la tarjeta en vivo y los
+  paneles (banda, total, tipo de celda y «¿Cómo se escribe?») van por `diferido()`, y arrastrar el número usa eventos de puntero, sin dnd-kit.
+  La hoja numerada (`hojaDeLaPlanilla()`), `aA1()`, `deA1()`, «de dónde sale», los usos de cada fila (`indiceDeUsos()`) y las bandas son O(filas),
+  una vez por fórmula de trabajo; tipear en la unidad de ejemplo o cambiar el modo sólo vuelve a correr `evaluar()` (lineal). El estado de
+  las filas es O(filas × nodos), una vez por fórmula de trabajo; filtrar y tipear no lo recalculan
+  (`use-editor-de-la-formula.soporte.escala.test.ts`: razón cuadrática ≤ 1,1). Abierto: con miles de filas pasa de 1 s. Compilar y validar
+  corren en el navegador al aplicar. La vista previa: 3 pedidos en el caso habitual (tipos de cambio; tablas vivas; sus filas por páginas de
+  `limit(1000)` por `tablas_referencia_filas_tabla_orden_idx`) y ≤ 8, constantes; una tabla se lee si tiene ≤ 999 filas, ≤ 40 tablas. Falta
+  el `EXPLAIN` de esas lecturas en `db:medir:volumen`. Guardar el borrador es una Server Action sin releer, de menos de 1 MiB con 600 filas; un
+  diseño de 2.000 ítems queda bajo el tope de 1 MB de una Server Action (`use-guardar-borrador.soporte.test.ts`).
 - `cotizacion_tabla()` (`medir-cotizacion-hoja.sql`): la tabla viva de 1.000 filas (`tablas_referencia_filas_tabla_orden_idx`,
   `limit 1001`), con y sin la hoja abierta, ≤ 25 ms; la firma suma ≤ 3 ms; ≤ 569.352 B la dueña (filas enteras) y ≤ 52.752 la asesora (año y
   factor); 0 bloques de `cotizaciones`. Quien configura recibe las filas sin recortar a `columnas`.

@@ -644,22 +644,21 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Nodo auxiliar** — `<fila>__<n>` en `compilarExpresion()`: cada operación anidada o número de una fórmula como texto, numerado en
   post-orden; cuáles lo son, `auxiliaresDe()` (`compilador-auxiliares.ts`). La constante auxiliar no pide celda en el diseño.
 - **Fila (de la fórmula)** — `Fila`, `filasDe()` (`entities/formula/filas.ts`): un nodo que no es auxiliar de otro, con sus auxiliares y su
-  `texto`; una línea del editor.
-- **Editor de la fórmula** — `EditorDeLaFormula` (`features/formula/components/editor/`), `?panel=editar-formula`: donde se escriben en texto
-  las filas de la fórmula de un origen, sobre el borrador o la publicada; compila cada fila al aplicar. En la pantalla se llama «Modo avanzado».
-- **Modo avanzado** — el editor de la fórmula en texto (`?panel=editar-formula`), detrás del botón «Modo avanzado» de la planilla; comparte la
-  fórmula con ella. No es «Avanzado» (la sección de la hoja que se edita en un modal).
-- **Planilla de la fórmula** — `PlanillaDeLaFormula` (`features/formula/components/planilla/`): la pestaña «Planilla» del editor de una fórmula del origen, como la
-  planilla de V1: filas numeradas con A · concepto, B · %, C · valor y D · de dónde sale, en bandas, con las celdas que se editan marcadas.
-- **Banda (de la planilla)** — `BandaDeLaPlanilla`, `bandasDeLaPlanilla()`: un tramo de la planilla con su cabecera: «Tipo de cambio», «Unidad de
-  ejemplo», «Variante», cada grupo con su color, y «Sin grupo».
+  `texto`; una fila numerada de la planilla.
+- **Planilla de la fórmula** — `PlanillaDeLaFormula` (`features/formula/components/planilla/`), `hojaDeLaPlanilla()`: la pestaña «Planilla» del editor de
+  una fórmula del origen, que se edita como una hoja de cálculo (`role="grid"`): las filas en el orden en que se calculan, numeradas de 1 a n, con A ·
+  concepto, B · %, C · valor y D · de dónde sale. Se escribe en la celda o en la **Barra de fórmula**, con **Referencias (de la planilla)**; las filas se
+  insertan, duplican, mueven y eliminan desde su «⋯», el clic derecho, Alt+↑/↓ o arrastrando su número. Es el único editor de la fórmula.
+- **Banda (de la planilla)** — `TramoDeLaHoja` (`entities/formula/hoja-de-la-planilla.ts`): un tramo de filas seguidas con el mismo grupo, con su cabecera
+  (etiqueta, plazo y tipo de cambio) y el color del grupo; un grupo partido en dos tramos son dos bandas. Se crea, renombra, colorea y quita desde su «⋯»
+  o el de la planilla (`bandas.ts`). Las filas sin grupo no llevan cabecera.
 - **De dónde sale** — `deDondeSale()` (`entities/formula/de-donde-sale.ts`), la columna D de la planilla: lo que calcula una fila, en palabras y con
   las etiquetas de lo que nombra («(Remate + Fees) × 4 %», «monto fijo»).
-- **Unidad de ejemplo** — `UnidadDeEjemplo` (`entities/formula/unidad-de-ejemplo.ts`): lo que se tipea en la banda «Unidad de ejemplo» de la planilla
-  (los `input`, los datos del vehículo, las banderas y la variante) para ver el efecto de cada cambio en C, «Totales» y la tarjeta en vivo. Arranca
-  en ceros como las «Cifras de prueba» y no se guarda.
-- **Barra de fórmula** — `BarraDeFormula`, arriba de la tabla de la planilla: el texto de la fila elegida, que se edita y se aplica como en el Modo
-  avanzado (una fila a la vez).
+- **Unidad de ejemplo** — `UnidadDeEjemplo` (`entities/formula/unidad-de-ejemplo.ts`): lo que se escribe en C en las filas del asesor, los datos del
+  vehículo, los interruptores y la variante para ver el efecto de cada cambio en C, «Totales» y la tarjeta en vivo. Arranca en ceros como las «Cifras
+  de prueba», vuelve a ceros desde el «⋯» de la planilla y no se guarda.
+- **Barra de fórmula** — `BarraDeFormula` (`components/planilla/barra/`), fija arriba de la cuadrícula: la celda activa, «fx» y su texto, el mismo que se
+  edita en la celda (uno solo a la vez), con cada referencia pintada de su color, la leyenda, las sugerencias y el error con su tramo.
 - **Referencia (de la planilla)** — `C5`, `B9` (`entities/formula/referencias-a1.ts`): cómo un cálculo de la planilla nombra otra fila, como en
   Excel: `C<n>` es el valor de la fila n y `B<n>` su %. Se guarda el id del nodo (`nodo.texto` con ids) y se muestra como A1 (`aA1()`); lo tipeado
   pasa a ids antes de compilar (`deA1()`). Insertar, mover o borrar filas cambia lo que se muestra, nunca lo guardado. No distingue mayúsculas; los
@@ -673,7 +672,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   «Interruptor Sí/No» (`bandera`), «De una tabla» (`tabla`; un `tramo` se ve así y no se ofrece) y «Variante» (`opcion`, una por fórmula). Un número
   escrito en C es «Valor fijo» y lo que empieza con `=`, «Cálculo»; los demás se eligen en el menú. Cambiarlo conserva id, etiqueta, descripción, la
   salida y la banda (si la fila sigue sumando) y se rechaza con el motivo si la fórmula deja de valer.
-- **Cifras de prueba** — `calcularLaVistaPrevia()`, «Vista previa» del editor: `evaluar()` con datos en 0, opciones apagadas, variante por
+- **Cifras de prueba** — `calcularLaVistaPrevia()`, con lo que arranca la unidad de ejemplo: `evaluar()` con datos en 0, opciones apagadas, variante por
   defecto, tipos de cambio de hoy y tablas vivas; no se guarda.
 - **Texto vigente** — `textoVigente()` (`entities/formula/texto-vigente.ts`): el texto de una fila con el valor del ⚙ de una constante escrito
   en su lugar (`al_dia`, `reescrito`) o «el texto ya no manda» (`no_manda`).
@@ -1540,23 +1539,22 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Nodo auxiliar** — `<fila>__<n>` en `compilarExpresion()`: cada operación anidada o número de una fórmula como texto, numerado en
   post-orden; cuáles lo son, `auxiliaresDe()` (`compilador-auxiliares.ts`). La constante auxiliar no pide celda en el diseño.
 - **Fila (de la fórmula)** — `Fila`, `filasDe()` (`entities/formula/filas.ts`): un nodo que no es auxiliar de otro, con sus auxiliares y su
-  `texto`; una línea del editor.
-- **Editor de la fórmula** — `EditorDeLaFormula` (`features/formula/components/editor/`), `?panel=editar-formula`: donde se escriben en texto
-  las filas de la fórmula de un origen, sobre el borrador o la publicada; compila cada fila al aplicar. En la pantalla se llama «Modo avanzado».
-- **Modo avanzado** — el editor de la fórmula en texto (`?panel=editar-formula`), detrás del botón «Modo avanzado» de la planilla; comparte la
-  fórmula de trabajo con ella. No es «Avanzado» (la sección de la hoja que se edita en un modal).
-- **Planilla de la fórmula** — `PlanillaDeLaFormula` (`features/formula/components/planilla/`): la vista por defecto de la pestaña «Fórmula», como la
-  planilla de V1: filas numeradas con A · concepto, B · %, C · valor y D · de dónde sale, en bandas, con las celdas que se editan marcadas.
-- **Banda (de la planilla)** — `BandaDeLaPlanilla`, `bandasDeLaPlanilla()`: un tramo de la planilla con su cabecera: «Tipo de cambio», «Unidad de
-  ejemplo», «Variante», cada grupo con su color, y «Sin grupo».
+  `texto`; una fila numerada de la planilla.
+- **Planilla de la fórmula** — `PlanillaDeLaFormula` (`features/formula/components/planilla/`), `hojaDeLaPlanilla()`: la pestaña «Planilla» del editor de
+  una fórmula del origen, que se edita como una hoja de cálculo (`role="grid"`): las filas en el orden en que se calculan, numeradas de 1 a n, con A ·
+  concepto, B · %, C · valor y D · de dónde sale. Se escribe en la celda o en la **Barra de fórmula**, con **Referencias (de la planilla)**; las filas se
+  insertan, duplican, mueven y eliminan desde su «⋯», el clic derecho, Alt+↑/↓ o arrastrando su número. Es el único editor de la fórmula.
+- **Banda (de la planilla)** — `TramoDeLaHoja` (`entities/formula/hoja-de-la-planilla.ts`): un tramo de filas seguidas con el mismo grupo, con su cabecera
+  (etiqueta, plazo y tipo de cambio) y el color del grupo; un grupo partido en dos tramos son dos bandas. Se crea, renombra, colorea y quita desde su «⋯»
+  o el de la planilla (`bandas.ts`). Las filas sin grupo no llevan cabecera.
 - **De dónde sale** — `deDondeSale()` (`entities/formula/de-donde-sale.ts`), la columna D de la planilla: lo que calcula una fila, en palabras y con
   las etiquetas de lo que nombra («(Remate + Fees) × 4 %», «monto fijo»).
-- **Unidad de ejemplo** — `UnidadDeEjemplo` (`entities/formula/unidad-de-ejemplo.ts`): lo que se tipea en la banda «Unidad de ejemplo» de la planilla
-  (los `input`, los datos del vehículo, las banderas y la variante) para ver el efecto de cada cambio en C, «Totales» y la tarjeta en vivo. Arranca
-  en ceros como las «Cifras de prueba» y no se guarda.
-- **Barra de fórmula** — `BarraDeFormula`, arriba de la tabla de la planilla: el texto de la fila elegida, que se edita y se aplica como en el Modo
-  avanzado (una fila a la vez).
-- **Cifras de prueba** — `calcularLaVistaPrevia()`, «Vista previa» del editor: `evaluar()` con datos en 0, opciones apagadas, variante por
+- **Unidad de ejemplo** — `UnidadDeEjemplo` (`entities/formula/unidad-de-ejemplo.ts`): lo que se escribe en C en las filas del asesor, los datos del
+  vehículo, los interruptores y la variante para ver el efecto de cada cambio en C, «Totales» y la tarjeta en vivo. Arranca en ceros como las «Cifras
+  de prueba», vuelve a ceros desde el «⋯» de la planilla y no se guarda.
+- **Barra de fórmula** — `BarraDeFormula` (`components/planilla/barra/`), fija arriba de la cuadrícula: la celda activa, «fx» y su texto, el mismo que se
+  edita en la celda (uno solo a la vez), con cada referencia pintada de su color, la leyenda, las sugerencias y el error con su tramo.
+- **Cifras de prueba** — `calcularLaVistaPrevia()`, con lo que arranca la unidad de ejemplo: `evaluar()` con datos en 0, opciones apagadas, variante por
   defecto, tipos de cambio de hoy y tablas vivas; no se guarda.
 - **Texto vigente** — `textoVigente()` (`entities/formula/texto-vigente.ts`): el texto de una fila con el valor del ⚙ de una constante escrito
   en su lugar (`al_dia`, `reescrito`) o «el texto ya no manda» (`no_manda`).
