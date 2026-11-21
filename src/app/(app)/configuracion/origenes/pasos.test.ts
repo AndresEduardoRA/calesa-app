@@ -42,7 +42,7 @@ describe('destinos de «Para cotizar y mover»', () => {
       `${base}/datos`,
       `${base}/campos`,
       `${base}/flujo`,
-      `${base}/formula`,
+      `${base}/formulas`,
       `${base}/formula/tarjeta`,
     ])
   })

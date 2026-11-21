@@ -7,10 +7,10 @@ import { HUECOS_DE_FORMULA_EN_LA_HOJA } from './huecos-en-la-hoja'
 afterEach(cleanup)
 
 describe('EnlaceDeLaFormulaSinPublicar', () => {
-  it('lleva a la fórmula de ese origen, con el mismo texto y las mismas clases', () => {
+  it('lleva a las fórmulas de ese origen, con el mismo texto y las mismas clases', () => {
     render(<EnlaceDeLaFormulaSinPublicar origenId="o1" />)
     const enlace = screen.getByRole('link', { name: 'Ir a la configuración de cotización' })
-    expect(enlace.getAttribute('href')).toBe('/configuracion/origenes/o1/formula')
+    expect(enlace.getAttribute('href')).toBe('/configuracion/origenes/o1/formulas')
     expect(enlace.className).toContain('min-h-11')
     expect(enlace.className).toContain('md:min-h-8')
   })

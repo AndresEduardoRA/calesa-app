@@ -12,16 +12,17 @@ const SIN_ACCESO = 'Ya no configuras este origen.'
 const SESION_QUE_NO_VALE = 'Tu sesión ya no vale: vuelve a entrar.'
 
 // La ruta se queda donde estaba, fuera de la página del origen: hasta chore/quitar-plantillas-de-v1.
-export const rutaDePlantillasDeV1 = (origenId: string) =>
-  `/configuracion/cotizacion/${encodeURIComponent(origenId)}/plantillas-de-v1`
+export const rutaDePlantillasDeV1 = (origenId: string, formulaDelOrigenId: string) =>
+  `/configuracion/cotizacion/${encodeURIComponent(origenId)}/plantillas-de-v1?formula=${encodeURIComponent(formulaDelOrigenId)}`
 
 export async function pedirPlantillasDeV1(
   origenId: string,
+  formulaDelOrigenId: string,
   senal?: AbortSignal,
 ): Promise<Resultado<DatosDePlantillasDeV1>> {
   let respuesta: Response
   try {
-    respuesta = await fetch(rutaDePlantillasDeV1(origenId), {
+    respuesta = await fetch(rutaDePlantillasDeV1(origenId, formulaDelOrigenId), {
       redirect: 'manual',
       cache: 'no-store',
       ...(senal === undefined ? {} : { signal: senal }),

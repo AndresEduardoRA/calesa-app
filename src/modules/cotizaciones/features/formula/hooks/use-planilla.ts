@@ -25,6 +25,8 @@ import {
   SIN_CANDIDATAS,
 } from '../components/editor/miembros-de-los-grupos'
 import { filasVisibles } from './use-editor-de-la-formula.soporte'
+import { useCamposQueFaltan } from './use-campos-que-faltan'
+import { useFilaPedida } from './use-fila-pedida'
 import { useTonos } from './use-tonos'
 import { useUnidadDeLaPlanilla } from './use-unidad-de-la-planilla'
 
@@ -139,6 +141,8 @@ function useEleccion(editor: PropsDeLaPlanilla['editor'], nodos: ReadonlyMap<str
     },
     [abierta, nodos, soltarLaCreada],
   )
+  // `?fila=` (el «Ir a la fila» de «Activar»): la elige al abrir, sin texto sin aplicar todavía.
+  useFilaPedida(setElegida)
   const deLaBarra = abierta?.id ?? editor.nueva.creada ?? elegida
   return { deLaBarra, alElegir, aviso: abierta === null ? null : aviso, enfocar }
 }
@@ -194,6 +198,7 @@ export function usePlanilla(p: PropsDeLaPlanilla) {
   const acciones = useAccionesDeLaUnidad(p.alCambiarUnidad)
   const deLasBandas = useDeLasBandas(p, c)
   const motivo = motivoDeEspera(editor)
+  const faltan = useCamposQueFaltan(p.origen.id, editor.trabajo.definicion.nodos)
   const ctx: ContextoDeLasFilas = {
     editor,
     nodos,
@@ -206,6 +211,7 @@ export function usePlanilla(p: PropsDeLaPlanilla) {
     idDelMotivo,
     alElegir: eleccion.alElegir,
     acciones,
+    faltan,
   }
   const cabecera = p.diseno?.cabecera
   return {

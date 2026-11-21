@@ -51,6 +51,12 @@ const nextConfig: NextConfig = {
   redirects() {
     return Promise.resolve([
       { source: '/configuracion', destination: '/configuracion/inicio', permanent: true },
+      // Una fórmula del origen sin parte abre su planilla (308, con su consulta).
+      {
+        source: `/configuracion/origenes/:id(${ID})/formulas/:formula(${ID})`,
+        destination: '/configuracion/origenes/:id/formulas/:formula/planilla',
+        permanent: true,
+      },
       // Las páginas de Configuración › Cotización y Logística que se mudaron a la página de cada origen y a Catálogos (308, con su
       // consulta). Las raíces (`/configuracion/cotizacion`, `/flujos`, `/logistica`) dependen de la consulta o del permiso: son `route.ts`.
       // `:origen` es un id: `[origen]/plantillas-de-v1` (dos segmentos) sigue en su `route.ts`.

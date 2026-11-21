@@ -10411,6 +10411,7 @@ export type Database = {
       }
       cotizacion_paquete_aplicar: {
         Args: {
+          p_formula_del_origen?: string
           p_formula_esperada: string
           p_origen: string
           p_paquete: Json

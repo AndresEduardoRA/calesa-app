@@ -12,6 +12,7 @@ import {
 import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
 import { publicarFormulaConTexto } from './soporte/formula-editor'
 import { literal, sql } from './soporte/sql'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // Las funciones de Excel de la fórmula (`docs/COTIZADOR.md` › «Fórmulas como texto»): la fila `comision` se reescribe en la barra de fórmula de la planilla con
 // SI, una comparación, MAX y BUSCARV por tramo sobre una tabla de referencia del origen, se publica y la hoja de cotizar la calcula en la base a cada lado del
@@ -96,8 +97,8 @@ test('la comisión con SI, MAX y BUSCARV se escribe en la planilla, se publica y
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/origenes/${origen.id}/formula`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origen.id, 'planilla')
+  await enLaPestana(page, 'Planilla')
 
   // (1) Una tabla que el origen no tiene: el error en la barra y la fila igual.
   await planilla(page).getByRole('button', { name: 'Elegir Comisión' }).click()

@@ -12,6 +12,7 @@ import {
   darRolDePrueba,
 } from './soporte/base'
 import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
+import { abrirLaFormula, enElEditor } from './soporte/rutas-de-la-formula'
 
 // La cotización de cada origen en su página y lo de toda la empresa en Catálogos (`docs/UX.md` › «La página del origen» y «Catálogos»): la pestaña
 // Fórmula con sus sub-pestañas Fórmula · Hoja · Tarjeta y la pestaña Tablas, cada una su ruta; Colores, Niveles y Vigencia en Catálogos, por el
@@ -75,26 +76,32 @@ async function enElCatalogo(page: Page, ruta: RegExp, titulo: string, frase: str
   await expect(page.getByRole('main').getByText(frase, { exact: true })).toBeVisible()
 }
 
-test('E2E escritorio · la Fórmula de un origen en sus sub-pestañas, y su pestaña Tablas', async ({
+test('E2E escritorio · las Fórmulas de un origen, el editor de una en sus pestañas, y su pestaña Tablas', async ({
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
   const id = conFormula.id
   await page.goto(`${ORIGENES}/${id}/datos`)
   await expect(page.getByRole('heading', { name: conFormula.nombre, level: 1 })).toBeVisible()
-  await page.getByRole('tab', { name: 'Fórmula', exact: true }).first().click()
-  await expect(page).toHaveURL(new RegExp(`${ORIGENES}/${id}/formula$`))
-  await enLaPestana(page, 'Fórmula')
+  await page.getByRole('tab', { name: 'Fórmulas', exact: true }).click()
+  await expect(page).toHaveURL(new RegExp(`${ORIGENES}/${id}/formulas$`))
+  await enLaPestana(page, 'Fórmulas')
+  await page
+    .getByRole('link', { name: /^Editar «/ })
+    .first()
+    .click()
+  await expect(page).toHaveURL(enElEditor(id, 'planilla'))
+  await enLaPestana(page, 'Planilla')
   await page.getByRole('tab', { name: 'Hoja', exact: true }).click()
-  await expect(page).toHaveURL(new RegExp(`${ORIGENES}/${id}/formula/hoja$`))
+  await expect(page).toHaveURL(enElEditor(id, 'hoja'))
   await enLaPestana(page, 'Hoja')
-  // Las pestañas del origen siguen marcando «Fórmula» bajo cada sub-pestaña.
-  await expect(page.getByRole('tab', { name: 'Fórmula', exact: true }).first()).toHaveAttribute(
+  // Las pestañas del origen siguen marcando «Fórmulas» en el editor de una fórmula.
+  await expect(page.getByRole('tab', { name: 'Fórmulas', exact: true })).toHaveAttribute(
     'aria-selected',
     'true',
   )
   await page.getByRole('tab', { name: 'Tarjeta', exact: true }).click()
-  await expect(page).toHaveURL(new RegExp(`${ORIGENES}/${id}/formula/tarjeta$`))
+  await expect(page).toHaveURL(enElEditor(id, 'tarjeta'))
   await enLaPestana(page, 'Tarjeta')
   await page.getByRole('tab', { name: 'Tablas', exact: true }).click()
   await expect(page).toHaveURL(new RegExp(`${ORIGENES}/${id}/tablas$`))
@@ -132,13 +139,13 @@ test('E2E escritorio · quien configura un origen no abre uno ajeno, y en Catál
   page,
 }) => {
   await entrar(page, configuradora, { fresco: true })
-  await page.goto(`${ORIGENES}/${conFormula.id}/formula/hoja`)
+  await abrirLaFormula(page, conFormula.id, 'hoja')
   await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Ver los orígenes' })).toHaveAttribute(
     'href',
     ORIGENES,
   )
-  await page.goto(`${ORIGENES}/${sinFormula.id}/formula/hoja`)
+  await abrirLaFormula(page, sinFormula.id, 'hoja')
   await enLaPestana(page, 'Hoja')
   await page.goto(`${ORIGENES}/no-es-un-origen/tablas`)
   await expect(page.getByRole('heading', { name: 'Esta página no existe' })).toBeVisible()
@@ -161,7 +168,7 @@ test('E2E escritorio · quien sólo ve los roles abre sólo Catálogos › Nivel
   await expect(page.getByRole('heading', { name: 'Niveles', level: 1 })).toBeVisible()
   await expect(menu(page).getByRole('link', { name: 'Colores', exact: true })).toHaveCount(0)
   await expect(menu(page).getByRole('link', { name: 'Vigencia', exact: true })).toHaveCount(0)
-  await page.goto(`${ORIGENES}/${conFormula.id}/formula`)
+  await page.goto(`${ORIGENES}/${conFormula.id}/formulas`)
   await expect(page.getByText('No puedes abrir este origen')).toBeVisible()
   await expect(page.getByRole('link', { name: 'Ver los orígenes' })).toHaveCount(0)
 })

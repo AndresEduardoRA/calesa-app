@@ -83,7 +83,7 @@ export const PARTES_DEL_ORIGEN = [
   'campos',
   'categorias',
   'flujo',
-  'formula',
+  'formulas',
   'tablas',
 ] as const
 
@@ -124,6 +124,29 @@ export function rutaDeConfiguracionDeCotizacion(
 ): Route {
   return conConsulta(
     `${RUTAS.origenes}/${encodeURIComponent(origenId)}/${RUTA_EN_EL_ORIGEN[pestana]}`,
+    consulta,
+  )
+}
+
+// Lo que se edita de una fórmula del origen, en su orden: cada parte es una sub-ruta `…/origenes/<id>/formulas/<fórmula>/<parte>`.
+export const PARTES_DE_LA_FORMULA = ['planilla', 'hoja', 'tarjeta'] as const
+
+export type ParteDeLaFormula = (typeof PARTES_DE_LA_FORMULA)[number]
+
+// La lista de las fórmulas de un origen (`…/origenes/<id>/formulas`), con su consulta (`?panel=`); sin consulta, sin `?`.
+export function rutaDeLasFormulas(origenId: string, consulta?: Record<string, string>): Route {
+  return conConsulta(`${RUTAS.origenes}/${encodeURIComponent(origenId)}/formulas`, consulta)
+}
+
+// Una parte de una fórmula del origen (`…/formulas/<fórmula>/planilla|hoja|tarjeta`), con su consulta (`?fila=`, `?lugar=`, `?panel=`).
+export function rutaDeLaFormula(
+  origenId: string,
+  formulaId: string,
+  parte: ParteDeLaFormula,
+  consulta?: Record<string, string>,
+): Route {
+  return conConsulta(
+    `${RUTAS.origenes}/${encodeURIComponent(origenId)}/formulas/${encodeURIComponent(formulaId)}/${parte}`,
     consulta,
   )
 }

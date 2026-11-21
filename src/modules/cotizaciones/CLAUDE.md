@@ -146,24 +146,29 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   cada cáscara de `diferido()` en su `diferidos.tsx` porque lo que importa la hoja viaja en la carga en frío de `/cotizaciones/nuevo` (4-73).
   `usePaginasDelHistorial(de)` descarta lo viejo con `ultimo`; `<ListaDelHistorial>` espera 300 ms el esqueleto salvo con `esperarEsqueleto={false}`.
   El bloque «Cotizaciones» de `/leads/[id]` (con `cotizaciones.ver` en algún origen, sin mirar la cartera: la RLS recorta; `pantallas/listado-fichas`, bajo el título con «Cotizar» que arma `src/app`) es la fila de tarjetas.
-- **La configuración** vive en la página de cada origen (la arma `src/app/(app)/configuracion/origenes/[id]/`): la pestaña Fórmula con sus sub-pestañas
-  Fórmula · Hoja · Tarjeta y la pestaña Tablas. Cada sección del módulo recibe el **origen abierto** (`{ id, nombre, activo }`) que `src/app` ya validó,
-  sin selector propio; las URL las arma `rutaDeConfiguracionDeCotizacion(origenId, pestana, consulta?)` de `@/shared/lib/rutas` (`formula|hoja|tarjeta|
-tablas` → `/configuracion/origenes/<id>/formula|formula/hoja|formula/tarjeta|tablas`) y las actions revalidan `RUTAS.origenes` con `'layout'`. Lo de toda la
+- **La configuración** vive en la página de cada origen (la arma `src/app/(app)/configuracion/origenes/[id]/`): la pestaña Fórmulas (la lista, área
+  `formulas-del-origen`, su ficha en `areas/formulas-del-origen/CLAUDE.md`), el editor de cada fórmula con Planilla · Hoja · Tarjeta
+  (`formulas/[formula]/planilla|hoja|tarjeta`, bajo un layout que lee la fórmula por PK con `leerLaFormulaDelOrigen()`, `cache()`, y dibuja su cabeza:
+  nombre, estado, «⋯» y «Empezar desde una plantilla») y la pestaña Tablas. Cada sección del módulo recibe el **origen abierto** (`{ id, nombre, activo }`)
+  que `src/app` ya validó, sin selector propio; las URL las arman `rutaDeLasFormulas(origenId, consulta?)`, `rutaDeLaFormula(origenId, formulaId, parte,
+consulta?)` y, para quien no conoce la fórmula, la ruta corta `rutaDeConfiguracionDeCotizacion(origenId, 'formula'|'hoja'|'tarjeta'|'tablas', consulta?)`
+  (`/configuracion/origenes/<id>/formula|formula/hoja|formula/tarjeta`: un `route.ts` que responde 308 a la fórmula de trabajo, o a la lista si no hay),
+  de `@/shared/lib/rutas`; las actions de la planilla, la hoja, la tarjeta y las tablas revalidan `RUTAS.origenes` con `'layout'`. Lo de toda la
   empresa (colores, niveles, vigencia y las tablas compartidas) está en Configuración › Catálogos (`/configuracion/catalogos/*`; colores y niveles revalidan
-  `RUTAS.catalogos`). Las sub-pestañas Fórmula, Hoja y Tarjeta leen y escriben la **fórmula de trabajo** del origen (glosario;
-  `leerFormulaDeTrabajoSobre()` de `infra/queries/formula-de-trabajo.ts`, espejo de `_fdo_de_trabajo()`): lo leído lleva su `formulaDelOrigenId` y cada
-  escritura lo manda (`p_formula_del_origen`), así escribe en la que leyó aunque otra pase a ser la de trabajo; nulo (un origen sin ninguna) lo omite y la
-  base usa la de trabajo, que el primer guardado crea. El ⚙ de la hoja (celda y cabecera) lee y cambia la publicada de la **activa**. La sub-pestaña
-  Tarjeta va a ancho completo y su página pide la referencia del lienzo sin esperarla
-  (`origenes/[id]/formula/tarjeta/referencia.ts`, con `leerListadoDeCotizaciones()` y `UNA` del área `listado`, `leerHojaDeUnaGuardada()`, y `referenciaPlana()` y
+  `RUTAS.catalogos`). Planilla, Hoja y Tarjeta reciben `formula: FormulaDelOrigen` del layout y leen y escriben **esa** fórmula del origen (la de la URL):
+  cada lectura va por su id y cada escritura lo manda (`p_formula_del_origen`); sus `key` llevan el id de la fórmula. Las RPC sin id y la ruta corta usan la
+  **fórmula de trabajo** (glosario; `leerFormulaDeTrabajoSobre()` de `infra/queries/formula-de-trabajo.ts`, espejo de `_fdo_de_trabajo()`). El ⚙ de la
+  hoja (celda y cabecera) lee y cambia la publicada de la **activa**. Los avisos de la copia (`AvisosDeLaCopia`, `entities/avisos-de-la-copia.ts`) y los
+  datos del vehículo que faltan (`useCamposQueFaltan()`, `entities/campos-que-faltan.ts`, espejo de `_fdo_campos_que_faltan`) son del núcleo y los
+  dibuja la planilla. La pestaña Tarjeta va a ancho completo y su página pide la referencia del lienzo sin esperarla
+  (`origenes/[id]/formulas/[formula]/tarjeta/referencia.ts`, con `leerListadoDeCotizaciones()` y `UNA` del área `listado`, `leerHojaDeUnaGuardada()`, y `referenciaPlana()` y
   `calculoDeLoGuardado()` del núcleo).
-- **Empezar desde una plantilla** (área `plantilla`; `docs/COTIZADOR.md` › «Plantillas de V1»): la cabeza de la pestaña Fórmula del origen pone
-  `EmpezarDesdeUnaPlantilla` (`pantallas/plantilla-de-v1.ts`, a la derecha de las sub-pestañas, con el hueco `Lienzo` lleno con
+- **Empezar desde una plantilla** (área `plantilla`; `docs/COTIZADOR.md` › «Plantillas de V1»): la cabeza del editor de una fórmula del origen pone
+  `EmpezarDesdeUnaPlantilla` (`pantallas/plantilla-de-v1.ts`, a la derecha de Planilla · Hoja · Tarjeta, con el hueco `Lienzo` lleno con
   `LienzoDeLaPlantillaDiferido`). El modal (`?panel=plantillas-de-v1`, diferido, una `key` por apertura) pide al abrirse `GET [origen]/plantillas-de-v1` (la
   ruta de `src/app` compone `getTiposCambio()` y `leerLayout()` con `leerPlantillasDeV1()` de `index.ts`; la lee `areas/plantilla/composicion-plantillas-de-v1.client.ts`,
   que sólo importa el modal) y la action `aplicarLaPlantillaDeV1` (`features/plantilla/actions/`) elige los colores, reescribe sus claves y llama a
-  `cotizacion_paquete_aplicar()` con la clave del paquete y las versiones de los borradores. Los paquetes (`entities/plantillas-de-v1/`) nunca viajan al
+  `cotizacion_paquete_aplicar()` con la clave del paquete, las versiones de los borradores y el id de esa fórmula (`p_formula_del_origen`). Los paquetes (`entities/plantillas-de-v1/`) nunca viajan al
   navegador (`solo-del-servidor.test.ts`: una Server Action corta el camino).
 - Niveles: `/configuracion/catalogos/niveles` (`equipo.roles.ver|gestionar`; `?panel=nuevo-nivel|renombrar-nivel|eliminar-nivel&nivel=<id>`).
 - Con Live, las cifras de la ayuda de una celda de dinero pasan por `<Monto>`; las de otra celda quedan a la vista.
@@ -186,10 +191,10 @@ tablas` → `/configuracion/origenes/<id>/formula|formula/hoja|formula/tarjeta|t
   `entities/tablas/` (`edicion-de-columnas.ts`, el reductor; `validacion-de-columnas.ts`, espejo de `_tabla_referencia_columnas_validas()`; `estructura.ts`,
   `claveDeLaTabla()` y los topes; `resultado-de-estructura.ts`, los rechazos de las tres RPC). Los dos paneles preguntan al cerrar con cambios
   (`<CambiosSinGuardar preguntaAlCerrar>`).
-- **La fórmula** (área `formula`; `/configuracion/origenes/<id>/formula`, `cotizaciones.configurar`, a ancho completo): arriba la publicada, el
+- **La fórmula** (área `formula`; la pestaña «Planilla»: `/configuracion/origenes/<id>/formulas/<fórmula>/planilla`, `cotizaciones.configurar`, a ancho completo): arriba la publicada, el
   borrador y las versiones (`VistaDeLaFormula`) y abajo la sesión de edición (`SesionDeLaFormula` por `diferido()`: lee la versión desde el navegador y
   llama **una vez** a `useEditorDeLaFormula`), que dibuja la planilla (`components/planilla/`, por `diferido()`; lo que arma, `usePlanilla()`) o, con
-  `?panel=editar-formula`, el Modo avanzado (`EditorDeLaFormula` como marco y `ListaDeFilas` por `diferido()`), sobre la misma fórmula de trabajo. El
+  `?panel=editar-formula`, el Modo avanzado (`EditorDeLaFormula` como marco y `ListaDeFilas` por `diferido()`), sobre la misma fórmula del origen. El
   catálogo de tablas del origen (`leerCatalogoDeTablas()`: clave y columnas de las `tablas_referencia` activas del origen y las compartidas, la del origen
   gana; tope 100; nulo si falla) lo lee la sección en paralelo con la fórmula y llega a la sesión para revisar BUSCARV al compilar. La unidad
   de ejemplo y el modo viven en la sesión; «Publicar…» espera con cambios aplicados sin guardar (`alCambiarPendientes`, en `useLayoutEffect`). La `key` de la
@@ -223,7 +228,7 @@ no-cache`; con «Ver como» (sin leer la huella), sin el primer recálculo o inc
   huella y el armado. `/cotizaciones/[id]/portada` (la ruta vieja) es un 308 a `/imagen` con su consulta (`next.config.ts`). El componente `<ImagenDeLaTarjeta>` sale por
   `pantallas/tarjeta-imagen.ts` (marco de la proporción que le den, pedida a la vista y de a cuatro por página con `useCargaDeLaImagen()`, recuadro con el total, visor por `diferido()` con la clave de
   `claveDelVisorDeLaImagen()`, que acepta también la de antes, `portada-…`; Modo Live por CSS en `globals.css`).
-- **El diseño** (la sub-pestaña «Hoja»: `/configuracion/origenes/<id>/formula/hoja`, `cotizaciones.configurar`): lee el borrador o la publicada y los niveles de
+- **El diseño** (la pestaña «Hoja»: `/configuracion/origenes/<id>/formulas/<fórmula>/hoja`, `cotizaciones.configurar`): lee el borrador o la publicada y los niveles de
   `cotizaciones_niveles` (no de `niveles_con_uso()`); edita secciones, celdas (ver y editar juntos con `ponerNiveles()`; `admiteNivel` apaga lo que la base
   rechazaría con `nivel_no_admitido`), atajos, interruptor, ayuda, modos, la tarjeta del total (variante y subtotal no se editan) y **el aspecto** de cada
   pieza (`components/aspecto/`, operaciones puras en `entities/diseno/edicion-del-aspecto.ts`: el valor por defecto quita la clave), con el aviso «se deduce
@@ -248,7 +253,8 @@ no-cache`; con «Ver como» (sin leer la huella), sin el primer recálculo o inc
 
 ## Áreas
 
-El módulo se parte por **área**: `listado`, `tarjeta`, `plantilla`, `formula`, `diseno`, `tablas`, `papelera`, `final`, `comprobantes`, `comentarios`.
+El módulo se parte por **área**: `listado`, `tarjeta`, `plantilla`, `formula`, `formulas-del-origen`, `diseno`, `tablas`, `papelera`, `final`, `comprobantes`,
+`comentarios`.
 Lo demás es el **núcleo** (la hoja, guardar, encima, revisiones, historial, la fila de tarjetas de las fichas (`features/fichas/`), niveles, el motor, el compilador, los validadores, el diseño, la apertura, la
 ruta, y las plantillas de V1 de `entities/plantillas-de-v1/`): lo que comparten. La lista y las carpetas del núcleo están en `scripts/guardas/areas-de-cotizaciones.ts`.
 
@@ -469,7 +475,7 @@ la pide: la base de su ETag), `comprobante_emitir|anular`, `comprobantes_serie_c
   la forma 2 que nombre un dato entra a ese aplanado, o quedaría fuera de las reglas y de K4. La geometría **resuelve cada celda antes de dibujar**
   (`resolverElContenido()`): los dibujos sólo ven un contenido simple y un cambio en cómo se resuelve sube `VERSION_DEL_DIBUJO`. La geometría toma valores, estados y totales por id de nodo (`CalculoDeLaTarjeta`), nunca de la hoja de quien mira. En una guardada dibuja **lo guardado** (`calculoDeLoGuardado()`: el
   snapshot, con los estados del primer recálculo) y lo que difiere se dice fuera.
-- **El editor de la plantilla** (la sub-pestaña «Tarjeta»: `/configuracion/origenes/<id>/formula/tarjeta`) escribe **sólo la forma 2**: una forma 1 se convierte
+- **El editor de la plantilla** (la pestaña «Tarjeta»: `/configuracion/origenes/<id>/formulas/<fórmula>/tarjeta`) escribe **sólo la forma 2**: una forma 1 se convierte
   al abrirla (`cuadriculaParaEditar()`) y no se guarda sola. Al navegador llega sólo el contexto reducido (`contextoParaElNavegador(contexto, cuadricula)`:
   los nodos del nivel «todos» y los restringidos que la cuadrícula nombra, nunca el cuerpo de un nodo) y nada se importa del área `formula`. **Lo
   incompleto no sale del panel:** una lista o unas condiciones a medio armar viven en el borrador del panel (`useBorradorDeLaRegla()`) y al reductor llegan

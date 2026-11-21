@@ -14,6 +14,7 @@ import {
 import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
 import { sembrarBorrador, sembrarVersiones } from './soporte/formula-versiones'
 import { literal, sql } from './soporte/sql'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // Descartar el borrador de la fórmula desde la Fórmula de un origen (Configuración › Orígenes) (4.20-2c, `docs/UX.md` › «Cotización: fórmula (estados propios)»): un `<Confirmar>`
 // con su URL (`?panel=descartar-borrador`) que nombra el borrador, por `formula_descartar_borrador()`; lo descarta todo el que configura el origen (P2 del 4.20-2c),
@@ -64,8 +65,8 @@ test.afterAll(async () => {
 })
 
 async function abrirFormula(page: Page, origenId: string, resto = '') {
-  await page.goto(`/configuracion/origenes/${origenId}/formula${resto}`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origenId, 'planilla', resto)
+  await enLaPestana(page, 'Planilla')
 }
 
 const dialogo = (page: Page) =>

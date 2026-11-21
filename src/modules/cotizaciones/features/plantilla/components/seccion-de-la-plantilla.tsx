@@ -2,10 +2,11 @@ import { IdCardIcon } from 'lucide-react'
 import type { ComponentType } from 'react'
 import Link from 'next/link'
 import { datosO } from '@/shared/lib/errores'
-import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
+import { rutaDeLaFormula } from '@/shared/lib/rutas'
 import { buttonVariants } from '@/shared/ui/button'
 import { EstadoVacio } from '@/shared/ui/estados'
 import { leerPlantillaDelOrigen } from '../../../areas/plantilla/composicion'
+import type { FormulaDelOrigen } from '../../../entities/formula-del-origen'
 import { idsDelContexto, propsDelEditor } from '../../../entities/plantilla/props-del-editor'
 import {
   recortarLaReferencia,
@@ -19,6 +20,8 @@ type Origen = { id: string; nombre: string; activo: boolean }
 type Props = {
   // El origen abierto: la página ya comprobó que la persona tiene `cotizaciones.configurar` en él (este módulo no depende de `origenes`).
   origen: Origen
+  // La fórmula del origen que abre la URL: la ruta ya la leyó por id y origen.
+  formula: FormulaDelOrigen
   // La cotización de referencia del lienzo: la página la pide sin esperarla (la compone `src/app`, que cruza el listado, la hoja guardada, `leads` y `vehiculos`) y aquí
   // se espera en paralelo con la plantilla. Nunca rechaza: sin cotización o si no se leyó, lo dice.
   referencia: Promise<ReferenciaDeLaTarjeta>
@@ -33,23 +36,27 @@ type Props = {
 // nodos. La base vuelve a decidir (policy `plantillas_tarjeta: leer`). Una lectura de la plantilla que falla sube al `error.tsx` de la ruta, con «Reintentar».
 export async function SeccionDeLaPlantilla({
   origen,
+  formula,
   referencia,
   Lienzo,
   puedeCambiarElLogo,
 }: Props) {
-  const [lectura, deReferencia] = await Promise.all([leerPlantillaDelOrigen(origen.id), referencia])
+  const [lectura, deReferencia] = await Promise.all([
+    leerPlantillaDelOrigen(formula.id),
+    referencia,
+  ])
   const editor = propsDelEditor(datosO(lectura), origen)
   if (editor === null) {
     return (
       <EstadoVacio
         Icono={IdCardIcon}
-        titulo={`Falta publicar la fórmula de ${origen.nombre}: la tarjeta se arma con sus nodos.`}
+        titulo={`Falta publicar la planilla de «${formula.nombre}»: la tarjeta se arma con sus filas.`}
         accion={
           <Link
-            href={rutaDeConfiguracionDeCotizacion(origen.id, 'formula')}
+            href={rutaDeLaFormula(origen.id, formula.id, 'planilla')}
             className={buttonVariants({ className: 'min-h-11 md:min-h-8' })}
           >
-            Ir a la fórmula
+            Ir a la planilla
           </Link>
         }
         compacto

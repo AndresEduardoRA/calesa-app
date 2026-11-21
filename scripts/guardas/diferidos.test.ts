@@ -47,12 +47,12 @@ describe('el código diferido', () => {
 
   it('un import() de un componente fuera de diferido() no se hace en src/ (salvo datos)', () => {
     // Los `import()` que quedan son de datos o de reglas (la tabla de países, el seguimiento del alta)
-    // la E/S de «visto» (`composicion-vistos.client`: supabase-js, que una lista no carga en frío)
+    // la E/S de «visto» (`composicion-vistos.client`) y la lectura de las fórmulas archivadas de un origen (`areas/formulas-del-origen/composicion.client`): supabase-js, que una lista no carga en frío,
     // o el renderer del PDF, el de la imagen de la tarjeta de una cotización, su paso a WebP y el `sharp` del logo de la tarjeta, que corren sólo en el servidor
     // (4.18-3a: así otra ruta que importa `@/modules/cotizaciones` no carga react-pdf, `next/og` ni `sharp`): nunca de
     // un componente del navegador. Un componente diferido va en un `diferidos.tsx`.
     const permitidos =
-      /import\(\s*['"][^'"]*\/(tabla|primer-seguimiento|papaparse|leer|composicion-vistos\.client|infra\/tarjeta\/pdf\/pdf-de-la-tarjeta|infra\/tarjeta\/imagen\/imagen-de-la-tarjeta|infra\/tarjeta\/imagen\/webp-de-la-tarjeta)[^'"]*['"]\s*\)|import\(\s*['"]sharp['"]\s*\)/
+      /import\(\s*['"][^'"]*\/(tabla|primer-seguimiento|papaparse|leer|composicion-vistos\.client|areas\/formulas-del-origen\/composicion\.client|infra\/tarjeta\/pdf\/pdf-de-la-tarjeta|infra\/tarjeta\/imagen\/imagen-de-la-tarjeta|infra\/tarjeta\/imagen\/webp-de-la-tarjeta)[^'"]*['"]\s*\)|import\(\s*['"]sharp['"]\s*\)/
     const componentes = fuentes.flatMap((f) =>
       [...f.texto.matchAll(/\bimport\(\s*['"]([^'"]+)['"]\s*\)/g)]
         .filter((m) => !permitidos.test(m[0]) && !f.archivo.endsWith('/diferidos.tsx'))

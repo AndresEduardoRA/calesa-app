@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { afterAll, describe, expect, it } from 'vitest'
 
-// main-en-tanda.sh: integrar sin la rama al día. Se carga con `source` en un bash con lo mínimo de orquestador.sh (estado en archivos,
-// `log` a un archivo, `git`, `ghr` y `ghc` falsos que responden desde archivos de gh/) y se llama a cada función.
+// main-en-tanda.sh: main en rojo en una tanda, la red de seguridad. Se carga con `source` en un bash con lo mínimo de orquestador.sh (estado en archivos,
+// `log` a un archivo, `git` y `ghc` falsos que responden desde archivos de gh/) y se llama a cada función.
 const ORQ = resolve('scripts/orquestador')
 const raices: string[] = []
 afterAll(() => {
@@ -32,16 +32,7 @@ est_set() { mkdir -p "$EST/$1"; printf '%s\\n' "$3" >"$EST/$1/$2"; }
 git() { cat "$G/main"; }
 caidos_de() { echo "- e2e/x.spec.ts"; }
 urgente() { grep -q '^urgente: si' "$1"; }
-migraciones_tras_main() { return 1; }
 publicar_entrada() { cp "$1" "$G/publicada.md"; PUBLICADA=T900; }
-ghr() {
-  case "$*" in
-    "api --paginate repos/{owner}/{repo}/pulls/"*) cat "$G/files" ;;
-    "api repos/{owner}/{repo}/compare/"*) cat "$G/atras" ;;
-    "pr merge"*) echo "$*" >>"$G/merge" ;;
-    "api -X PUT"*) echo "$*" >>"$G/put" ;;
-  esac
-}
 ghc() { cat "$G/runs"; }
 source ${JSON.stringify(join(ORQ, 'main-en-tanda.sh'))}
 `
@@ -50,35 +41,6 @@ source ${JSON.stringify(join(ORQ, 'main-en-tanda.sh'))}
 
 const leer = (f: string) => (existsSync(f) ? readFileSync(f, 'utf8') : '')
 const MAIN = 'a'.repeat(40)
-const pr = (sha = 'abc') => JSON.stringify({ headRefOid: sha })
-
-describe('integrar_con_migraciones', () => {
-  it('con_migraciones mira si el PR agrega algo en supabase/migrations/', () => {
-    const raiz = nuevaRaiz()
-    writeFileSync(join(raiz, 'gh/files'), 'src/a.ts\nsupabase/migrations/20261119000000_x.sql\n')
-    expect(correr(raiz, 'con_migraciones 9 && echo si').stdout).toContain('si')
-    writeFileSync(join(raiz, 'gh/files'), 'src/a.ts\n')
-    expect(correr(raiz, 'con_migraciones 9 || echo no').stdout).toContain('no')
-  })
-
-  it('en verde y al día con main, lo integra con la punta probada', () => {
-    const raiz = nuevaRaiz()
-    writeFileSync(join(raiz, 'gh/atras'), '0\n')
-    correr(raiz, `integrar_con_migraciones T1 9 '${pr()}'`)
-    expect(leer(join(raiz, 'gh/merge'))).toBe('pr merge 9 --squash --match-head-commit abc\n')
-    expect(leer(join(raiz, 'gh/put'))).toBe('')
-  })
-
-  it('atrás de main, lo pone al día (una vez cada 15 min) y no lo integra', () => {
-    const raiz = nuevaRaiz()
-    writeFileSync(join(raiz, 'gh/atras'), '3\n')
-    correr(raiz, `integrar_con_migraciones T1 9 '${pr()}'`)
-    correr(raiz, `integrar_con_migraciones T1 9 '${pr()}'`)
-    expect(leer(join(raiz, 'gh/merge'))).toBe('')
-    expect(leer(join(raiz, 'gh/put')).trim().split('\n')).toHaveLength(1)
-    expect(leer(join(raiz, 'est/log'))).toContain('3 commits atrás de main')
-  })
-})
 
 describe('vigilar_main', () => {
   const corrida = (conclusion: string, sha = MAIN) =>

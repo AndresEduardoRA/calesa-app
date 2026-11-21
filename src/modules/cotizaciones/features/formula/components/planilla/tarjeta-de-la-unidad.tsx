@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useMemo, useTransition, type ComponentType } from 'react'
-import { rutaDeConfiguracionDeCotizacion } from '@/shared/lib/rutas'
+import { rutaDeLaFormula } from '@/shared/lib/rutas'
 import { Button } from '@/shared/ui/button'
 import { calculoDeLaUnidad } from '../../../../entities/formula/tarjeta-de-la-unidad'
 import type { VistaPrevia } from '../../../../entities/formula/vista-previa'
@@ -15,6 +15,7 @@ import { SelectorDeModo } from './selector-de-modo'
 
 type Props = {
   origenId: string
+  formulaDelOrigenId: string
   tarjeta: LecturaDeLaTarjetaEnVivo
   // El dibujo de la tarjeta: lo llena el área `tarjeta` (este módulo no la importa).
   TarjetaEnVivo: ComponentType<PropsDeLaTarjetaEnVivo>
@@ -25,7 +26,15 @@ type Props = {
   verTotalBs: boolean
 }
 
-function Cuerpo({ tarjeta, TarjetaEnVivo, vista, modo, verTotalBs, origenId }: Props) {
+function Cuerpo({
+  tarjeta,
+  TarjetaEnVivo,
+  vista,
+  modo,
+  verTotalBs,
+  origenId,
+  formulaDelOrigenId,
+}: Props) {
   const router = useRouter()
   const [releyendo, releer] = useTransition()
   const lectura = tarjeta.estado === 'lista' ? tarjeta.lectura : null
@@ -36,9 +45,9 @@ function Cuerpo({ tarjeta, TarjetaEnVivo, vista, modo, verTotalBs, origenId }: P
   if (tarjeta.estado === 'sin_tarjeta') {
     return (
       <p className="text-(--color-ink-soft)">
-        Este origen todavía no tiene tarjeta.{' '}
+        Esta fórmula todavía no tiene tarjeta.{' '}
         <Link
-          href={rutaDeConfiguracionDeCotizacion(origenId, 'tarjeta')}
+          href={rutaDeLaFormula(origenId, formulaDelOrigenId, 'tarjeta')}
           className="text-(--color-primario-ink) underline"
         >
           La imagen que recibe el cliente

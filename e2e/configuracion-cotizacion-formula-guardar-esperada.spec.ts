@@ -10,6 +10,7 @@ import {
 import { borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/cotizar-formula'
 import { sembrarBorrador } from './soporte/formula-versiones'
 import { literal, sql } from './soporte/sql'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // Publicar y descartar con la hora del borrador (4.21-3b-1, C9; cierra 4-8 de punta a punta): la pestaña manda el `actualizado_en` del borrador que leyó, y si otra
 // persona lo guardó después, la base da su PT409 («El borrador cambió después de que lo abriste…») con «Recargar»; tras recargar, se publica o se descarta el de ahora.
@@ -46,8 +47,8 @@ function guardaOtraPersona(origenId: string): void {
 }
 
 async function abrirFormula(page: Page, origenId: string) {
-  await page.goto(`/configuracion/origenes/${origenId}/formula`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origenId, 'planilla')
+  await enLaPestana(page, 'Planilla')
 }
 
 test('G6: si otra persona guardó el borrador, publicar da su conflicto con «Recargar» y, tras recargar, publica', async ({

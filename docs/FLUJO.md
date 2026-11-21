@@ -16,8 +16,9 @@ una rama, un PR y un commit en `main`. Nadie integra a mano ni espera a nadie: e
    guardas (hook `Stop`).
 3. **Entregar** (skill `entregar`): verificación local (abajo), docs al día, commits convencionales y
    `bash scripts/flujo/publicar.sh`, que empuja la rama, abre el PR con un título de commit convencional, le enciende el
-   **auto-merge con squash** y espera al CI. Verde: GitHub lo integra, el guion vuelve a `main` al día y borra las ramas integradas.
-   Rojo: dice qué job cayó; se arregla en la misma rama, se commitea y se vuelve a correr.
+   **auto-merge** y espera. Verde: entra a la **cola de integración**, que lo prueba combinado con `main` y los PR de delante y lo
+   integra; el guion vuelve a `main` al día y borra las ramas integradas. Nadie trae `main` a la rama. Rojo, o sacado de la cola: dice
+   qué job cayó; se arregla en la misma rama, se commitea y se vuelve a correr.
 4. **Nada queda a medias.** Un PR que no pasó se arregla o se cierra en la misma sesión; si la sesión se corta, el PR sigue solo
    (el auto-merge no depende de ella) y la siguiente lo ve con `gh pr list`.
 
@@ -36,6 +37,7 @@ del PR cuenta qué cambió, por qué y cómo se verificó: es la bitácora. No h
 | CI del PR (la autoridad)     | Nivel 1 (lint, tipos, mapa, título, orden de migraciones, `pnpm test` en 3 partes); «Base» si cambia código (reset, tipos sin diff, `db:probar` completo, privilegios, `db:lint`, advisors);                                                                                       |
 |                              | los e2e dirigidos a lo tocado, o el completo de escritorio en 8 bloques si toca un disparador del Nivel 2 (`.claude/rules/e2e.md`). `Listo · todo en verde` los resume                                                                                                             |
 |                              | Con contratos entre repos (`.claude/rules/contratos.md`): «Contrato · la base cumple sus versiones» (el proveedor) y «Contrato · el consumidor usa sólo lo fijado» (con los tipos sin diff)                                                                                        |
+|                              | Y otra vez en la cola de integración, sobre el commit combinado (`merge_group`): lo mismo que pidió el PR, con migraciones y contratos contra `HEAD^1` (`main` y los PR de delante)                                                                                                |
 | Cada noche (CI)              | El e2e completo con los dos proyectos sobre `main`, si hubo commits; si cae dos noches seguidas, el issue `noche-roja` entra a la cola (`scripts/flujo/noche.mjs`)                                                                                                                 |
 | Antes de desplegar           | El completo con los dos proyectos: Actions › ci › Run workflow, `proyectos: ambos` (lo dispara la persona), o `pnpm test:e2e:completo` en local                                                                                                                                    |
 
@@ -51,14 +53,20 @@ microdecisiones sola (`.claude/rules/ui.md`).
 ## GitHub
 
 - `main` está protegida: sólo avanza por PR y exige el check **`Listo · todo en verde`** (el job `listo` de `ci.yml`, que resume a los
-  demás), **sin exigir la rama al día** («Require branches to be up to date» apagado): un PR en verde entra aunque `main` haya
-  avanzado. Lo que esa regla cuidaba: un PR con migraciones nuevas no lleva auto-merge y lo integran `publicar.sh` o el orquestador en
-  verde y al día con `main` (si quedó atrás, `PUT …/pulls/<n>/update-branch` por `gh api` y el CI otra vez); y si dos PR juntos dejan
-  `main` en rojo, el orquestador encola la tarea urgente de arreglarlo y no arranca tareas nuevas hasta verlo verde
-  (`scripts/orquestador/main-en-tanda.sh`). El repo sólo admite squash, con auto-merge y borrado de la rama al integrar. La persona,
-  como administradora, puede saltarse la protección; una sesión no empuja `main` (`.claude/hooks/bloquear-peligrosos.sh`).
+  demás), sin exigir la rama al día. Además exige la **cola de integración** (un ruleset de `main`: «Require merge queue», método
+  squash, el mismo check): un PR en verde entra a la cola con su auto-merge, GitHub arma el grupo (`main`, los PR de delante y este,
+  un commit cada uno), corre `ci.yml` sobre él (`merge_group`) y, en verde, lo integra. Un PR corre su CI una vez y otra en el grupo,
+  no una más por cada PR que entra antes; nadie trae `main` a la rama, y el orden de migraciones lo valida el grupo. Si el grupo cae,
+  GitHub saca al PR: `publicar.sh` dice el motivo y sale con 1; el orquestador renombra sus migraciones si quedaron antes de una de
+  `main`, lo vuelve a encolar si lo caído es ajeno (la máquina del CI, un e2e que no toca), o lo manda a arreglo como un choque
+  (`scripts/orquestador/integracion.sh`). La cola se activa en un ruleset, no en la protección clásica: `cola_activa`
+  (`scripts/flujo/cola-de-integracion.sh`) sólo lee los rulesets. Sin la cola, el auto-merge integra como siempre, sin probar el PR
+  combinado. Si igual `main` queda en rojo, el orquestador encola la tarea urgente de arreglarlo y no arranca tareas nuevas hasta verlo
+  verde (`scripts/orquestador/main-en-tanda.sh`, la red de seguridad). El repo sólo admite squash, con auto-merge y borrado de la rama
+  al integrar. La persona, como administradora, puede saltarse la protección; una sesión no empuja `main`
+  (`.claude/hooks/bloquear-peligrosos.sh`).
 - La cuenta es la dueña del repo aunque la activa de la máquina sea otra: `publicar.sh` pide su token (`gh auth token --user <dueña>`)
-  y nunca cambia la cuenta activa (`gh auth switch` es de la persona).
+  y nunca cambia la cuenta activa (`gh auth switch` es de la persona). Una organización no tiene sesión de `gh`: vale la de la máquina.
 - Un e2e que pasa al reintentar en CI no pone el PR en rojo; queda anotado en el PR (`e2e/soporte/reporter-de-inestables.ts`). Sólo
   se arregla si cae dos noches seguidas en el completo: el job `aviso-noche` lleva la cuenta en el issue `noche-roja` y a la segunda
   noche lo vuelve una tarea de la cola (`scripts/flujo/noche.mjs`). Es el único job con un permiso de escritura (`issues: write`).
@@ -84,8 +92,8 @@ el cierre de la tanda: docs aplastados, lo que sobra fuera y la retro, que abre 
 los turnos de sesión y la pausa por el límite del plan).
 
 Si dos PR tocan lo mismo, el segundo choca: `git merge origin/main` en su rama (nunca rebase con push forzado), se resuelve, se
-commitea y se vuelve a publicar. Una migración que quedó antes de una ya integrada se crea de nuevo con
-`pnpm exec supabase migration new` (el CI lo exige).
+commitea y se vuelve a publicar. Una migración que quedó antes de una ya integrada (o de una de un PR de delante en la cola) se crea de
+nuevo con `pnpm exec supabase migration new` (el CI lo exige).
 
 ## Construcción y mantenimiento
 
