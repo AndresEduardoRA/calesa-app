@@ -31,8 +31,8 @@ export const PRESUPUESTO_DE_JS_EN_KB: Readonly<Record<string, number>> = {
   // El detalle de un vehículo en logística (T20), con el vehículo medido de la subasta de la semilla: medido 438,9 KB en 28 chunks antes de las zonas y 442,3 KB en 27 después, más un 5 % hacia arriba a la decena.
   '/logistica/vehiculo/[id]': 470,
   // La ficha de un vehículo (T34), con el vehículo medido de la subasta de la semilla: medido 504,3 KB en 33 chunks con las pestañas, más un 5 % hacia
-  // arriba a la decena. La ficha en dos columnas tiene que caber en lo mismo.
-  '/vehiculos/[id]': 530,
+  // arriba a la decena. La ficha en dos columnas tiene que caber en lo mismo; con la cuenta regresiva de la subasta y la fila de tarjetas de cotizaciones, 530,4 KB en 35 chunks (+1,9 %).
+  '/vehiculos/[id]': 540,
   // La ficha de un lead (T33), sin tope hasta las dos columnas: medido 548,5 KB en 36 chunks con pestañas y 554,7 KB en 36 con todo a la vista
   // (el marco de bloques, el índice y el resumen de seguimientos), con un lead recién creado; más un 5 % hacia arriba a la decena.
   '/leads/[id]': 590,

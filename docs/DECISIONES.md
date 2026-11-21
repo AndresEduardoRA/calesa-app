@@ -310,6 +310,7 @@ las trampas, en `docs/LECCIONES.md`.
   aparte (`<Monto>` con su modo). El lead lee `cotizaciones_listado(p_lead)` y el vehículo `cotizaciones_de_este_vehiculo()`, que devuelve `vence_el` para la
   vigencia. Descartados: seguir con las filas de «De este vehículo» (sin imagen ni «Compartir» a la vista), paginar dentro de la fila (otra lista infinita) y una
   cuadrícula (alarga la columna).
+- **El tope de JS de la ficha del vehículo sube de 530 a 540 KB** (+1,9 %, regla del 5 %): la izquierda trae la cuenta regresiva de la subasta y su modal de fechas (diferido) y la derecha la fila de tarjetas; medido 530,4 en 35 chunks.
 - **Aprobar desde la ficha del vehículo refresca la página.** El «Costo estimado» de la izquierda se lee en el servidor y no escucha a las islas: tras
   aprobar o deshacer, «Cotizaciones de este vehículo» hace `router.refresh()` en una transición. En la ficha no hay nada tipeado y la isla no se vuelve a
   montar (no cambian ni su posición ni su `key`); la isla ya apaga sus filas mientras relee.

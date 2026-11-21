@@ -604,7 +604,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 ## JS en frío (con gzip, lo que el documento nombra)
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB` de `e2e/soporte/presupuestos.ts`, lo medido más un 5 % a la decena; uno pasado por ≤ 5 % se sube con la regla del 5 %):
-  `/leads` 560, `/leads/[id]` 590, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 400 (con las tarjetas de la lista, la imagen de la tarjeta en frío y el hook de los menús de las filas que comparte con las fichas),
+  `/leads` 560, `/leads/[id]` 590, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 540, `/cotizaciones` 400 (con las tarjetas de la lista, la imagen de la tarjeta en frío y el hook de los menús de las filas que comparte con las fichas),
   `/cotizaciones/nuevo` 470 (465,4 medidos con los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, un 1 % sobre los 465 de antes; con la subasta, `?origen=`; la línea «Descargar PDF» y el contexto del «⋯» de la guardada viajan con la hoja), `/cotizaciones/[id]` 480
   (el título de la cotización y la cabecera compacta, con el menú de Base UI del «⋯» en frío), `/cotizaciones/comparar` 380, `/logistica` 390,
   `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470; `/cotizaciones/papelera` 440 (en su spec).
@@ -624,7 +624,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   «Actualizar los datos» no pesan en frío. Abrir «Editar imágenes» o la vitrina (`?panel=…&para=<id>`, `shallow: false`) vuelve a pedir la página de la
   lista al servidor, como `?editar=`; la página lee sólo el panel nombrado (la galería ≤ 24 con la subasta en un origen de subasta, o el vehículo por pk y,
   si se abre, `vehiculo_vitrina_previa`). «Actualizar los datos» es una consulta a apibara por confirmación, nunca al abrir el menú.
-- `/vehiculos/[id]` (la ficha del vehículo): ≤ 530 KB, medido 501,9 en 32 chunks (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
+- `/vehiculos/[id]` (la ficha del vehículo): ≤ 540 KB, medido 530,4 en 35 chunks (la cuenta regresiva de la subasta y la fila de tarjetas de cotizaciones: +1,9 % sobre los 530 de antes, regla del 5 %) (sus paneles del «⋯» con su propio `diferidos-de-la-ficha.tsx`):
   «Cotizaciones de este vehículo» y «Actividad reciente» (las cáscaras de sus islas), la ficha completa (`?ver=ficha`, con `useAbiertoAlgunaVez`), «Compartir» y el modal de las fechas de la subasta
   van con `diferido()`; la tira es la del visor; «Vitrina» es de cliente y su vista previa ya viajaba con el panel. El documento de la ficha
   aporta 53,7 KB sobre `/perfil` con una cotización y lo mismo con 601 (`PRESUPUESTO_DE_LA_FICHA_DEL_VEHICULO_EN_KB` = 61;
