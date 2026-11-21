@@ -54,6 +54,7 @@ const props = (extra: Partial<PropsDeLaSesion> = {}): PropsDeLaSesion => ({
   formulaDelOrigenId: '44444444-4444-4444-8444-444444444444',
   formulaId: '22222222-2222-4222-8222-222222222222',
   sobre: 'Sobre el borrador de Ana.',
+  estadoGuardado: null,
   recargando: false,
   alRecargar: vi.fn(),
   alCambiarPendientes: vi.fn(),

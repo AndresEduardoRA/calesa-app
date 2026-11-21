@@ -35,6 +35,7 @@ function PlanillaDePrueba({ leida }: { leida: FormulaParaEditar }) {
       origen={ORIGEN_DE_PRUEBA}
       formulaDelOrigenId={leida.formulaDelOrigenId}
       sobre="Sobre el borrador de Ana."
+      estadoGuardado={null}
       unidad={unidad}
       alCambiarUnidad={setUnidad}
       modo={modo}

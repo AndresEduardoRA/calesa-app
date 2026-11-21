@@ -741,6 +741,13 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Hoja (pestaña)** — `/configuracion/origenes/<id>/formulas/<fórmula>/hoja`, clave `hoja` de `SUBPESTANAS_DE_LA_FORMULA`: el nombre en la UI de la
   pestaña del editor de una fórmula del origen donde se edita el diseño de la hoja («Cómo se ve y se llena la cotización.»). El término técnico sigue siendo «Diseño de la hoja»
   (`features/diseno/`); la «Hoja» de cotizar es la pantalla donde se cotiza.
+- **Edición a pantalla completa** — `<EdicionAPantallaCompleta>` (`src/shared/ui/edicion-a-pantalla-completa/`), `enLaEdicion()` (`src/shared/lib/edicion.ts`), `?editar=si`:
+  el modo en que el editor de una pieza clave de Configuración (la planilla, la hoja, la tarjeta, una tabla, el flujo) ocupa toda la ventana: se ocultan el menú lateral
+  de la app, la barra superior y el menú de Configuración (`data-oculto-al-editar`, CSS en `globals.css`) y arriba queda una barra propia con «‹ Salir», el camino, el
+  título, el estado y las acciones del editor (`<AccionesDeLaEdicion>`). Se entra con «Editar» (`<EntrarALaEdicion>`); la URL lo conserva al recargar. No: «modo
+  focus», «pantalla de edición», «editor expandido».
+- **Estado de la edición** — `EstadoDeLaEdicion` (`src/shared/lib/edicion.ts`): lo que dice la barra de la edición a pantalla completa de lo que se edita: «Cambios sin
+  guardar», «Borrador» o «Publicada vN» (lo no guardado manda). El flujo no lleva estado: se guarda en el acto.
 - **Aspecto** — claves planas y opcionales del diseño de la hoja / `entities/aspecto-de-la-hoja.ts`, `features/hoja/components/clases-de-la-rejilla.ts`:
   cómo se ve una pieza, de escalas cerradas (nunca px, CSS ni hex). Ítem: ancho, alto, letra y énfasis; sección: ancho, alto, relleno,
   separación, densidad, letra, énfasis y color (clave `tono`); cabecera: color, relleno, letra y énfasis. Sin la clave, lo de siempre; el editor quita la clave

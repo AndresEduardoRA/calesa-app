@@ -119,5 +119,10 @@ export function useGuardadoDelDiseno({
     estado,
     motivo: motivoParaNoGuardarElDiseno(hayCambios),
     guardar,
+    hayCambios,
+    // La versión que se edita ahora: guardar sobre la publicada crea el borrador.
+    versionEditada: base.estado,
+    // Tira lo cambiado y no guardado que la pestaña conserva (al salir de la edición a pantalla completa con «Descartar»).
+    limpiar,
   }
 }

@@ -996,6 +996,7 @@ se dibuja**, y sus acciones no se pierden: van al «⋯» «Más acciones de «R
 
 ### Flujos: configuración (estados propios)
 
+- **A pantalla completa:** «Editar el flujo» (`?editar=si`, sólo en la pestaña Flujo de un origen) lo abre sin el marco con sus botones en la barra: «Edición a pantalla completa (estados propios)».
 - **Entrada:** la pestaña Flujo de un origen con `flujos.configurar` en ese origen, y Repuestos › Flujo de repuestos con `repuestos.configurar`;
   sin el permiso, la pestaña va apagada con su motivo y su URL dice «No puedes abrir esta pestaña». Los tipos de documento de la empresa, sin
   diagrama ni panel, en Catálogos › Tipos de documento.
@@ -1390,6 +1391,28 @@ en la cabecera.
   conflicto: el texto de la base con «Recargar»; una acción que ya no corresponde avisa y se limpia. Si la lectura falla, la cabecera sigue
   sin nada de esto.
 
+### Edición a pantalla completa (estados propios)
+
+La planilla, la hoja y la tarjeta de una fórmula, una tabla de referencia de un origen y el flujo de un origen se editan a pantalla completa
+(`@/shared/ui/edicion-a-pantalla-completa`; glosario: «Edición a pantalla completa» y «Estado de la edición»).
+
+- **Entrar:** «Editar» (un enlace, `aria-label` «Editar la planilla», «Editar la hoja», «Editar la tarjeta», «Editar el flujo») arriba a la derecha de la
+  pieza, que suma `?editar=si`; en una tabla, abrirla desde la lista (`?tabla=<id>&editar=si`; un enlace viejo con sólo `?tabla=` también entra); la tarjeta
+  bajo 1.024 px no lo ofrece y conserva su aviso. Recargar mantiene el modo (la URL lo dice y lo decide el servidor). Una fórmula archivada no entra: se
+  ve la página de siempre con su «Copiar». `?fase=` y `?seccion=` del flujo solos no entran. Catálogos › Tablas compartidas, Repuestos › Flujo y la puesta
+  en marcha de un origen no cambian.
+- **Qué se esconde:** el menú lateral, la barra de arriba, los avisos flotantes del marco, el menú de Configuración, el marco del origen y la cabeza de la
+  fórmula. Queda la barra propia (pegada arriba, 52 px; en el celular, en dos renglones).
+- **La barra:** a la izquierda «‹ Salir» (vuelve a la página de la pieza sin el modo; con cambios sin guardar pregunta «Tienes cambios sin guardar.»
+  con «Seguir editando» y «Descartar»), el camino (origen › fórmula ›, cada paso un enlace que también pregunta; oculto en el celular), el título (el `h1`:
+  «Planilla», «Hoja», «Tarjeta», «Tabla», «Flujo») y su estado en una insignia (**Cambios sin guardar**, **Borrador**, **Publicada vN**; el flujo, sin
+  estado: se guarda en el acto). A la derecha las acciones de siempre: «Guardar el borrador», «Publicar…» (en la tabla, «Publicar») y el «⋯» (en la tabla
+  suma «Descartar los cambios»); el flujo, sus botones («Reglas del flujo», «Tipos de documento», «Ver como…», «Nueva fase»).
+- **Estados propios:** sin cambios, «Salir» vuelve de una vez. Esc es del editor (celda, panel, menú): nunca sale del modo. Sin permiso para publicar, la
+  acción sigue a la vista apagada con su motivo (`title` y texto descrito). Un conflicto (PT409) se dice dentro del modo, con «Recargar», como fuera de él.
+  Recargar con cambios no pregunta (lo editado vive en la pestaña) y el estado vuelve a decir «Cambios sin guardar».
+- **Mientras carga:** la barra y su título están desde el primer cuadro; el camino y el estado esperan su lectura con un esqueleto.
+
 ### Cotización: fórmulas del origen (estados propios)
 
 Configuración › Orígenes › un origen › Fórmulas (`/configuracion/origenes/<id>/formulas`, `cotizaciones.configurar` en el origen): las fórmulas
@@ -1428,6 +1451,7 @@ del origen; la activa es la que se cotiza.
 Configuración › Orígenes › un origen › Fórmulas › una fórmula › Planilla (`/configuracion/origenes/<id>/formulas/<fórmula>/planilla`): ver,
 publicar, revertir, descartar y editar una fórmula del origen. `?fila=<nodo>` elige esa fila al abrir y se borra de la URL.
 
+- **A pantalla completa:** «Editar la planilla» (`?editar=si`) la abre sin el marco, con su barra propia: «Edición a pantalla completa (estados propios)».
 - **Quién entra:** `cotizaciones.configurar` en ese origen, aunque no tenga los permisos de los niveles (entonces «Niveles» va apagada con su
   motivo). La base vuelve a decidir: la policy `formulas: leer` sólo deja ver los orígenes con la clave.
 - **Origen:** la página es la de ese origen (también inactivo); para cambiar de origen, el menú o la lista de orígenes. Sin la clave en el origen,
@@ -1515,6 +1539,7 @@ publicar, revertir, descartar y editar una fórmula del origen. `?fila=<nodo>` e
 Configuración › Orígenes › un origen › Fórmulas › una fórmula › Tarjeta (`/configuracion/origenes/<id>/formulas/<fórmula>/tarjeta`, a todo el ancho; `?lugar=` va a ese lugar al abrir y se borra): el editor de la tarjeta de la cotización como un
 Excel. Edita el **borrador** de la plantilla (sólo la forma 2, la cuadrícula), lo publica con nota y lo descarta.
 
+- **A pantalla completa:** «Editar la tarjeta» (`?editar=si`, desde 1.024 px) la abre sin el marco: «Edición a pantalla completa (estados propios)».
 - **Quién entra y origen:** como «Fórmula»; la pestaña va después de «Hoja». **Sin fórmula publicada**, no hay editor: «Falta publicar la fórmula de
   <Origen>: la tarjeta se arma con sus nodos.» con «Ir a la fórmula».
 - **Arriba:** «Tarjeta de <Origen>», de dónde nace («Sobre el borrador guardado el …», «Sin borrador: parte de la versión N publicada.» o «Sin borrador ni
@@ -1677,6 +1702,7 @@ El modo «Retocar la tarjeta» de «Vista previa» en una guardada (`/cotizacion
 Configuración › Orígenes › un origen › Tablas (`/configuracion/origenes/<id>/tablas`; las compartidas, también en Catálogos › Tablas compartidas, `/configuracion/catalogos/tablas`): crear tablas de referencia, cambiar sus columnas, desactivarlas y editar y publicar sus filas
 (`tabla_referencia_crear|columnas|desactivar|publicar()`).
 
+- **A pantalla completa:** abrir una tabla de un origen es editarla a pantalla completa (`?tabla=<id>&editar=si`); «Publicar» y el «⋯» suben a la barra y «Salir» vuelve a la lista: «Edición a pantalla completa (estados propios)». Las compartidas de Catálogos, no.
 - **Quién entra y origen:** como «Fórmula»; cambiar de origen con los chips suelta `?tabla=`.
 - **Lista:** las tablas activas del origen y las compartidas, por clave: nombre como enlace a `?tabla=<id>`, clave, «Compartida» y
   «Tapada por la de <Origen>» (`<Badge>`) y «Versión N · <persona> · <cuándo>», y su «⋯» («Editar filas», «Columnas», «Desactivar»: lleva a la
@@ -1737,6 +1763,7 @@ Configuración › Catálogos › Vigencia (`/configuracion/catalogos/vigencia`)
 Configuración › Orígenes › un origen › Fórmulas › una fórmula › Hoja (`/configuracion/origenes/<id>/formulas/<fórmula>/hoja`, el diseño de la hoja): secciones, celdas, ítems, cabecera y tarjeta del total de la hoja, su orden, su
 aspecto en la rejilla de 12 y su vista previa.
 
+- **A pantalla completa:** «Editar la hoja» (`?editar=si`) la abre sin el marco; la vista previa se pega bajo la barra: «Edición a pantalla completa (estados propios)».
 - **Quién entra y origen:** como «Fórmula».
 - **Qué abre:** el borrador o, sin él, la publicada. Sin versión o sin diseño lo dice (aquí no se crea uno). Cargando,
   `EsqueletoFormulario`; una lectura que falla sube al «Reintentar» de la ruta.

@@ -1,8 +1,10 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useEnLaEdicion } from '@/shared/ui/edicion-a-pantalla-completa'
 import { useState, useTransition, type ComponentType } from 'react'
 import type { CatalogoDeTablas } from '../../../entities/compilador'
+import { estadoDeLaFormulaGuardada } from '../../../entities/formula/estado-de-la-edicion'
 import { mismaVersion, otraSesion, type SobreQueVersion } from '../../../entities/formula/sesion'
 import type { LecturaDeLaFormula as Formula } from '../../../entities/formula/versiones'
 import type {
@@ -10,10 +12,12 @@ import type {
   PropsDeLaTarjetaEnVivo,
 } from '../../../entities/tarjeta-en-vivo'
 import { usePanelDeLaFormula } from '../hooks/use-panel-de-la-formula'
+import { borradorAtrasado } from '../../../entities/formula/versiones'
 import { AvisosDeLaCopia } from './avisos-de-la-copia'
 import { AccionesDeLaFormula } from './acciones-de-la-formula'
 import { SesionDeLaFormulaDiferida } from './diferidos'
 import type { TipoDeCambioDeLaEmpresa } from './planilla/tipos'
+import { PublicarDelBorrador } from './publicar-del-borrador'
 import { VistaDeLaFormula } from './vista-de-la-formula'
 
 type Origen = { id: string; nombre: string; activo: boolean }
@@ -54,6 +58,7 @@ export function FormulaDelOrigen({
   tiposDeCambio,
 }: Props) {
   const panel = usePanelDeLaFormula()
+  const enLaEdicion = useEnLaEdicion()
   const router = useRouter()
   const [vuelta, setVuelta] = useState(0)
   const [pendientes, setPendientes] = useState(false)
@@ -83,7 +88,11 @@ export function FormulaDelOrigen({
         formula={formula}
         panel={panel}
         publicarEspera={pendientes}
+        publicarEnLaBarra={enLaEdicion}
       />
+      {enLaEdicion && formula.borrador && !borradorAtrasado(formula.borrador, formula.publicada) ? (
+        <PublicarDelBorrador alPublicar={panel.abrirPublicar} espera={pendientes} />
+      ) : null}
       {sobre ? (
         <SesionDeLaFormulaDiferida
           key={`${formulaDelOrigenId}:${String(vuelta)}:${String(generacion.sesion)}`}
@@ -91,6 +100,7 @@ export function FormulaDelOrigen({
           formulaDelOrigenId={formulaDelOrigenId}
           formulaId={sobre.id}
           sobre={sobreQue(formula)}
+          estadoGuardado={estadoDeLaFormulaGuardada(formula)}
           recargando={recargando}
           alRecargar={recargar}
           alCambiarPendientes={setPendientes}

@@ -14,6 +14,7 @@ import type { TonoDelCatalogo } from './aspecto'
 import { AvisosDelDiseno } from './avisos-del-diseno'
 import { BarraDeGuardado } from './barra-de-guardado'
 import { CabeceraDelDiseno } from './cabecera-del-diseno'
+import { EstadoDeLaHojaEnLaBarra } from './estado-de-la-hoja-en-la-barra'
 import { PanelDeLaVistaPrevia } from './panel-de-la-vista-previa'
 import { SeccionesDelDiseno } from './secciones-del-diseno'
 import { TarjetaDelDiseno } from './tarjeta-del-diseno'
@@ -55,17 +56,17 @@ export function EditorDelDiseno({
     niveles,
     catalogo: claves,
   })
-  const { guardado } = editor
   const ediciones = useEdicionesDelDiseno(editor.aplicar, leida.definicion)
   const tablas = useMemo(() => tablasParaAyuda(leida.definicion), [leida.definicion])
   const totales = useMemo(() => totalesPosibles(leida.definicion), [leida.definicion])
   const apartes = useMemo(() => apartesPosibles(leida.definicion), [leida.definicion])
   const tipos = useMemo(() => tiposDeCambio(leida.definicion), [leida.definicion])
-  const { rechazo } = editor
+  const { rechazo, guardado } = editor
   const lugar = rechazo?.lugar ?? null
   const vista = useVistaPreviaDelDiseno()
   return (
     <div className={vista.abierta ? CON_LA_VISTA_AL_COSTADO : 'grid min-w-0 gap-3'}>
+      <EstadoDeLaHojaEnLaBarra guardado={guardado} />
       <BarraDeGuardado
         nombreDelOrigen={origen.nombre}
         enCurso={guardado.enCurso}

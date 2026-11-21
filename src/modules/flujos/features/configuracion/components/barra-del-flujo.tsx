@@ -2,6 +2,7 @@
 
 import { ListIcon, WorkflowIcon } from 'lucide-react'
 import { Button } from '@/shared/ui/button'
+import { AccionesDeLaEdicion } from '@/shared/ui/edicion-a-pantalla-completa'
 import type { FlujoParaConfigurar } from '../../../entities/flujo'
 import { MOTIVO_SIN_ORDEN_AQUI, useOrdenDeFases } from '../hooks/use-orden-de-fases'
 import { usePanelDelFlujo } from '../hooks/use-panel-del-flujo'
@@ -15,8 +16,8 @@ export const ID_DEL_MOTIVO_SIN_ORDEN = 'motivo-sin-orden-de-fases'
 const BOTON = 'h-11 md:h-8'
 
 // La barra del flujo, sobre las fases: el título, lo del flujo entero que se abre en el panel («Reglas del flujo», «Tipos de documento»), «Ver como lista» o
-// «Ver como diagrama» (sólo donde cabe el diagrama) y «Nueva fase» (hueco del área `fases`, con sus modales, una vez por pantalla). Si no se puede ordenar,
-// el motivo en texto. Se parte en renglones: con el texto al 200 % no ensancha la página.
+// «Ver como diagrama» (sólo donde cabe el diagrama) y «Nueva fase» (hueco del área `fases`, con sus modales, una vez por pantalla). En la edición a pantalla
+// completa esos botones suben a la barra de arriba. Si no se puede ordenar, el motivo en texto. Se parte en renglones: con el texto al 200 % no ensancha la página.
 export function BarraDelFlujo({ flujo, huecos }: Props) {
   const panel = usePanelDelFlujo()
   const vista = useVistaDelFlujo()
@@ -45,37 +46,39 @@ export function BarraDelFlujo({ flujo, huecos }: Props) {
           </p>
         )}
       </div>
-      <div className="flex min-w-0 flex-wrap items-start gap-2">
-        {panel.disponibles.includes('reglas') ? (
-          <Button
-            variant="outline"
-            className={BOTON}
-            onClick={() => {
-              panel.abrirSeccion('reglas')
-            }}
-          >
-            Reglas del flujo
-          </Button>
-        ) : null}
-        {panel.disponibles.includes('documentos') ? (
-          <Button
-            variant="outline"
-            className={BOTON}
-            onClick={() => {
-              panel.abrirSeccion('documentos')
-            }}
-          >
-            Tipos de documento
-          </Button>
-        ) : null}
-        {vista.puedeDiagrama && flujo.fases.length > 0 ? (
-          <Button variant="outline" className={BOTON} onClick={vista.alternar}>
-            {vista.vista === 'diagrama' ? <ListIcon aria-hidden /> : <WorkflowIcon aria-hidden />}
-            {vista.vista === 'diagrama' ? 'Ver como lista' : 'Ver como diagrama'}
-          </Button>
-        ) : null}
-        {AccionesDeLaLista ? <AccionesDeLaLista flujo={flujo} /> : null}
-      </div>
+      <AccionesDeLaEdicion orden={1}>
+        <div className="flex min-w-0 flex-wrap items-start gap-2">
+          {panel.disponibles.includes('reglas') ? (
+            <Button
+              variant="outline"
+              className={BOTON}
+              onClick={() => {
+                panel.abrirSeccion('reglas')
+              }}
+            >
+              Reglas del flujo
+            </Button>
+          ) : null}
+          {panel.disponibles.includes('documentos') ? (
+            <Button
+              variant="outline"
+              className={BOTON}
+              onClick={() => {
+                panel.abrirSeccion('documentos')
+              }}
+            >
+              Tipos de documento
+            </Button>
+          ) : null}
+          {vista.puedeDiagrama && flujo.fases.length > 0 ? (
+            <Button variant="outline" className={BOTON} onClick={vista.alternar}>
+              {vista.vista === 'diagrama' ? <ListIcon aria-hidden /> : <WorkflowIcon aria-hidden />}
+              {vista.vista === 'diagrama' ? 'Ver como lista' : 'Ver como diagrama'}
+            </Button>
+          ) : null}
+          {AccionesDeLaLista ? <AccionesDeLaLista flujo={flujo} /> : null}
+        </div>
+      </AccionesDeLaEdicion>
     </div>
   )
 }

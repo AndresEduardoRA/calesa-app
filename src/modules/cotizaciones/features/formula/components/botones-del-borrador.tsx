@@ -9,12 +9,20 @@ type Props = {
   alDescartar?: () => void
   // Hay cambios aplicados sin guardar: «Publicar…» espera, con su motivo a la vista.
   publicarEspera?: boolean
+  // En la edición a pantalla completa «Publicar…» está en la barra de arriba (`PublicarDelBorrador`): acá queda su motivo y «Descartar…».
+  publicarEnLaBarra?: boolean
 }
 
 export const MOTIVO_DE_PUBLICAR = 'Guarda el borrador antes de publicar: se publica lo guardado.'
+export const ID_DEL_MOTIVO_DE_PUBLICAR_LA_FORMULA = 'formula-motivo-de-publicar'
 
 // Los botones de la tarjeta del borrador, en su orden; sin ninguno, nada. «Publicar…» apagado lleva su motivo en texto (`aria-describedby`).
-export function BotonesDelBorrador({ alPublicar, alDescartar, publicarEspera = false }: Props) {
+export function BotonesDelBorrador({
+  alPublicar,
+  alDescartar,
+  publicarEspera = false,
+  publicarEnLaBarra = false,
+}: Props) {
   const idDelMotivo = useId()
   if (!alPublicar && !alDescartar) {
     return null
@@ -23,7 +31,7 @@ export function BotonesDelBorrador({ alPublicar, alDescartar, publicarEspera = f
   return (
     <div className="mt-1 grid gap-1">
       <div className="flex flex-wrap gap-2">
-        {alPublicar ? (
+        {alPublicar && !publicarEnLaBarra ? (
           <Button
             type="button"
             className="min-h-11 md:min-h-9"
@@ -46,7 +54,10 @@ export function BotonesDelBorrador({ alPublicar, alDescartar, publicarEspera = f
         ) : null}
       </div>
       {espera ? (
-        <p id={idDelMotivo} className="text-(--color-ink-soft)">
+        <p
+          id={publicarEnLaBarra ? ID_DEL_MOTIVO_DE_PUBLICAR_LA_FORMULA : idDelMotivo}
+          className="text-(--color-ink-soft)"
+        >
           {MOTIVO_DE_PUBLICAR}
         </p>
       ) : null}

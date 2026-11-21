@@ -19,6 +19,8 @@ type Props = {
   alDescartar?: () => void
   // Hay cambios aplicados en la planilla sin guardar: «Publicar…» espera con su motivo (se publica lo guardado).
   publicarEspera?: boolean
+  // «Publicar…» está en la barra de la edición a pantalla completa.
+  publicarEnLaBarra?: boolean
 }
 
 // El borrador del origen (a lo sumo uno): quién lo guardó, cuándo, sobre qué versión empezó y, si desde entonces se publicó otra, que publicarlo dará conflicto
@@ -30,6 +32,7 @@ export function TarjetaDelBorrador({
   alPublicar,
   alDescartar,
   publicarEspera = false,
+  publicarEnLaBarra = false,
 }: Props) {
   const { zonaHoraria } = useRegional()
   const atrasado = borradorAtrasado(borrador, publicada)
@@ -58,6 +61,7 @@ export function TarjetaDelBorrador({
         {...(alPublicar && !atrasado ? { alPublicar } : {})}
         {...(alDescartar ? { alDescartar } : {})}
         publicarEspera={publicarEspera}
+        publicarEnLaBarra={publicarEnLaBarra}
       />
     </section>
   )

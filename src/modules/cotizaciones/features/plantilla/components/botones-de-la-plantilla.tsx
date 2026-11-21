@@ -3,6 +3,7 @@
 import { MoreHorizontalIcon } from 'lucide-react'
 import { useId } from 'react'
 import { Button } from '@/shared/ui/button'
+import { AccionesDeLaEdicion } from '@/shared/ui/edicion-a-pantalla-completa'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,41 +42,48 @@ export function BotonesDeLaPlantilla({
   const motivo = motivoParaNoPublicar({ esperada, hayCambios })
   const idDeGuardar = useId()
   return (
-    <div className="flex flex-wrap items-center justify-end gap-2">
-      <Button
-        type="button"
-        className="min-h-11 md:min-h-9"
-        disabled={!guardar.puede || ocupado}
-        aria-describedby={guardar.motivo === null ? undefined : idDeGuardar}
-        onClick={guardar.alGuardar}
-      >
-        {guardar.enCurso ? 'Guardando…' : 'Guardar borrador'}
-      </Button>
-      <Button
-        type="button"
-        variant="outline"
-        className="min-h-11 md:min-h-9"
-        disabled={ocupado || motivo !== null}
-        aria-describedby={motivo === null ? undefined : ID_DEL_MOTIVO_DE_PUBLICAR}
-        onClick={alPublicar}
-      >
-        Publicar…
-      </Button>
+    // Vacío (sin motivos que decir) no ocupa lugar: en la edición a pantalla completa los botones van a la barra de arriba y acá quedan sólo sus motivos.
+    <div className="flex flex-wrap items-center justify-end gap-2 empty:hidden">
+      <AccionesDeLaEdicion orden={1}>
+        <Button
+          type="button"
+          className="min-h-11 md:min-h-9"
+          disabled={!guardar.puede || ocupado}
+          aria-describedby={guardar.motivo === null ? undefined : idDeGuardar}
+          onClick={guardar.alGuardar}
+        >
+          {guardar.enCurso ? 'Guardando…' : 'Guardar borrador'}
+        </Button>
+      </AccionesDeLaEdicion>
+      <AccionesDeLaEdicion orden={2}>
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11 md:min-h-9"
+          disabled={ocupado || motivo !== null}
+          aria-describedby={motivo === null ? undefined : ID_DEL_MOTIVO_DE_PUBLICAR}
+          onClick={alPublicar}
+        >
+          Publicar…
+        </Button>
+      </AccionesDeLaEdicion>
       {esperada === null ? null : (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label="Más acciones de la tarjeta"
-            disabled={ocupado}
-            className="flex size-[44px] items-center justify-center rounded-(--radius-md) outline-none hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) disabled:opacity-50 md:size-9"
-          >
-            <MoreHorizontalIcon aria-hidden className="size-4" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="max-w-(--available-width)">
-            <DropdownMenuItem className="min-h-11 md:min-h-8" onClick={alDescartar}>
-              Descartar borrador…
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <AccionesDeLaEdicion orden={3}>
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label="Más acciones de la tarjeta"
+              disabled={ocupado}
+              className="flex size-[44px] items-center justify-center rounded-(--radius-md) outline-none hover:bg-(--color-surface-3) focus-visible:shadow-(--shadow-focus) disabled:opacity-50 md:size-9"
+            >
+              <MoreHorizontalIcon aria-hidden className="size-4" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="max-w-(--available-width)">
+              <DropdownMenuItem className="min-h-11 md:min-h-8" onClick={alDescartar}>
+                Descartar borrador…
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </AccionesDeLaEdicion>
       )}
       {guardar.motivo === null ? null : (
         <p
