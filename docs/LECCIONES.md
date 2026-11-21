@@ -329,6 +329,9 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Lee pronto el log de una corrida roja: `gh run view --log-failed` sale vacío al rato y la causa queda sin verificar.
 - `supabase db lint` cambia de formato si detecta un agente (`AI_AGENT`, `CLAUDECODE`): lee con `leerDbLint()` aceptando las dos formas y, para reproducir el CI, quita esas variables.
 - Corre Splinter con los schemas de `[api]` (`pgrst.db_schemas`): sin ellos sólo revisa `public` y no ve los avisos de `web`.
+- El lint con tipos (`projectService`) del repo entero roza los 4 GB del heap de Node que da el runner: `pnpm lint` y `lint:fix` van con
+  `NODE_OPTIONS=--max-old-space-size=8192`. Sin eso, el PR que suma archivos cae por `heap out of memory` (código 134) aunque el lint
+  no tenga nada que decir.
 - Excluye del typecheck y del lint toda carpeta ignorada por git que el orquestador enlaza en el worktree (la copia de V1 en `docs/referencias/cotizador-actual`), y también del recorrido de `scripts/enlaces-internos.mjs`: `tsconfig` incluye `**/*.ts` y el mapa sigue el enlace.
 - Si `next build` cae con «Type '/x' is not assignable to RouteImpl», corre `pnpm typecheck` (hace `next typegen`): no es del código.
 - No nombres `<Confirmar>` con sus signos en un comentario: `scripts/guardas/confirmar-con-url.test.ts` busca el texto crudo (comentarios incluidos) y pide registrar un diálogo que no existe; escribe el nombre sin `<…>`.
