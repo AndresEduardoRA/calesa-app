@@ -105,8 +105,10 @@ export function nombreDeLaCelda(plantilla: PlantillaEnCuadricula | null, id: str
 export const motivoDelTextoLargo = (nombre: string) =>
   `Acorta el texto de la celda «${nombre}»: tiene más de ${String(MAXIMO_DE_CARACTERES_DE_UN_RETOQUE)} caracteres.`
 
-// Lo que dice el modo al elegir una fila tocando una celda que no es de texto.
+// Lo que dice el modo al elegir una fila tocando una celda que no es de texto (`tipo`: el de su contenido en la plantilla, nunca el que se dibuja).
 export function motivoDeLaCeldaSinTexto(tipo: string | undefined): string {
+  if (tipo === 'respaldo' || tipo === 'condiciones')
+    return 'Esta celda cambia según la cotización: no se retoca.'
   return tipo === 'dato'
     ? 'Esta celda muestra un dato de la cotización: no se retoca.'
     : 'Esta celda no tiene texto para retocar.'

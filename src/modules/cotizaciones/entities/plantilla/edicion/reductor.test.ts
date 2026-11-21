@@ -156,4 +156,15 @@ describe('reductorDelEditor: el portapapeles y lo recuperado', () => {
       foco: { f: 2, k: 2 },
     })
   })
+
+  it('ocultar una fila según sus condiciones es un paso que se deshace', () => {
+    const si = [{ es: 'encendido', nodo: 'seguro' }] as const
+    const e = hacer(inicial(), { tipo: 'ocultarSegun', fila: 2, si })
+    expect(e.plantilla.filas[2]).toEqual({ id: 'f3', alto: 25, ocultar_si: 'condiciones', si })
+    expect(e.anuncio.texto).toBe('La fila 3 se oculta si se cumplen sus condiciones.')
+    expect(hacer(e, { tipo: 'deshacer' }).plantilla.filas[2]?.ocultar_si).toBe('nunca')
+    expect(hacer(inicial(), { tipo: 'ocultarSegun', fila: 2, si: [] }).rechazo).toBe(
+      'Una fila se oculta con 1 a 3 condiciones.',
+    )
+  })
 })

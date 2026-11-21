@@ -334,7 +334,7 @@ test('dos personas reordenan a la vez: la segunda se entera de quién las cambi�
   // La dueña, con las fotos como estaban, mueve otra.
   await page.getByRole('button', { name: 'Mover la foto 5 antes' }).click()
   await expect(page.getByText(/Sara Corea cambió las fotos de este vehículo hace/)).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Recargar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Recargar', exact: true })).toBeVisible()
   // No se pisó nada.
   expect(await ordenDe(TITULOS.lleno)).toEqual(deSpuesDeSara)
   await deSara.context().close()

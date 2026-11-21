@@ -108,7 +108,7 @@ test('si otra persona publicó con el modal abierto, el conflicto dice quién si
   const conflicto = modal(page, 1).getByText(/^Otra persona publicó la versión 4/)
   await expect(conflicto).toBeVisible()
   await expect(conflicto).not.toContainText('Recarg')
-  await modal(page, 1).getByRole('button', { name: 'Recargar' }).click()
+  await modal(page, 1).getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(conflicto).toBeHidden()
   await expect(modal(page, 1).getByLabel('Nota')).toHaveValue('Vuelve a la versión 1.')
   await modal(page, 1).getByRole('button', { name: 'Revertir', exact: true }).click()

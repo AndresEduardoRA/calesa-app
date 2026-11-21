@@ -330,7 +330,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
   lotes más de la dueña: por el índice, sin recorrer `lotes_papelera` ni `cotizaciones`; quien no tiene la clave descarta los lotes ajenos
   (tope 600; crece con ellos, no con la página).
 - `/cotizaciones/papelera` (`e2e/cotizaciones-papelera.spec.ts`): una página (`tamano + 1`) y «Mostrar los N» un lote al pedirlo. JS en frío
-  ≤ 440 KB. Página 1 con 5 × 20: ≤ 3.000 nodos y ≤ 475.000 B de documento, igual (± 2 %) con lotes de 21 que
+  ≤ 440 KB. Página 1 con 5 × 20: ≤ 3.000 nodos y ≤ 480.000 B de documento (medido: 477.234; subido desde 475.000 por los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, un 1 %), igual (± 2 %) con lotes de 21 que
   de 200 (≈ 1 KB por botón «Purgar»: las clases de `Button`). Purgar no lee nada: una llamada por confirmación y relee una página.
 - Orígenes: resumen y categorías con uso, 100 / 50 ms (exento, administración). Tipos de cambio: historial de 30 («Mostrando los 30
   cambios más recientes.»).
@@ -605,7 +605,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
 
 - Topes (`PRESUPUESTO_DE_JS_EN_KB` de `e2e/soporte/presupuestos.ts`, lo medido más un 5 % a la decena; uno pasado por ≤ 5 % se sube con la regla del 5 %):
   `/leads` 560, `/leads/[id]` 590, `/perfil` 440, `/vehiculos` 530, `/vehiculos/[id]` 530, `/cotizaciones` 400 (con las tarjetas de la lista, la imagen de la tarjeta en frío y el hook de los menús de las filas que comparte con las fichas),
-  `/cotizaciones/nuevo` 470 (con la subasta, `?origen=`; la línea «Descargar PDF», el contexto del «⋯» de la guardada y el interruptor «Privada» viajan con la hoja), `/cotizaciones/[id]` 480
+  `/cotizaciones/nuevo` 470 (con el interruptor «Privada» y los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, sobre los 465 de antes; con la subasta, `?origen=`; la línea «Descargar PDF», el contexto del «⋯» de la guardada y el interruptor «Privada» viajan con la hoja), `/cotizaciones/[id]` 480
   (el título de la cotización y la cabecera compacta, con el menú de Base UI del «⋯» en frío), `/cotizaciones/comparar` 380, `/logistica` 390,
   `/logistica/fase/[fase]` 390, `/logistica/vehiculo/[id]` 470; `/cotizaciones/papelera` 440 (en su spec).
 - Medido: `/leads` 526,5 KB en 36 chunks y `/leads/[id]` 558,3 KB (el «+» y los «⋯» de los bloques de la derecha van en frío: `DropdownMenu` y `MasAcciones` ya
@@ -672,7 +672,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `loading` y el de `page`); por eso existe `pantallas/esqueleto-de-hoja.ts`. Se ve comparando `entryJSFiles` de
   `page_client-reference-manifest.js` entre dos builds.
 - react-pdf no llega al navegador, pero estar en el grafo del servidor suma ≈ 0,45 KB al runtime de Turbopack de **todas** las rutas.
-- El marco (shell): en el JS de toda pantalla viajan el menú lateral plegable (`LateralPlegable`, `ProveedorDelMenuPlegado`: un botón, un contexto y `Ctrl/Cmd+B`; sin librería nueva), el botón de la burbuja del chat, `usePathname`, el store del contador y
+- El marco (shell): en el JS de toda pantalla viajan el menú lateral plegable (`LateralPlegable`, `ProveedorDelMenuPlegado`: un botón, un contexto y `Ctrl/Cmd+B`; sin librería nueva), el botón de la burbuja del chat, los botones «Recargar la página» y «Copiar el enlace de esta página» (el modal del enlace va con `diferido()`), `usePathname`, el store del contador y
   `useAlDescansar`; el cliente de Supabase, la suscripción, el panel, la lista, el hilo y el redactor van con `diferido()`. La campana: su
   contador con Realtime y su popover van con `diferido()` (sin eso `/cotizaciones` subía ≈ 66 KB). Una `chat_no_leidos` al montar y otra por
   ráfaga de señales (≥ 250 ms). Los tipos de cambio de la barra: en frío sólo el botón con los de la barra (≤ 3, `{id, nombre, monedaA, valor}`
@@ -680,7 +680,7 @@ Cada sección por su RPC, de a `_acotar_pagina(p_tamano, 5, 20)` + 1, con el mí
   `diferido()` y su código se adelanta al pasar el puntero. Al abrirlo, una `tipos_cambio_vigentes()` de ≤ 31 filas (un `limit 1` por tipo
   sobre `tipos_cambio_historial_tipo_idx` y dos búsquedas por `perfiles_pkey`), sin caché; tras guardar se relee sin esqueleto. Es una
   tabla de configuración: sin medición de volumen.
-- Documento de `/perfil` (HTML con el payload RSC, sin comprimir) ≤ 121 KB (medido: 120,5) (`PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB`), igual con la
+- Documento de `/perfil` (HTML con el payload RSC, sin comprimir) ≤ 124 KB (medido: 123,3; subido desde 121 por los botones «Recargar la página» y «Copiar el enlace de esta página» del marco, un 2,5 %) (`PRESUPUESTO_DEL_DOCUMENTO_DE_PERFIL_EN_KB`), igual con la
   semilla y con 100 + 100 + 100 catálogos (± 1 KB): lo paga toda pantalla del marco. Las ≈ 30 acciones de la paleta viajan como props del
   hueco del buscador; el formulario de «Tu ficha en la web» se monta y se pide con `diferido()` al abrirla. El layout `(app)` no manda
   catálogos al alta: `<AltaDeLead>` no recibe nada y los lee del navegador (`infra/contexto-de-alta.client.ts`, memoria de 60 s en

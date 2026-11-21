@@ -131,5 +131,10 @@ describe('los motivos del modo', () => {
       'Esta celda muestra un dato de la cotización: no se retoca.',
     )
     expect(motivoDeLaCeldaSinTexto('logo')).toBe('Esta celda no tiene texto para retocar.')
+    // La lista de respaldo y las condiciones cambian con la cotización, aunque una rama sea un texto.
+    for (const tipo of ['respaldo', 'condiciones'] as const)
+      expect(motivoDeLaCeldaSinTexto(tipo)).toBe(
+        'Esta celda cambia según la cotización: no se retoca.',
+      )
   })
 })

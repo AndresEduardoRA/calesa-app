@@ -4,10 +4,11 @@ const MOTIVO = {
   no_aplica: (nodo: string) => `«${nodo}» no está en esta referencia`,
   cero: (nodo: string) => `«${nodo}» vale 0`,
   fuera_de_la_version: (nodo: string) => `«${nodo}» no está en la versión de esta cotización`,
+  condicion: () => 'se cumplen sus condiciones',
 } as const
 
-// Las filas que la tarjeta no dibuja con esta referencia y por qué, como V1: «‹rótulo› — «X» no está en esta referencia», «— «X» vale 0» o «— «X» no está en la
-// versión de esta cotización». Sin ocultas, nada.
+// Las filas que la tarjeta no dibuja con esta referencia y por qué, como V1: «‹rótulo› — «X» no está en esta referencia», «— «X» vale 0», «— «X» no está en la
+// versión de esta cotización» o «— se cumplen sus condiciones». Sin ocultas, nada.
 export function OcultasDeLaTarjeta({ ocultas }: { ocultas: readonly FilaOculta[] }) {
   if (ocultas.length === 0) return null
   return (

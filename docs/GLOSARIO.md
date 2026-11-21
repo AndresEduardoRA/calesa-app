@@ -520,7 +520,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   USA (subasta), China, Oficina y Compra dealer USA. Vive en el código, no en la base, y no publica. No es la **Plantilla de tarjeta** (sólo la tarjeta,
   versionada en la base).
 - **Celda de la tarjeta** — `CeldaDeLaTarjeta`, `definicion.celdas[]` de la forma 2: un rectángulo de la cuadrícula con su posición (`fila`,
-  `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo, foto del asesor o vacío) y su estilo. La de logo dibuja
+  `columna`), su combinación (`abarca_columnas`, `abarca_filas`), su contenido (texto, dato, logo, foto del asesor, vacío, una **lista de respaldo** o unas
+  **condiciones de la tarjeta**) y su estilo. La de logo dibuja
   sólo el logo de la empresa, a la medida de la celda; su nombre es el dato «Nombre de la empresa» (`empresa_nombre`). No es la **Celda (de la hoja)**.
 - **Asesor (de la tarjeta)** — `AsesorDeLaTarjeta` (`ContextoDeLaCotizacion.asesor`: nombre, teléfono, cargo y foto), `leerAsesorQueMira()`, variables
   `asesor_*`: quien mira o comparte la tarjeta, su imagen, su PDF o su texto, nunca quien creó la cotización (ese es el **autor**, «Creado por»). Con «Ver como», la
@@ -532,12 +533,25 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   en un círculo. En el editor, un contenido más («Foto del asesor»), como el logo.
 - **Fila de la tarjeta** — `FilaDeLaTarjeta`, `definicion.filas[]` de la forma 2: una fila con su alto y su «Ocultar si…». No es la **Fila (de la
   fórmula)**.
-- **Ocultar si…** — `ocultar_si` de una fila de la tarjeta (`nunca`, `no_aplica`, `no_aplica_o_cero`): la fila no se dibuja si su nodo no aplica
-  en esa cotización (otra opción de la variante, un interruptor apagado) o vale 0; las celdas combinadas que la cruzan se acortan. El lienzo de
+- **Ocultar si…** — `ocultar_si` de una fila de la tarjeta (`nunca`, `no_aplica`, `no_aplica_o_cero`, `condiciones`): la fila no se dibuja si su nodo no
+  aplica en esa cotización (otra opción de la variante, un interruptor apagado) o vale 0, o, con «Según condiciones», si se cumplen todas las de su `si` (de 1
+  a 3, unidas con Y; sin «si no»); las celdas combinadas que la cruzan se acortan. El lienzo de
   Configuración dice cuáles y por qué con la referencia elegida: «Ocultas con esta referencia (N)».
 - **Dato de la tarjeta** — `{tipo: 'dato', …}` de una celda: una variable de la cotización (`VARIABLES_DE_LA_TARJETA`: `empresa_nombre`, «Nombre de
   la empresa»; `fecha_larga`, `numero`, `asesor_nombre`, `asesor_telefono` «WhatsApp del asesor», `asesor_cargo` «Cargo del asesor»…) o un nodo de la fórmula con qué mostrar (`MOSTRAR`: `monto`, `etiqueta`, `descripcion`, `porcentaje`, `tc_nombre`, `tc_valor`,
-  `plazo`). Un texto no mezcla texto y variables.
+  `plazo`). Un texto no mezcla texto y variables. En el editor, «Dato» dice «Cuál dato»: «Uno», «El primero con valor» (una **lista de respaldo**) o
+  «Según condiciones» (las **condiciones de la tarjeta**).
+- **Lista de respaldo** — `{tipo: 'respaldo', datos}` de una celda de la tarjeta, «El primero con valor» en el editor: de 2 a 5 datos de la tarjeta en orden;
+  la tarjeta muestra el primero que tiene valor y, si ninguno, la celda vacía (`resolverElContenido()`). No es el título de respaldo de la cotización
+  («Cotización n.º N»).
+- **Condiciones de la tarjeta** — `{tipo: 'condiciones', ramas, si_no}` de una celda de la tarjeta, «Según condiciones» en el editor: de 1 a 4 ramas («si se
+  cumplen estas condiciones, mostrar esto») y el «si no» (hasta 5 contando él); se muestra lo de la primera rama cuyas condiciones se cumplen todas o, si ninguna, lo del «si no».
+  Cada rama muestra un texto, un dato o nada. Una fila también se oculta «Según condiciones» (**Ocultar si…**).
+- **Condición (de la tarjeta)** — `CondicionDeLaTarjeta`: lo que pregunta una rama de las **condiciones de la tarjeta** o una fila que se oculta «Según
+  condiciones», como frase («Remate es mayor que 1.000»): si un dato tiene valor (`vacio`, `no_vacio`), si un nodo vale 0 (`cero`, `no_cero`), se compara con
+  un número (`mayor`, `menor`, `igual`), es una opción de la variante (`opcion`) o un interruptor está encendido (`encendido`, `apagado`). Hasta 3 por rama,
+  unidas con Y. Un nodo que no está en la versión deja la condición sin respuesta y la rama se salta. No es la **Condición (de la fórmula)** ni la `condicion` de
+  un nodo (el **interruptor**).
 - **Lienzo** — `LienzoDeLaPlantilla` (área `tarjeta`) con la capa del editor (`CapaDeEdicion`, `role="grid"`): la tarjeta de la cotización a escala
   que se edita en la página del origen › Fórmula › Tarjeta, como un Excel (cabeceras de columna, asas de fila, selección, atajos). La dibuja el
   mismo modelo de dibujo que el PDF. No es el lienzo del diagrama del flujo.
@@ -882,6 +896,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   acción; se suscribe diferida y otra vez al volver la red.
 - **Widget del chat** — `chat/features/widget`, `<WidgetChat>`: botón flotante con los no leídos que abre el chat fuera de `/chat` (en el
   celular, enlace a `/chat`); docs y pruebas le dicen «la burbuja», que no es la **burbuja de un mensaje**.
+- **Recargar la página** — `<RecargarLaPagina>` de `shared/ui`: botón de la barra superior, a la izquierda del buscador; recarga completa del navegador.
+- **Copiar el enlace de esta página** — `<CopiarElEnlaceDeLaPagina>` de `shared/ui`: botón flotante secundario, a la izquierda del botón del chat (`<Flotantes>` del marco);
+  copia la URL actual o, si el portapapeles falla, la deja seleccionada en un modal.
 - **Push** — `suscripciones_push`: suscripción web push del navegador.
 - **Actividad** — `actividad` / `registrar_actividad()`: auditoría inmutable, 14 días.
 - **Actividad reciente** — `ActividadReciente` (`actividad/pantallas/actividad-reciente.ts`): los últimos 5 cambios de un registro como frases, cada uno
@@ -1023,6 +1040,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Shell** — `shell.ts` y `shell.client.ts` de un módulo, `src/app/(app)/layout.tsx`: marco de toda pantalla.
 - **Pantalla (entrada)** — `pantallas/<pantalla>.ts` de un módulo: entrada por la que `src/app` trae los componentes de una pantalla.
 - **Carril** — un worktree con su propia pila de Supabase (`scripts/worktree/preparar.sh`, `docs/FLUJO.md`).
+- **E2E afectados** — `node scripts/e2e-afectados.mjs [--correr]`: los e2e que una rama puede romper aunque no sean de su módulo (los
+  dirigidos, los que nombran un texto visible que cambió o que un texto nuevo vuelve ambiguo, y los de las pantallas de un compartido), con
+  tope de 40; se corren en local antes de publicar. No son los **dirigidos** del CI (`scripts/e2e-dirigidos.mjs`), que son un subconjunto.
 - **Área (de un módulo)** — una parte de un módulo: sus carpetas `features/<área>/`, `entities/<área>/`, `infra/<área>/`, sus entradas
   `areas/<área>/` y `pantallas/<área>.ts`. No importa otra área (`cotizaciones`).
 - **Núcleo (de un módulo)** — lo que comparten las áreas de un módulo (en `cotizaciones`: la hoja, guardar, el motor…); no importa ningún área.

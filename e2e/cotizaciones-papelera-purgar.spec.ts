@@ -201,7 +201,7 @@ test('P5 con la versión vieja no se purga nada: el conflicto se dice en el diá
   for (const id of ids.slice(1)) {
     expect(estadoEnLaBase(id)?.eliminadoEn).not.toBeNull()
   }
-  await dialogo.getByRole('button', { name: 'Recargar' }).click()
+  await dialogo.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(dialogo).toBeHidden()
   await expect(lote.getByText('Lote de 3 · quedan 2')).toBeVisible()
 })

@@ -132,7 +132,7 @@ test('si otra pestaña ya la movió, vuelve a su lugar y ofrece «Recargar»', a
   await expect(
     page.getByText('Esta oportunidad ya está en «Cotizado». Recarga para verla donde está.'),
   ).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Recargar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Recargar', exact: true })).toBeVisible()
   await verEtapa(page, 'Nuevo')
   await expect(tarjeta(page, titulo)).toBeVisible()
   expect((await enLaBase(op.id))?.etapa_id).toBe(etapa(embudo, 'Cotizado'))
