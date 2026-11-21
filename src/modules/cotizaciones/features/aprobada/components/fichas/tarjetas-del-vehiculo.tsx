@@ -48,7 +48,7 @@ function useRanura(id: string): HTMLElement | null {
 function useIsla(vehiculoId: string, alCambiar: () => void) {
   const lista = useDeEsteVehiculo(vehiculoId)
   const fuente = useId()
-  const leerAlMontar = useEffectEvent(lista.leerLaPrimera)
+  const leerAlMontar = useEffectEvent(lista.leerAlMontar)
   useEffect(() => {
     leerAlMontar()
   }, [])

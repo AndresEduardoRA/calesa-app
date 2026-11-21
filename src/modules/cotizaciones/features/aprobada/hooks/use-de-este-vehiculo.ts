@@ -90,9 +90,10 @@ export function useDeEsteVehiculo(vehiculoId: string) {
     // En el tope de lo que se dibuja: hay más, pero no se pide (el aviso manda al listado).
     enElTope,
     hayMasParaPedir,
-    // La primera página, una vez: no vuelve a pedir lo leído, lo que va en camino ni lo que falló (eso es «Reintentar»).
-    leerLaPrimera: () => {
-      if (!estado.leido && !estado.cargando && estado.error === null) {
+    // Al montarse (o volver a mostrarse la pantalla, que repite el montaje): lo que iba en camino quedó viejo al desmontarse (`ultimo`) y nunca llegará, así
+    // que no cuenta como «en camino»; sin esto, un bloque que se dejó antes de que llegara su lectura volvía a su esqueleto y se quedaba ahí.
+    leerAlMontar: () => {
+      if (!estado.leido && estado.error === null) {
         leer(null)
       }
     },

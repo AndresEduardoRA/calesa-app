@@ -138,7 +138,7 @@ export function DeEsteVehiculo({
 function useIsla(vehiculoId: string, conTitulo: boolean, alCambiar: (() => void) | undefined) {
   const lista = useDeEsteVehiculo(vehiculoId)
   const fuente = useId()
-  const leerAlMontar = useEffectEvent(lista.leerLaPrimera)
+  const leerAlMontar = useEffectEvent(lista.leerAlMontar)
   useEffect(() => {
     leerAlMontar()
   }, [])
