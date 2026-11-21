@@ -36,3 +36,8 @@ export function conPreferencia(
   }
   return Object.keys(apagados).length === 0 ? null : apagados
 }
+
+// Cuántos de los tipos dados siguen encendidos: lo que dice la tarjeta «Notificaciones» de `/perfil`.
+export function contarEncendidos(apagados: ApagadosDePush, tipos: readonly string[]): number {
+  return tipos.filter((tipo) => estaEncendido(apagados, tipo)).length
+}

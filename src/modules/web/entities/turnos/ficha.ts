@@ -62,3 +62,37 @@ export type MiFichaEnLaWeb = {
 }
 
 export type LectorDeMiFichaEnLaWeb = () => Promise<Resultado<MiFichaEnLaWeb | null>>
+
+// Lo que la persona escribe en el modal «Tu ficha en la web»: los cinco textos tal cual (las especialidades, separadas por coma).
+export type EscritoDeFicha = {
+  whatsapp: string
+  handle: string
+  cargo: string
+  presentacion: string
+  especialidades: string
+}
+
+export function escritoDeFicha(ficha: MiFichaEnLaWeb): EscritoDeFicha {
+  return {
+    whatsapp: ficha.whatsapp ?? '',
+    handle: ficha.handle ?? '',
+    cargo: ficha.cargo ?? '',
+    presentacion: ficha.presentacion ?? '',
+    especialidades: textoDeEspecialidades(ficha.especialidades),
+  }
+}
+
+// ¿Cerrar ahora perdería algo? Un espacio de más al borde no es un cambio (el esquema los recorta).
+export function hayCambiosDeFicha(
+  ficha: MiFichaEnLaWeb,
+  escrito: EscritoDeFicha,
+  publicoWeb: boolean,
+): boolean {
+  const guardado = escritoDeFicha(ficha)
+  return (
+    publicoWeb !== ficha.publicoWeb ||
+    (Object.keys(guardado) as (keyof EscritoDeFicha)[]).some(
+      (campo) => escrito[campo].trim() !== guardado[campo],
+    )
+  )
+}

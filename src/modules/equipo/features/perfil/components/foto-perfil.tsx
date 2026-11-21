@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { Avatar } from '@/shared/ui/avatar'
 import { Button } from '@/shared/ui/button'
-import type { CambioDeFoto } from '../hooks/use-guardar-perfil'
+import type { CambioDeFoto } from '../hooks/use-envio-del-perfil'
 
 type Props = {
   nombre: string

@@ -25,7 +25,7 @@ Autenticación, perfiles, roles y permisos (RBAC puro), invitaciones, bloqueo, b
 - `infra/invitaciones.ts` — **la excepción del cliente admin**: `conAdminDeAuth()` comprueba `equipo.usuarios.gestionar` y entrega sólo `auth.admin`
   (lo cuida el lint). Crear rol o invitar no es idempotente.
 
-- «Visto» (`features/vistos/`, `entities/vistos.ts`): la preferencia `vistos` (en `ProveedorPreferencias`) y `VistosDelPerfil`; las marcas se
+- «Visto» (`features/vistos/`, `entities/vistos.ts`): la preferencia `vistos` (en `ProveedorPreferencias`) y `ControlesDeVistos` (dentro del modal «Preferencias» de `/perfil`: `features/perfil/components/tarjetas-del-perfil.tsx` dibuja las tarjetas Tú y Preferencias con su modal por `?panel=`); las marcas se
   dibujan en `@/shared/ui/lista` (`idDeVisto`, `<SufijoDeVisto>`, `useVistoDeLista`).
   - Marcas: `ultimo`, `visto` y `nuevo` (lo no visto: negrita en la lista; sólo con «Vistos» encendido, la lectura de la página llegada y el id dentro de lo leído; `null` en
     cualquier otro caso: nada se pone en negrita sin saber).

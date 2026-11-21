@@ -332,7 +332,7 @@ test('E2E ficha en dos columnas · el documento no crece con las cotizaciones', 
   sembrar(600, 5)
   const conMuchas = (await largo(`/vehiculos/${id}`)) - perfil
   const kb = (bytes: number) => Math.round((bytes / 1024) * 10) / 10
-  const medido = `la ficha aporta ${String(kb(conUna))} KB con 1 cotización y ${String(kb(conMuchas))} KB con 601`
+  const medido = `la ficha aporta ${String(kb(conUna))} KB con 1 cotización y ${String(kb(conMuchas))} KB con 601 (sobre un /perfil de ${String(kb(perfil))} KB)`
   console.warn(`[ficha del vehículo] ${info.project.name}: ${medido}`)
   info.annotations.push({ type: 'documento de la ficha', description: medido })
   expect(Math.abs(conMuchas - conUna)).toBeLessThanOrEqual(1024)
