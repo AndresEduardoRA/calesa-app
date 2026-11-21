@@ -197,6 +197,8 @@ Al cerrar una, se borra su línea (el PR lo cuenta). Lo nuevo que aparezca al tr
 
 ## Pulido de interfaz
 
+- **[T420]** En el celular, el paso a paso de la puesta en marcha (seis filas arriba) baja el contenido de cada paso casi a media pantalla, y en
+  «Listo» deja «Cotizar con <origen>» bajo el pliegue: plegarlo a una línea («Paso 3 de 6 · Flujo») que abre la lista (`paso-a-paso.tsx`).
 - **[T414]** Con el texto al 200 % en el celular, la cabecera del resumen de la cotización ocupa casi toda la pantalla (el monto se corta contra el borde y las pestañas quedan debajo, sin desplazamiento del drawer, que va con `desplazamiento="propio"`): dejar que el drawer se desplace cuando la cabecera no deja alto a las pestañas, o plegar la cabecera a título y total (`resumen-de-cotizacion.tsx`, `cabecera-del-resumen.tsx`).
 - **[T414]** En el celular, la fila «Creada» de la cabecera del resumen parte su valor bajo la etiqueta («Creada» sola y debajo «hace 2 minutos · …»): dejar la etiqueta con el primer tramo del valor.
 - **[—]** La imagen de la tarjeta quita el recuadro al cargar (`onLoad`) y la grande del resumen puede verse un instante como un marco gris vacío hasta que el
