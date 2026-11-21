@@ -3,7 +3,7 @@ import { desmontarSubasta, prepararSubasta, type EstadoDeApibara } from './sopor
 import { admin } from './soporte/base'
 import { entrar } from './soporte/inventario'
 
-// Editar las fechas de la subasta (A4b) desde el bloque de la subasta de la ficha: «Editar fechas» abre `?panel=fechas-de-subasta`, la
+// Editar las fechas de la subasta (A4b) desde el «⋯» del vehículo en su ficha: «Editar fechas de subasta» abre `?panel=fechas-de-subasta`, la
 // hora se escribe en la zona de quien edita (la de su perfil, acá Nueva York) y se guarda el instante en UTC. Un cierre antes del inicio
 // se dice junto al campo. Sin llamadas a apibara.
 test.describe.configure({ mode: 'serial' })
@@ -55,18 +55,16 @@ async function fechasGuardadas() {
   )
 }
 
-// «Editar fechas» va en el «⋯» de «Subasta».
+// «Editar fechas de subasta» va en el «⋯» del vehículo.
 async function editarFechas(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Más acciones de la subasta' }).click()
-  await page.getByRole('menuitem', { name: 'Editar fechas' }).click()
+  await page.getByRole('button', { name: 'Más acciones de Fechas A Mano' }).click()
+  await page.getByRole('menuitem', { name: 'Editar fechas de subasta' }).click()
 }
 
 test('las fechas se escriben en la zona de quien edita y se guardan en UTC', async ({ page }) => {
   await entrar(page, duena)
   await page.goto(`/vehiculos/${vehiculoId}`)
-  // El bloque de la columna izquierda (el primero): el grupo «Subasta» del layout también es una región, en «Ficha».
-  const bloque = page.getByRole('region', { name: 'Subasta' }).first()
-  await expect(bloque).toContainText('Sin fecha')
+  await expect(page.getByRole('heading', { name: 'Fechas A Mano', level: 1 })).toBeVisible()
   await editarFechas(page)
   await expect(page).toHaveURL(/[?&]panel=fechas-de-subasta/)
   const modal = page.getByRole('dialog', { name: 'Fechas de la subasta' })
@@ -87,9 +85,9 @@ test('las fechas se escriben en la zona de quien edita y se guardan en UTC', asy
   const guardadas = await fechasGuardadas()
   expect(new Date(guardadas.subasta_en ?? '').toISOString()).toBe('2026-12-01T15:30:00.000Z')
   expect(guardadas.subasta_fin_en).toBeNull()
-  await expect(bloque).not.toContainText('Sin fecha')
 
-  // Al volver a abrir, lo guardado se ve en la misma zona.
+  // Al volver a abrir, lo guardado se ve en la misma zona. Tras guardar la ficha se vuelve a leer: se abre cuando esa lectura ya llegó.
+  await page.waitForLoadState('networkidle')
   await editarFechas(page)
   await expect(modal.getByLabel('Fecha de la subasta')).toHaveValue('2026-12-01T10:30')
 })

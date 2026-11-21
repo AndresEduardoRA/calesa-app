@@ -17,7 +17,7 @@ import {
 import { literal, sql } from './soporte/sql'
 
 // La columna izquierda de la ficha del vehículo (`docs/UX.md` › Vehículo): el «⋯» y la vitrina sobre la foto, la tira de miniaturas, los enlaces
-// cortos, «Cotización aprobada», «Subasta» (su frase en las cuatro situaciones) y «Datos principales» con «Ver más» (la ficha completa, `?ver=ficha`).
+// cortos, la subasta y el costo como la tarjeta de la lista (la cuenta regresiva, la puja, la compra directa y el «Costo estimado» que comparte), «Editar fechas de subasta» en el «⋯» y «Datos principales» con «Ver más» (la ficha completa, `?ver=ficha`).
 // Terreno propio por SQL de servicio: un origen de subasta con «Subasta» → «Comprado», un campo y sus datos clave, y cuatro vehículos. Se borra al
 // empezar y al terminar.
 test.describe.configure({ mode: 'serial' })
@@ -146,27 +146,46 @@ test('E2E ficha izquierda · los enlaces cortos a logística y repuestos', async
   ).toHaveAttribute('href', `/repuestos/${t.proyecto.id}`)
 })
 
-test('E2E ficha izquierda · «Cotización aprobada» con su imagen, «Abrir» y «Compartir»; sin aprobada, «Cotizar»', async ({
+test('E2E ficha izquierda · la cuenta, la puja, la compra directa y el «Costo estimado» que comparte la aprobada', async ({
   page,
 }, info) => {
   await entrar(page, duena)
   await alaFicha(page, t.principal)
-  const aprobada = region(page, 'Cotización aprobada')
-  await expect(aprobada.locator('[data-imagen-de-la-tarjeta]')).toBeVisible()
-  await aprobada.scrollIntoViewIfNeeded()
-  await capturar(page, info, 'aprobada')
-  await expect(aprobada.getByRole('link', { name: 'Abrir' })).toHaveAttribute(
-    'href',
-    `/cotizaciones/${t.cotizacion}`,
-  )
-  await aprobada.getByRole('button', { name: 'Compartir' }).click()
+  const bloque = region(page, 'Subasta y costo')
+  await expect(bloque.locator('[data-cuenta-regresiva]')).toHaveText(/^Cierra en 2 d /)
+  await expect(bloque.locator('dt')).toHaveText([
+    /^Puja actual/,
+    'Compra directa',
+    'Costo estimado',
+  ])
+  await expect(bloque.locator('dd').nth(0)).toContainText('4.100')
+  await expect(bloque.locator('dd').nth(1)).toContainText('15.000')
+  // Ya no hay un bloque «Cotización aprobada» ni uno «Subasta» aparte.
+  await expect(region(page, 'Cotización aprobada')).toHaveCount(0)
+  await expect(page.locator('[data-frase-de-subasta]')).toHaveCount(0)
+  await bloque.scrollIntoViewIfNeeded()
+  await capturar(page, info, 'costo-y-subasta')
+  await bloque.getByRole('button', { name: /^Compartir la cotización aprobada/ }).click()
   await expect(page).toHaveURL(new RegExp(`panel=compartir&para=${t.cotizacion}`))
-  await capturar(page, info, 'aprobada-compartir')
+  await capturar(page, info, 'costo-compartir')
+})
 
+test('E2E ficha izquierda · sin aprobada, el costo dice «—» y «Cotizar» lleva a la hoja con el vehículo', async ({
+  page,
+}) => {
+  await entrar(page, duena)
   await alaFicha(page, t.sinResolver)
-  const vacia = region(page, 'Cotización aprobada')
-  await expect(vacia.getByText('Sin cotización aprobada')).toBeVisible()
-  const cotizar = vacia.getByRole('link', { name: 'Cotizar' })
+  const bloque = region(page, 'Subasta y costo')
+  // Sin cuenta (ya cerró) y con las tres filas fijas: la puja y la compra directa sin dato, «—».
+  await expect(bloque.locator('[data-cuenta-regresiva]')).toHaveCount(0)
+  await expect(bloque.locator('dt')).toHaveText([
+    /^Puja (actual|final)/,
+    'Compra directa',
+    'Costo estimado',
+  ])
+  await expect(bloque.locator('dd').nth(0)).toHaveText('—')
+  await expect(bloque.locator('dd').nth(2)).toContainText('—')
+  const cotizar = bloque.getByRole('link', { name: 'Cotizar' })
   const href = (await cotizar.getAttribute('href')) ?? ''
   expect(href).toContain('/cotizaciones/nuevo')
   expect(href).toContain(t.sinResolver.id)
@@ -175,42 +194,47 @@ test('E2E ficha izquierda · «Cotización aprobada» con su imagen, «Abrir» y
   )
 })
 
-test('E2E ficha izquierda · en Modo Live no se ofrece «Compartir»', async ({ page }) => {
+test('E2E ficha izquierda · en Modo Live el costo es texto y no se ofrece «Compartir»', async ({
+  page,
+}) => {
   await entrar(page, duena)
   await page.addInitScript(() => {
     window.localStorage.setItem('modo-live', '1')
   })
   await alaFicha(page, t.principal)
   await expect(page.locator('html')).toHaveClass(/\blive\b/)
-  const aprobada = region(page, 'Cotización aprobada')
-  await expect(aprobada.getByRole('link', { name: 'Abrir' })).toBeVisible()
-  await expect(aprobada.getByRole('button', { name: 'Compartir' })).toHaveCount(0)
+  const bloque = region(page, 'Subasta y costo')
+  await expect(bloque.locator('dt')).toHaveText([
+    /^Puja actual/,
+    'Compra directa',
+    'Costo estimado',
+  ])
+  await expect(bloque.getByRole('button', { name: /Compartir/ })).toHaveCount(0)
 })
 
-test('E2E ficha izquierda · la frase de «Subasta» en las cuatro situaciones, y «Editar fechas» en su «⋯»', async ({
+test('E2E ficha izquierda · la cuenta regresiva sólo en una subasta viva, y «Editar fechas de subasta» en el «⋯»', async ({
   page,
 }, info) => {
   await entrar(page, duena)
-  for (const [vehiculo, tono, texto] of [
-    [t.principal, 'info', /^Se subasta en 2 días \d+ h$/],
-    [t.sinResolver, 'aviso', /^Cerró hace 3 h( \d+ min)? · sin resolver$/],
-    [t.ganada, 'exito', /^Ganada$/],
-    [t.noGanada, 'apagado', /^No ganada$/],
+  for (const [vehiculo, cuentas] of [
+    [t.principal, 1],
+    [t.sinResolver, 0],
+    [t.ganada, 0],
+    [t.noGanada, 0],
   ] as const) {
     await alaFicha(page, vehiculo)
-    const frase = region(page, 'Subasta').locator('[data-frase-de-subasta]')
-    await expect(frase).toHaveAttribute('data-frase-de-subasta', tono)
-    await expect(frase).toHaveText(texto)
+    await expect(region(page, 'Subasta y costo').locator('[data-cuenta-regresiva]')).toHaveCount(
+      cuentas,
+    )
   }
   await alaFicha(page, t.principal)
-  const subasta = region(page, 'Subasta')
-  await expect(subasta.getByText('Puja actual')).toBeVisible()
-  await expect(subasta.getByText('Compra directa')).toBeVisible()
-  await subasta.scrollIntoViewIfNeeded()
-  await capturar(page, info, 'subasta')
-  await subasta.getByRole('button', { name: 'Más acciones de la subasta' }).click()
-  await page.getByRole('menuitem', { name: 'Editar fechas' }).click()
+  await page.getByRole('button', { name: `Más acciones de ${t.principal.titulo}` }).click()
+  await capturar(page, info, 'menu-con-fechas')
+  await page.getByRole('menuitem', { name: 'Editar fechas de subasta' }).click()
   await expect(page).toHaveURL(/[?&]panel=fechas-de-subasta/)
+  await expect(page.getByRole('dialog', { name: 'Fechas de la subasta' })).toBeVisible()
+  // La URL sola también abre el modal.
+  await page.goto(`/vehiculos/${t.principal.id}?panel=fechas-de-subasta`)
   await expect(page.getByRole('dialog', { name: 'Fechas de la subasta' })).toBeVisible()
 })
 
@@ -261,7 +285,7 @@ test('E2E ficha izquierda · `?seccion=fotos` abre el visor', async ({ page }) =
   await expect(page.locator('[data-visor-de-imagenes]').getByText('1 de 3')).toBeVisible()
 })
 
-test('E2E ficha izquierda · sin permisos: vitrina apagada con su motivo, sin enlaces cortos ni aprobada', async ({
+test('E2E ficha izquierda · sin permisos: vitrina apagada con su motivo, sin enlaces cortos ni costo estimado', async ({
   page,
 }, info) => {
   await page.context().clearCookies()
@@ -277,6 +301,9 @@ test('E2E ficha izquierda · sin permisos: vitrina apagada con su motivo, sin en
   const cabecera = page.locator('main header').first()
   await expect(cabecera.getByRole('link', { name: 'Ver en logística' })).toHaveCount(0)
   await expect(cabecera.getByRole('link', { name: /^Repuestos · Proyecto/ })).toHaveCount(0)
-  await expect(region(page, 'Cotización aprobada')).toHaveCount(0)
+  // Sin `cotizaciones.ver` no hay fila «Costo estimado» (ni consulta): sólo la subasta.
+  const bloque = region(page, 'Subasta')
+  await expect(bloque.locator('dt')).toHaveText([/^Puja actual/, 'Compra directa'])
+  await expect(page.getByText('Costo estimado')).toHaveCount(0)
   await capturar(page, info, 'sin-permisos')
 })

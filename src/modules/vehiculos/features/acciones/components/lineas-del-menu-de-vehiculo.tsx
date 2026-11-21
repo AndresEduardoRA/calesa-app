@@ -19,6 +19,7 @@ export type Lineas = {
   cotizar: () => void
   editar: () => void
   imagenes: () => void
+  fechas: () => void
   publicar: () => void
   actualizar: () => void
   verActividad: () => void
@@ -88,6 +89,7 @@ const LINEAS: Readonly<Record<ClaveDeAccionDeVehiculo, Constructor>> = {
   // Las que abren un panel esperan a que el menú se cierre (el foco vuelve al «⋯» antes de abrir).
   editar: (p) => lineaDe('editar', p, p.editar, { despuesDeCerrar: true }),
   imagenes: (p) => lineaDe('imagenes', p, p.imagenes, { despuesDeCerrar: true }),
+  fechas: (p) => lineaDe('fechas', p, p.fechas, { despuesDeCerrar: true }),
   publicar: (p) => lineaDe('publicar', p, p.publicar, { despuesDeCerrar: true }),
   actualizar: (p) => lineaDe('actualizar', p, p.actualizar, { despuesDeCerrar: true }),
   actividad: (p) => lineaDe('actividad', p, p.verActividad),

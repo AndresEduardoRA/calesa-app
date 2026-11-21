@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cuentaRegresiva, estaDesactualizada } from './subasta-tiempo'
+import { cuentaRegresiva } from './subasta-tiempo'
 
 describe('cuentaRegresiva', () => {
   const ahora = new Date('2026-10-14T12:00:00Z')
@@ -20,18 +20,5 @@ describe('cuentaRegresiva', () => {
       texto: 'hace 5 h',
     })
     expect(cuentaRegresiva('ayer', ahora)).toBeNull()
-  })
-})
-
-describe('estaDesactualizada', () => {
-  const ahora = new Date('2026-10-14T12:00:00Z')
-
-  it('una abierta cuya hora ya pasó quedó vieja; las demás no', () => {
-    expect(estaDesactualizada('abierta', '2026-10-14T10:00:00Z', ahora)).toBe(true)
-    expect(estaDesactualizada('abierta', '2026-10-14T18:00:00Z', ahora)).toBe(false)
-    expect(estaDesactualizada('vendida', '2026-10-14T10:00:00Z', ahora)).toBe(false)
-    expect(estaDesactualizada('terminada', '2026-10-14T10:00:00Z', ahora)).toBe(false)
-    expect(estaDesactualizada('abierta', null, ahora)).toBe(false)
-    expect(estaDesactualizada(null, 'no es fecha', ahora)).toBe(false)
   })
 })

@@ -274,7 +274,7 @@ las trampas, en `docs/LECCIONES.md`.
   mayoría) y la pantalla dice «hora del patio». Sin estado, sólo la zona de quien mira y la de la empresa: nunca una inventada.
   `vehiculos.subasta_zona` sigue sin uso. Las fechas de subasta se ven en la zona de quien mira (`/perfil`), con su abreviatura; lo demás,
   en la de la empresa.
-- **Las fechas de subasta se escriben a mano en la zona de quien edita.** «Editar fechas» del bloque de la subasta (no el panel de edición: el
+- **Las fechas de subasta se escriben a mano en la zona de quien edita.** «Editar fechas de subasta» del «⋯» de la ficha (no el panel de edición: el
   alta no las pide, las trae apibara) manda el instante con su zona y `vehiculo_guardar` lo acepta sólo en un origen de subasta; un texto
   sin zona se rechaza, para no depender de la hora del servidor. Refrescar desde apibara sigue mandando sobre lo escrito.
 - **Refrescar no pisa lo editado.** `fusionarRefresco(previo, nuevo, actual)` toma el valor nuevo sólo si lo guardado es lo que la API dijo antes; los campos de subasta siempre se actualizan.
@@ -292,8 +292,8 @@ las trampas, en `docs/LECCIONES.md`.
 - **«Relacionados» sin ruido: en una línea en los drawers y en logística, compacto en las fichas; un grupo vacío no se dibuja.** Dos presentaciones, que cada lugar nombra (`presentacion` sin valor por defecto): la línea de chips con un popover por grupo (página de la unidad de logística y drawer de gastos: ahí un bloque alto no cabe sin desplazar) y la compacta (las dos columnas de las fichas). Los chips y el popover son de `vehiculos`; `logistica` no los conoce. En la compacta la leyenda es el `title` del título y la descripción del grupo para el lector, sin ícono de ayuda (tres íconos son ruido y un popover de ayuda suma JS); las acciones del grupo, en su «⋯». Las de un grupo que no se dibuja van al «⋯» «Relacionados» (`accionesFueraDeLosGrupos()`); con todo vacío se ve la frase y una sola acción (la primera, vincular) y el resto va al «⋯». El popover de un chip conserva la leyenda y los botones: es a pedido. Descartadas: una pestaña propia (suma navegación y pierde el vistazo), una sección plegada (esconde los conteos y suma un toque), una barra lateral (no existe en el celular), chips también en las fichas (ahí hay lugar: las filas a la vista ahorran un toque) y tres tarjetas con los vacíos colapsados (siguen repitiendo leyendas y botones).
 - **La ficha del vehículo, en dos columnas: lo clave a la izquierda** (el marco y el criterio de la del lead). A la izquierda, con su propio desplazamiento (ver «La ficha en dos columnas: la página quieta, cada columna por dentro»), sólo lo clave y
   lo que sirve para mostrarle el vehículo a un cliente: la foto con su tira de miniaturas y, sobre su esquina, la vitrina y el «⋯» (como en la tarjeta de
-  la lista; «Editar» va en el «⋯»), título, número, origen, situación y los enlaces cortos a logística y repuestos; después «Cotización aprobada»,
-  «Subasta» (una frase con color y cuenta en vez de una tabla de datos) y «Datos principales» (sólo los datos clave del origen) con «Ver más», que abre la
+  la lista; «Editar» va en el «⋯»), título, número, origen, situación y los enlaces cortos a logística y repuestos; después la subasta y el costo (la cuenta regresiva y las filas de la tarjeta de la lista: puja,
+  compra directa y «Costo estimado», sin título) y «Datos principales» (sólo los datos clave del origen) con «Ver más», que abre la
   **ficha completa** en un modal grande de sólo lectura y con tipografía de vitrina (`?ver=ficha`; sus fotos no abren el visor encima: un solo nivel de
   modal). Ningún bloque de la izquierda entra al índice. Sin tope de ancho propio (con `max-w-4xl` nunca habría dos columnas). Descartados: la tira vertical al costado de la foto (en 24 rem
   le roba ancho y no entra al 200 %), puntos en vez de tira (no dejan elegir entre 24), «Ver más» como acordeón (alarga la columna), la ficha completa como
@@ -314,7 +314,8 @@ las trampas, en `docs/LECCIONES.md`.
   aparte (`<Monto>` con su modo). El lead lee `cotizaciones_listado(p_lead)` y el vehículo `cotizaciones_de_este_vehiculo()`, que devuelve `vence_el` para la
   vigencia. Descartados: seguir con las filas de «De este vehículo» (sin imagen ni «Compartir» a la vista), paginar dentro de la fila (otra lista infinita) y una
   cuadrícula (alarga la columna).
-- **Aprobar desde la ficha del vehículo refresca la página.** «Cotización aprobada» de la izquierda se lee en el servidor y no escucha a las islas: tras
+- **El tope de JS de la ficha del vehículo sube de 530 a 540 KB** (+1,9 %, regla del 5 %): la izquierda trae la cuenta regresiva de la subasta y su modal de fechas (diferido) y la derecha la fila de tarjetas; medido 530,4 en 35 chunks.
+- **Aprobar desde la ficha del vehículo refresca la página.** El «Costo estimado» de la izquierda se lee en el servidor y no escucha a las islas: tras
   aprobar o deshacer, «Cotizaciones de este vehículo» hace `router.refresh()` en una transición. En la ficha no hay nada tipeado y la isla no se vuelve a
   montar (no cambian ni su posición ni su `key`); la isla ya apaga sus filas mientras relee.
 - **«Actividad reciente» de la ficha del vehículo se lee desde el navegador al acercarse**, con su código por `diferido()`: dibujada en el servidor,
@@ -322,12 +323,13 @@ las trampas, en `docs/LECCIONES.md`.
   `/actividad/reciente`; las dos comparten el marco y las filas.
 - **La vista previa del bloque «Vitrina» va plegada en un `<details>` nativo**: sin JS, no pide la foto hasta abrirse y no repite el precio, que va
   arriba con `<Monto>`. El motivo de «Publicado, no visible» va escrito a la vista, no sólo en el `title` de la insignia.
-- **«Ganada» en la frase de la subasta sin copiar la situación:** en un origen de subasta, la situación `fase` con el cierre vencido sólo puede ser una
-  ganada (si no, la base diría «Sin resolver» o «No ganada»); con el cierre futuro y fuera del tramo se muestra la cuenta sin el color de éxito. No se suma
-  `es_subasta` a la fase que lee la ficha. La cuenta usa el texto de `cuentaRegresiva()` («en 2 días 4 h»), el mismo de toda la app.
-- **La aprobada de la ficha del vehículo sale de `cotizaciones_de_este_vehiculo()` con la página más chica** (`TAMANO_DE_LA_APROBADA`, sólo la fijada):
-  muestra lo mismo que «De este vehículo» (el total con su moneda y el nombre del modo, el autor y la fecha de la cotización), no el monto congelado de
-  `cotizaciones_aprobadas`; sin migración ni otra RPC que duplique `_nombre_del_modo`.
+- **La izquierda de la ficha dice lo mismo que la tarjeta de la lista sobre la subasta y el costo.** Un solo bloque reemplaza a «Cotización aprobada» y a
+  «Subasta»: la cuenta regresiva del cierre (sólo «En subasta»; el mismo componente y un solo temporizador por página) y filas fijas con los mismos
+  componentes de la lista (`RotuloDePrecioDeTarjeta`, `CeldaDeCompraDirecta`, `CostoEstimado`), así que nada se dice dos veces distinto. La puja y la compra
+  directa salen de los atributos del vehículo (ya viajan con él), sin leer la subasta; el costo, de `cotizaciones_aprobadas_de_vehiculos()` con un solo id (la
+  lectura del inventario, con el modo). No se muestra el aviso de «subasta vieja» ni la frase «Ganada / No ganada»: la situación ya la dice la cabecera.
+  «Editar fechas de subasta» pasa al «⋯» del vehículo y sólo la ofrece la ficha de un origen de subasta (su modal vive ahí; la fila y la tarjeta no la
+  ofrecen). Descartado: dos tarjetas (cuenta aparte del costo; más ruido) y dejar la portada de la aprobada (ya no hay portada guardada).
 - **La lista abre la ficha; no hay resumen.** Un toque en la fila o la tarjeta de
   `/vehiculos` lleva a `/vehiculos/<id>`, como un enlace de verdad. El nombre es el `<a>` (`<EnlaceDeLaFila>` de `shared`, con `data-abre-resumen` para el peso
   de «visto» y el color de la fila con el foco) y el resto de la fila le pasa el clic (`href` en `<FilaDeLista>`/`<TarjetaDeLista>`): Ctrl, Cmd o Shift + clic y

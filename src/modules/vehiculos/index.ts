@@ -160,11 +160,12 @@ export type {
 export type { VehiculosDelLead } from './entities/vehiculos-del-lead'
 export { opcionesDeVehiculoDelLead, type OpcionDeVehiculo } from './features/vinculo/lecturas'
 
-// La subasta de un vehículo de subasta: su fecha, su estado y cuándo se consultó (`<BloqueDeSubasta>`: `pantallas/ficha`).
+// La subasta de un vehículo de subasta: su fecha, su estado y cuándo se consultó (el modal de «Editar fechas de subasta» la lee).
 export { fotosPorTraerDe, type SubastaDeVehiculo } from './entities/subasta-vehiculo'
 
-// Si el origen trae la «Compra directa» (el campo de apibara con el «Buy it now»): la ficha la muestra en «Subasta» como la lista. Puro.
+// Las filas de la subasta del vehículo desde el layout de su origen, como las dibuja la lista: la puja (o el precio) y la «Compra directa» (el campo de apibara con el «Buy it now»). La ficha las muestra arriba de «Datos principales». Puro.
 export { columnaDeCompraDirecta } from './entities/compra-directa-de-la-fila'
+export { columnaDePrecio } from './entities/precio-de-la-fila'
 
 // Los datos comunes de un vehículo con sus etiquetas (el único lugar con texto fijo): los usa `datos` para exportar los vehículos de un
 // origen (9.05-2b). Puro.

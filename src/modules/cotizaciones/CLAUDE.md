@@ -289,9 +289,8 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
 - **El resumen del listado** (`HuecosDelResumen`): `Imagen` (primero tras la barra, arriba de los datos: `pantallas/tarjeta-resumen.ts`), `Pestanas`, `Comprobantes` y
   `DeEsteVehiculo` (entre los datos y las pestañas, sólo con un vehículo que quien mira ve; `aprobarEn` lo manda la página y `alCambiar` refresca el
   listado; `pantallas/aprobada-resumen.ts`). Cerrar el resumen borra también `?visor=&foto=` (el visor de la imagen).
-- **La ficha del vehículo** (`/vehiculos/[id]`, columna izquierda, la compone `src/app`): «Cotización aprobada» con `leerAprobadaDelVehiculo()` (`index.ts`),
-  la tarjeta de `pantallas/aprobada-del-vehiculo.ts` (`AprobadaDelVehiculo`, `EsqueletoDeLaAprobada`) y, como un área no importa otra, la imagen de la tarjeta diferida y
-  `BotonDeCompartirDeLaFila` de `pantallas/tarjeta-aprobada-del-vehiculo.ts` en sus ranuras; el diálogo, `DialogoDeCompartirDeLaFila` de `pantallas/tarjeta-compartir.ts`.
+- **La ficha del vehículo** (`/vehiculos/[id]`, columna izquierda, la compone `src/app`): el «Costo estimado» de la aprobada (lo dibuja `vehiculos`, como en la lista) con
+  `leerAprobadasDeVehiculos([id])` (`index.ts`); lo que lo abre y el diálogo, `useAbrirCompartirDeLaFila` y `DialogoDeCompartirDeLaFila` de `pantallas/tarjeta-compartir.ts`.
   A la derecha, «Cotizaciones de este vehículo»: `TarjetasDelVehiculo` de `pantallas/aprobada-fichas.ts` (la isla del área `aprobada`, abajo, al acercarse, sin título propio: lo dibuja el
   servidor con «Cotizar» y una ranura `ID_DE_LA_RANURA_DE_COMPARAR` donde la isla pone «Comparar» con un portal); `src/app` le pasa la fila de tarjetas del listado (`Tarjetas`, de
   `pantallas/listado-fichas.ts`) con la imagen (`pantallas/tarjeta-imagen.ts`) y `compartir` (`useAbrirCompartirDeLaFila()`, nulo en Modo Live) ya unidos, `aprobarEn` y `alCambiar`, que refresca la página.

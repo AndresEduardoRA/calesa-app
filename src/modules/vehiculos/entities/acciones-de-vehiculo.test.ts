@@ -14,6 +14,7 @@ const todas = (oferta: OfertaDeAccion): OfertasDelMenuDeVehiculo => ({
   cotizar: oferta,
   editar: oferta,
   imagenes: oferta,
+  fechas: oferta,
   publicar: oferta,
   actualizar: oferta,
   actividad: oferta,
@@ -21,10 +22,10 @@ const todas = (oferta: OfertaDeAccion): OfertasDelMenuDeVehiculo => ({
 })
 
 describe('accionesDeVehiculo', () => {
-  it('T336 · con todo, el orden es: cotizar; editar, imágenes, web y subasta; actividad; y la papelera', () => {
+  it('T336 · con todo, el orden es: cotizar; editar, imágenes, fechas, web y subasta; actividad; y la papelera', () => {
     expect(accionesDeVehiculo(todas('habilitada'))).toEqual([
       ['cotizar'],
-      ['editar', 'imagenes', 'publicar', 'actualizar'],
+      ['editar', 'imagenes', 'fechas', 'publicar', 'actualizar'],
       ['actividad'],
       ['papelera'],
     ])

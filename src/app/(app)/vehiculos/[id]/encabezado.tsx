@@ -37,6 +37,8 @@ type Props = {
   editaEnElOrigen: boolean
   // En un origen de subasta con apibara encendida: si tiene con qué consultar. null = no aplica.
   subasta: { consultable: boolean } | null
+  // «Editar fechas de subasta» del «⋯»: un origen de subasta.
+  fechas: boolean
   // Los enlaces cortos (logística, repuestos), en la línea de la situación.
   enlaces?: ReactNode
 }
@@ -77,6 +79,7 @@ export function Encabezado(props: Props) {
             }
             paraActividad={paraActividad}
             subasta={props.subasta}
+            fechas={props.fechas}
             avisos={avisos}
           />
         </>
