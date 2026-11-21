@@ -101,11 +101,18 @@ function comparaLaVariante(e: Estado): boolean {
 const esGrupoSolo = (e: Estado, texto: string) =>
   esta(e.nombres.grupos, texto, e.m) && mirar(e).t === T.CIERRA
 
+// En SUMA, un grupo es un argumento entero: su nombre y lo que cierra o separa el argumento (o el final, que dice «sin cerrar»).
+const CIERRAN_EL_SUMANDO = new Set<number>([T.CIERRA, T.PUNTO_Y_COMA, T.COMA, T.FIN])
+const esGrupoSumando = (e: Estado, texto: string) =>
+  esta(e.nombres.grupos, texto, e.m) && CIERRAN_EL_SUMANDO.has(mirar(e).t)
+
 // Donde la función pide un grupo, un id, un texto o VERDADERO/FALSO, el nombre no se resuelve: lo revisa la función al cerrarse.
 const COMO_CLAVE = new Set<string>(['grupo', 'clave', 'texto', 'logico'])
 const esClave = (e: Estado, pide: string | undefined, texto: string) =>
   pide !== undefined &&
-  (COMO_CLAVE.has(pide) || (pide === 'valor_o_grupo' && esGrupoSolo(e, texto)))
+  (COMO_CLAVE.has(pide) ||
+    (pide === 'valor_o_grupo' && esGrupoSolo(e, texto)) ||
+    (pide === 'sumando' && esGrupoSumando(e, texto)))
 // La variante: donde va una condición, el valor que BUSCARV busca, o al compararla.
 const admiteVariante = (e: Estado, pide: string | undefined) =>
   pide === 'condicion' || pide === 'buscado' || comparaLaVariante(e)
@@ -185,6 +192,8 @@ const MANEJADORES = new Map<number, Manejador>([
   [T.PUNTO_Y_COMA, puntoYComa],
   [T.PORCIENTO, porciento],
   [T.COMA, (_e, t) => enToken(t, 'coma')],
+  // Un rango sólo existe en la planilla, que lo expande antes de compilar: aquí es un carácter que no se entiende.
+  [T.DOS_PUNTOS, (_e, t) => enToken(t, 'caracter_invalido', { texto: ':' })],
   [
     T.ERROR,
     (e, t) => (t.codigo === undefined ? undefined : enToken(t, t.codigo, { texto: textoDe(e, t) })),

@@ -2601,15 +2601,15 @@
       }
     },
     {
-      "nombre": "SUMA con dos argumentos",
+      "nombre": "SUMA de un grupo con otro argumento",
       "texto": "SUMA(compra; compra)",
       "esperado": {
         "error": {
-          "codigo": "cantidad_de_argumentos",
-          "desde": 0,
-          "largo": 4,
+          "codigo": "grupo_con_otros",
+          "desde": 5,
+          "largo": 6,
           "linea": 1,
-          "columna": 1
+          "columna": 6
         }
       }
     },
@@ -2666,26 +2666,38 @@
       }
     },
     {
-      "nombre": "SUMA de un número",
+      "nombre": "SUMA de un número es la suma de un término",
       "texto": "SUMA(3)",
       "esperado": {
-        "error": {
-          "codigo": "argumento_invalido",
-          "desde": 5,
-          "largo": 1,
-          "linea": 1,
-          "columna": 6
+        "nodos": [
+          {
+            "id": "total__1",
+            "tipo": "constante",
+            "etiqueta": "3",
+            "formato": "raw"
+          },
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["total__1"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ],
+        "params": {
+          "total__1": 3
         }
       }
     },
     {
-      "nombre": "SUMA de una expresión",
+      "nombre": "SUMA de una expresión con un grupo",
       "texto": "SUMA(compra+1)",
       "esperado": {
         "error": {
-          "codigo": "argumento_invalido",
+          "codigo": "grupo_sin_suma",
           "desde": 5,
-          "largo": 8,
+          "largo": 6,
           "linea": 1,
           "columna": 6
         }
@@ -2852,7 +2864,7 @@
       "texto": "SUMA(zzz)",
       "esperado": {
         "error": {
-          "codigo": "grupo_inexistente",
+          "codigo": "nombre_desconocido",
           "desde": 5,
           "largo": 3,
           "linea": 1,
@@ -2861,16 +2873,20 @@
       }
     },
     {
-      "nombre": "un nodo no es un grupo",
+      "nombre": "SUMA de un nodo es la suma de un término",
       "texto": "SUMA(remate)",
       "esperado": {
-        "error": {
-          "codigo": "grupo_inexistente",
-          "desde": 5,
-          "largo": 6,
-          "linea": 1,
-          "columna": 6
-        }
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["remate"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ],
+        "params": {}
       }
     },
     {
@@ -4391,6 +4407,62 @@
           "largo": 11,
           "linea": 1,
           "columna": 36
+        }
+      }
+    },
+    {
+      "nombre": "SUMA de varios valores, en el orden del texto",
+      "texto": "SUMA(remate; fees; flete)",
+      "esperado": {
+        "nodos": [
+          {
+            "id": "total",
+            "tipo": "calculo",
+            "op": "suma",
+            "de": ["remate", "fees", "flete"],
+            "etiqueta": "Total",
+            "salida": "total"
+          }
+        ],
+        "params": {}
+      }
+    },
+    {
+      "nombre": "SUMA de un grupo y un valor",
+      "texto": "SUMA(compra; remate)",
+      "esperado": {
+        "error": {
+          "codigo": "grupo_con_otros",
+          "desde": 5,
+          "largo": 6,
+          "linea": 1,
+          "columna": 6
+        }
+      }
+    },
+    {
+      "nombre": "un valor y después un grupo en SUMA",
+      "texto": "SUMA(remate; compra)",
+      "esperado": {
+        "error": {
+          "codigo": "grupo_con_otros",
+          "desde": 13,
+          "largo": 6,
+          "linea": 1,
+          "columna": 14
+        }
+      }
+    },
+    {
+      "nombre": "los dos puntos de un rango no compilan sueltos",
+      "texto": "remate:fees",
+      "esperado": {
+        "error": {
+          "codigo": "caracter_invalido",
+          "desde": 6,
+          "largo": 1,
+          "linea": 1,
+          "columna": 7
         }
       }
     }

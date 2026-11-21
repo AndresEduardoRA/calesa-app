@@ -26,6 +26,7 @@ export const CODIGOS_DE_COMPILACION = [
   'referencia_hacia_adelante',
   'ciclo',
   'grupo_sin_suma',
+  'grupo_con_otros',
   'variante_en_calculo',
   'funcion_desconocida',
   'hoy_no_soportado',
@@ -38,7 +39,6 @@ export const CODIGOS_DE_COMPILACION = [
   'tabla_sin_columnas',
   'tabla_sin_tramos',
   'tablas_sin_leer',
-  'grupo_inexistente',
   'grupo_vacio',
   'auxiliar_ocupado',
   'demasiados_terminos',
@@ -120,6 +120,8 @@ const MENSAJES: Record<CodigoDeCompilacion, (d: DatosDeError) => string> = {
   ciclo: (d) => `${q(d.nombre)} es esta misma fila: no puede usarse a sí misma.`,
   grupo_sin_suma: (d) =>
     `${q(d.nombre)} es un grupo: para sumarlo escribe SUMA(${d.nombre ?? '?'}).`,
+  grupo_con_otros: (d) =>
+    `${q(d.nombre)} es un grupo: SUMA lo suma solo. Escribe SUMA(${d.nombre ?? '?'}) y suma lo demás con +.`,
   // `texto`, una de sus opciones para el ejemplo.
   variante_en_calculo: (d) =>
     `${q(d.nombre)} es la variante: no entra en un cálculo. Para preguntar por una opción, escribe ${d.nombre ?? '?'}="${d.texto ?? 'clave'}".`,
@@ -139,7 +141,6 @@ const MENSAJES: Record<CodigoDeCompilacion, (d: DatosDeError) => string> = {
   tabla_sin_tramos: (d) =>
     `Para buscar por tramo, la tabla ${q(d.texto)} necesita las columnas desde y hasta.`,
   tablas_sin_leer: () => 'No pudimos leer las tablas de este origen. Recarga para usar BUSCARV.',
-  grupo_inexistente: (d) => `El grupo ${q(d.nombre)} no existe.`,
   grupo_vacio: (d) => `El grupo ${q(d.nombre)} no tiene filas antes de esta.`,
   auxiliar_ocupado: (d) =>
     `La fila intermedia ${q(d.nombre)} ya existe: renombra esa fila o escribe la fórmula más corta.`,

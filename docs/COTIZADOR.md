@@ -252,9 +252,11 @@ motor lo ignora; otro nodo con `texto` es `forma`.
 - **Gramática:** números (con punto: `0,1` es el error `coma`), `4%` (÷ 100, constante `pct`), `+ - * /`, las comparaciones
   `> < >= <= = <>` y `( )`; un nombre es sólo el id de un nodo anterior. Precedencia: `* /`, después `+ -`, después las comparaciones,
   todo asociativo a la izquierda; `a<b<c` es `comparacion_encadenada`. Un texto entre comillas (`"fletes"`) sólo va en BUSCARV o frente a
-  la variante con `=`/`<>` (`variante="b"`); en otro lugar, `texto_fuera_de_lugar`. No hay `MULTIPLICAR`/`RESTAR`/`DIVIDIR`, referencias
-  A1 ni `HOY()`. Un literal es una `constante` en `params`.
-- **Las diez funciones** (argumentos con `;`, el nombre en mayúsculas o minúsculas): `SUMA(grupo)`; `SI(condición; x[; y])` (con una
+  la variante con `=`/`<>` (`variante="b"`); en otro lugar, `texto_fuera_de_lugar`. No hay `MULTIPLICAR`/`RESTAR`/`DIVIDIR` ni `HOY()`.
+  Un literal es una `constante` en `params`. El compilador sólo lee ids: las referencias A1 y los rangos (`C5`, `C5:C9`) los traduce a
+  ids la planilla antes de compilar (`deA1()`, «El editor»); el `:` suelto es `caracter_invalido`.
+- **Las diez funciones** (argumentos con `;`, el nombre en mayúsculas o minúsculas): `SUMA(grupo)` (sus miembros) o `SUMA(a; b; …)`
+  (uno o más valores; un grupo junto a otros es `grupo_con_otros`); `SI(condición; x[; y])` (con una
   bandera y dos argumentos es el `si` de siempre; si no, `elegir`); `Y(c1; c2; …)` y `O(…)` (dos o más condiciones); `MAX(a; b; …)` y
   `MIN(…)` (un argumento solo tiene que ser un grupo, que se expande en sus miembros); `BUSCARV(valor; "tabla"; "columna"[; VERDADERO|
 FALSO])`; `REDONDEAR(x; n)`; `PORCENTAJE_DE(x; pct)`; `DEPRECIAR(x; tabla; sobre; columna)`. Una condición es una bandera, una
