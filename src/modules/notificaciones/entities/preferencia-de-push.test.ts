@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { apagadosDesde, conPreferencia, estaEncendido } from './preferencia-de-push'
+import {
+  apagadosDesde,
+  conPreferencia,
+  contarEncendidos,
+  estaEncendido,
+} from './preferencia-de-push'
 
 describe('apagadosDesde', () => {
   it('sólo cuenta lo que es exactamente false', () => {
@@ -46,5 +51,12 @@ describe('conPreferencia', () => {
 
   it('limpia lo que no era false al reescribir', () => {
     expect(conPreferencia({ mensaje: true, raro: 3 }, 'evento', false)).toEqual({ evento: false })
+  })
+})
+
+describe('contarEncendidos', () => {
+  it('cuenta los tipos dados sin apagar, y no los apagados de un tipo que ya no existe', () => {
+    expect(contarEncendidos({}, ['a', 'b', 'c'])).toBe(3)
+    expect(contarEncendidos({ a: false, z: false }, ['a', 'b', 'c'])).toBe(2)
   })
 })

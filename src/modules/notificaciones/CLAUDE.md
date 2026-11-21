@@ -7,7 +7,7 @@ Abierto: **7-5** (pedida sin red, la suscripción de fondo pone su barra «Sin c
 ## Entra y sale
 
 - Entra: `notificar()` desde RPC y triggers de otros módulos; suscripciones push del navegador.
-- Sale: `<Campana>` (`shell.client.ts`), `pantallas/notificaciones.ts`, `pantallas/perfil.ts` (`<NotificacionesDelPerfil>`),
+- Sale: `<Campana>` (`shell.client.ts`), `pantallas/notificaciones.ts`, `pantallas/perfil.ts` (`<NotificacionesDelPerfil>`: la tarjeta «Notificaciones» de `/perfil` —el interruptor del push a la vista— y su modal, con los avisos por tipo y «Tus navegadores»; `#notificaciones` lo abre),
   `leerPaginaDeNotificaciones()` y `filtroDeLista()`. Depende de `equipo`.
 
 ## Archivos clave

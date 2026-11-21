@@ -31,7 +31,7 @@ sólo `web.cola.participar`), en `docs/PENDIENTES.md`.
   `ajustes_web`: cada action revalida las dos rutas.
 - `turnos`: `infra/turnos/mis-turnos.ts` lee `limit 6` **filtrado por `usuario_id` a mano** (la RLS deja ver todas a quien gestiona la cola); el título sale
   de `web.vehiculos` (un vehículo que dejó de ser público va sin título). «Contacté» va en un toque sin «Deshacer»; «Vincular a lead» por
-  `?panel=vincular-turno&turno=`, montado en `src/app/(app)/_inicio/vincular-turno.tsx` con el panel de `leads`. En `/perfil` (`pantallas/perfil.ts`):
+  `?panel=vincular-turno&turno=`, montado en `src/app/(app)/_inicio/vincular-turno.tsx` con el panel de `leads`. En `/perfil` (`pantallas/perfil.ts`; las tarjetas «Turnos de la web» y «Tu ficha en la web», esta con su modal `?panel=ficha`):
   `cambiarDisponibilidad` escribe sólo `cola_web_asesores.disponible` de la fila propia (apagado con `motivoSinInterruptor`); `guardarFicha` escribe
   directo bajo la RLS seis columnas de `perfiles` con `actualizado_en` como versión; `entities/turnos/ficha.ts` (`esWhatsapp`, `esHandle`) espeja el
   check de la base.
@@ -135,7 +135,6 @@ precio, precio_hasta, precio_nota, destacado, atributos` (sólo los campos `publ
   `supabase/tests/rueda-por-rol.sql`).
 - **`web.solicitar_asesor` responde lo que escribió**: con un turno abierto, el paso 3 reinicia `vence_en` con `returning * into s` y `expira_en` sale de
   esa fila, no de la leída antes; una rama que reinicie un reloj lo hace igual (`rueda-por-rol.sql` exige `expira_en` = `vence_en` de la tabla).
-- **La ficha de la web comparte versión con «Tus datos»** (`perfiles.actualizado_en`): `/perfil` pone esa versión de `key` a `<FormularioPerfil>` y al
-  formulario de la ficha, o el segundo guardado daría conflicto. `handle` va a minúsculas y pide 3 a 30 de `a-z0-9._-` (la base sólo pide unicidad; 23505 →
-  «Ese identificador ya está en uso.»); `publico_web` sin WhatsApp lo rechaza el formulario, no la base. Con «Ver como» el interruptor y la ficha quedan de
+- **La ficha de la web comparte versión con «Tus datos»** (`perfiles.actualizado_en`): el modal «Tú» y el de la ficha reciben la versión por props al abrir (nunca en su `key`) y cada apertura parte de lo guardado, o el segundo guardado daría conflicto. `handle` va a minúsculas y pide 3 a 30 de `a-z0-9._-` (la base sólo pide unicidad; 23505 →
+  «Ese identificador ya está en uso.»); `publico_web` sin WhatsApp lo rechaza el formulario, no la base. Con «Ver como» el interruptor y «Editar» de la ficha quedan de
   sólo lectura: escribirían en la cuenta real.

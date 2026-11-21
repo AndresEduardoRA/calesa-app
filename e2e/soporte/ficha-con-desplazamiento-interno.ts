@@ -16,6 +16,11 @@ export const columnaPrincipal = (page: Page): Locator => columna(page, 'principa
 export const desplazamientoDeLaVentana = (page: Page): Promise<number> =>
   page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)
 
+// Que los bloques que leen al acercarse ya hayan llegado: un esqueleto más alto que lo que lo reemplaza achica la columna al llegar y mueve su posición, así
+// que una posición medida antes no es la que queda.
+export const bloquesLlegaron = (page: Page): Promise<void> =>
+  expect(page.locator('[data-ficha-en-bloques] [aria-busy="true"]')).toHaveCount(0)
+
 export const medidaDe = (lugar: Locator) =>
   lugar.evaluate((e) => ({
     overflowY: getComputedStyle(e).overflowY,

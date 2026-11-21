@@ -9,6 +9,7 @@ import {
   darRolDePrueba,
   exigirEquipoSinAjenos,
 } from './soporte/base'
+import { editarTarjeta } from './soporte/empresa'
 import { ingresar } from './soporte/pasos'
 import { literal, sql } from './soporte/sql'
 
@@ -125,13 +126,14 @@ test('«Tu ficha en la web» guarda el WhatsApp, el identificador y aparecer en 
 }, info) => {
   const handle = `e2e-ficha-${info.project.name}`
   await entrarAlPerfil(page, asesora)
-  await page.locator('summary', { hasText: 'Tu ficha en la web' }).click()
-  await page.getByLabel('Identificador').fill(handle.toUpperCase())
-  await page.getByLabel('WhatsApp', { exact: true }).fill('+59171112222')
-  await page.getByLabel('Cargo').fill('Asesora de ventas')
-  await page.getByLabel('Especialidades').fill('SUV, camionetas')
-  await page.getByRole('switch', { name: 'Aparecer en la web' }).click()
-  await page.getByRole('button', { name: 'Guardar' }).last().click()
+  const ficha = await editarTarjeta(page, 'Tu ficha en la web')
+  await ficha.getByLabel('Identificador').fill(handle.toUpperCase())
+  await ficha.getByLabel('WhatsApp', { exact: true }).fill('+59171112222')
+  await ficha.getByLabel('Cargo').fill('Asesora de ventas')
+  await ficha.getByLabel('Especialidades').fill('SUV, camionetas')
+  await ficha.getByRole('switch', { name: 'Aparecer en la web' }).click()
+  await ficha.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(ficha).toBeHidden()
 
   await expect
     .poll(() =>
@@ -141,6 +143,12 @@ test('«Tu ficha en la web» guarda el WhatsApp, el identificador y aparecer en 
     )
     .toBe(`${handle}|+59171112222|Asesora de ventas|SUV,camionetas|true`)
 
-  // «Tus datos» sigue guardando después: su versión se renovó con la de la ficha.
-  await expect(page.getByLabel('Identificador')).toHaveValue(handle)
+  // La tarjeta muestra lo guardado, y «Tú» sigue guardando después: su versión se renovó con la de la ficha.
+  const tarjeta = page.getByRole('region', { name: 'Tu ficha en la web', exact: true })
+  await expect(tarjeta).toContainText(handle)
+  await expect(tarjeta).toContainText('+59171112222')
+  const tu = await editarTarjeta(page, 'Tú')
+  await tu.getByLabel('Nombre y apellido').fill('Asesora Renovada')
+  await tu.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(page.getByText('Perfil guardado')).toBeVisible()
 })

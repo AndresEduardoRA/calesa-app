@@ -1,6 +1,7 @@
 // @sin-celular-archivo: el service worker y el permiso del navegador no cambian con el ancho; el bloque comparte los componentes de Perfil, que ya corren en celular
-import { expect, test } from './soporte/prueba'
+import { expect, test, type Locator, type Page } from './soporte/prueba'
 import { CONTRASENA, entrar } from './soporte/alta'
+import { editarTarjeta } from './soporte/empresa'
 import {
   PREFIJO_ROL_E2E,
   borrarPersonasDePrueba,
@@ -19,6 +20,16 @@ import { literal, sql } from './soporte/sql'
 
 let duena = ''
 let sinPermisos = ''
+
+// «Notificaciones» de /perfil: el interruptor de este navegador está en la tarjeta; los avisos por tipo y «Tus navegadores», en su modal.
+const tarjetaDeAvisos = (page: Page) =>
+  page.getByRole('region', { name: 'Notificaciones', exact: true })
+const interruptorDeEsteNavegador = (page: Page) =>
+  tarjetaDeAvisos(page).getByRole('switch', { name: 'Recibir avisos en este navegador' })
+async function cerrar(dialogo: Locator) {
+  await dialogo.getByRole('button', { name: 'Listo' }).click()
+  await expect(dialogo).toBeHidden()
+}
 
 const filasDe = (tabla: string, correo: string, donde = 'true') =>
   Number(
@@ -68,12 +79,15 @@ test('E2E escritorio · encender los avisos de este navegador crea su fila y apa
   await simularPush(page, { permiso: 'default' })
   await entrar(page, duena, { fresco: true })
   await page.goto('/perfil')
-  const avisos = page.getByRole('switch', { name: 'Recibir avisos en este navegador' })
+  const avisos = interruptorDeEsteNavegador(page)
   await expect(avisos).toBeEnabled()
   await expect(avisos).not.toBeChecked()
+  await expect(tarjetaDeAvisos(page).getByText('Tus navegadores')).toBeVisible()
+  const antes = await editarTarjeta(page, 'Notificaciones')
   await expect(
-    page.getByText('Todavía no has activado los avisos en ningún navegador.'),
+    antes.getByText('Todavía no has activado los avisos en ningún navegador.'),
   ).toBeVisible()
+  await cerrar(antes)
 
   await avisos.click()
   await expect(avisos).toBeChecked()
@@ -82,15 +96,18 @@ test('E2E escritorio · encender los avisos de este navegador crea su fila y apa
     sql(`select s.endpoint from public.suscripciones_push s join public.perfiles p on p.id = s.usuario_id
           where p.email = ${literal(duena)}`),
   ).toMatch(/^https:\/\/fcm\.googleapis\.com\/fcm\/send\/e2e-/)
-  // Sin el endpoint a la vista: la lista nombra el navegador.
-  await expect(page.getByText(/· Este navegador/)).toBeVisible()
+  // Sin el endpoint a la vista: «Tus navegadores» (en el modal) nombra el navegador.
+  const con = await editarTarjeta(page, 'Notificaciones')
+  await expect(con.getByText(/· Este navegador/)).toBeVisible()
   await expect(page.getByText('fcm.googleapis.com')).toHaveCount(0)
+  await cerrar(con)
 
   await avisos.click()
   await expect(avisos).not.toBeChecked()
   await expect.poll(() => filasDe('suscripciones_push', duena)).toBe(0)
+  const sin = await editarTarjeta(page, 'Notificaciones')
   await expect(
-    page.getByText('Todavía no has activado los avisos en ningún navegador.'),
+    sin.getByText('Todavía no has activado los avisos en ningún navegador.'),
   ).toBeVisible()
 })
 
@@ -100,7 +117,8 @@ test('E2E escritorio · apagar un tipo persiste al recargar y volver a encenderl
   await simularPush(page, { permiso: 'granted' })
   await entrar(page, duena)
   await page.goto('/perfil')
-  const recordatorios = page.getByRole('switch', { name: 'Recordatorios' })
+  const modal = await editarTarjeta(page, 'Notificaciones')
+  const recordatorios = modal.getByRole('switch', { name: 'Recordatorios' })
   await expect(recordatorios).toBeEnabled()
   await expect(recordatorios).toBeChecked()
 
@@ -113,8 +131,14 @@ test('E2E escritorio · apagar un tipo persiste al recargar y volver a encenderl
     )
     .toBe('{"recordatorio": false}')
 
+  await cerrar(modal)
+  // La tarjeta cuenta lo encendido.
+  await expect(tarjetaDeAvisos(page)).toContainText(/ de \d+ encendidos/)
+
   await page.reload()
-  const tras = page.getByRole('switch', { name: 'Recordatorios' })
+  const tras = (await editarTarjeta(page, 'Notificaciones')).getByRole('switch', {
+    name: 'Recordatorios',
+  })
   await expect(tras).toBeEnabled()
   await expect(tras).not.toBeChecked()
   // La campana no cambia: lo apagado sólo detiene el push.
@@ -133,10 +157,10 @@ test('E2E escritorio · sin el permiso los interruptores quedan a la vista, desh
   await simularPush(page, { permiso: 'granted' })
   await entrar(page, sinPermisos, { fresco: true })
   await page.goto('/perfil')
-  const avisos = page.getByRole('switch', { name: 'Recibir avisos en este navegador' })
-  await expect(avisos).toBeDisabled()
+  await expect(interruptorDeEsteNavegador(page)).toBeDisabled()
   await expect(page.getByText('Tu rol no recibe avisos push.').first()).toBeVisible()
-  await expect(page.getByRole('switch', { name: 'Recordatorios' })).toBeDisabled()
+  const modal = await editarTarjeta(page, 'Notificaciones')
+  await expect(modal.getByRole('switch', { name: 'Recordatorios' })).toBeDisabled()
   expect(filasDe('suscripciones_push', sinPermisos)).toBe(0)
 })
 
@@ -147,12 +171,11 @@ test('E2E escritorio · con los avisos de la empresa apagados el interruptor del
   await simularPush(page, { permiso: 'granted' })
   await entrar(page, duena, { fresco: true })
   await page.goto('/perfil')
-  await expect(
-    page.getByRole('switch', { name: 'Recibir avisos en este navegador' }),
-  ).toBeDisabled()
+  await expect(interruptorDeEsteNavegador(page)).toBeDisabled()
   await expect(page.getByText(/La empresa todavía no activó los avisos push\./)).toBeVisible()
   // Los de por tipo son preferencias: siguen disponibles.
-  await expect(page.getByRole('switch', { name: 'Recordatorios' })).toBeEnabled()
+  const modal = await editarTarjeta(page, 'Notificaciones')
+  await expect(modal.getByRole('switch', { name: 'Recordatorios' })).toBeEnabled()
 })
 
 test('E2E escritorio · Empresa › Integraciones enciende «Avisos push»', async ({ page }) => {
