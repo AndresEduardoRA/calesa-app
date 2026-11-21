@@ -320,7 +320,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Extras como el principal** — `ajustes_leads.telefonos_extra_como_principal` / `telefonos.comoPrincipal`, «Los teléfonos extra cuentan como
   el principal» (apagado de fábrica): con ella, un extra es único entre leads vivos y registrar ese número encuentra a su lead.
 - **Choque de teléfonos** — `telefonos_extra_choques()` / `<ChoquesDeTelefonos>`: un extra cuyo número es el principal o el extra de otro lead
-  vivo; la lista de Configuración › Leads › Teléfonos extra, enmascarada, por cursor y sin total.
+  vivo; la lista «Números repetidos» (modal `?panel=numeros-repetidos` de la tarjeta Teléfonos extra, sólo con la regla encendida), enmascarada, por cursor y sin total; se lee al abrirla.
 - **Editar teléfonos extra** — permiso `leads.telefonos_extra.editar` (con alcance): agregar, rotular y quitar extras; el principal sigue con
   `leads.editar`.
 - **«Anterior»** — `leads_telefonos.etiqueta` / `ETIQUETA_DEL_ANTERIOR`: etiqueta del principal reemplazado, que queda como teléfono extra.
@@ -389,7 +389,8 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Portal del cliente** — `accesos_portal` / `web.portal_*` / `?seccion=portal`: lo que el cliente ve en la web con código y clave: sus
   vehículos, lo «Visible para el cliente» y novedades.
 - **Mensaje del portal** — `ajustes_leads.portal_mensaje` / `portal_mensaje_guardar()`: texto para WhatsApp al dar acceso, con `{cliente}`,
-  `{empresa}`, `{codigo}`, `{clave}` y `{direccion}`; nulo = el de fábrica.
+  `{empresa}`, `{codigo}`, `{clave}` y `{direccion}`; nulo = el de fábrica. Es una tarjeta de Configuración › Leads (`?panel=portal`) que se edita con el
+  «Editor de texto con variables»; «Restablecer» (`?panel=restablecer-portal`) está en su «⋯».
 - **Ajustes de leads** — `ajustes_leads` / `ajustes_leads_leer()`: fila única con las plantillas de leads (embudo y mensaje del portal), cada
   una con su versión.
 - **Código del portal** — `accesos_portal.codigo` / `codigoDictado()`: `XXX-YYYYY`: prefijo de la empresa y cinco símbolos sin I, O, 0 ni 1.
@@ -1070,6 +1071,11 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Tarjeta de ajustes** — `<TarjetaDeAjustes>`, `<TarjetasDeAjustes>` (`@/shared/ui/tarjetas-de-ajustes`): cada bloque de una página de ajustes de
   Configuración, con su título, los valores guardados a la vista (texto, muestras, el logo; no campos), la acción principal («Editar», «Configurar») y su «⋯»;
   se edita en un modal (`?panel=<tarjeta>`). No es la «tarjeta de la lista» ni la «tarjeta de la cotización».
+- **Editor de texto con variables** — `<EditorConVariables>` (`@/shared/ui/editor-con-variables`): para un texto configurable con variables; una `<textarea>` con las
+  variables resaltadas, un **botón de variable** por cada una que ese texto acepta (inserta `{clave}` en el cursor o sobre lo seleccionado), el contador, el aviso de
+  las que no acepta y la vista previa con datos de ejemplo. «Botón de variable» no es la «Ficha» (la del lead o la del vehículo). Hoy lo usa el Mensaje del portal.
+- **Variable de un texto** — `{clave}` dentro de un texto configurable (`partesDelTexto()`, `@/shared/lib/texto-con-variables`): toda `{…}` cuenta, y la que el texto no acepta se
+  rechaza. No es el «Dato de la tarjeta» (una celda de la tarjeta de la cotización, que no mezcla texto con datos).
 - **Estado de un documento legal** — `estadoDeLegal()` (`web`): `publicada` (hay un texto guardado: es el que muestra el sitio) · `sin-publicar` (nunca se escribió);
   es el badge de la tarjeta de cada documento de «Legales». Guardar publica: no hay «Borrador» ni «Programada» (son de las guías). No: «versión», «borrador».
 - **Estado de la integración** — `estadoDeIntegracion()` (`empresa`): `activa` · `apagada` · `falta_la_clave`; es el badge de la tarjeta de cada integración.
