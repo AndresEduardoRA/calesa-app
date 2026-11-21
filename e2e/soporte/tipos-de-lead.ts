@@ -5,7 +5,7 @@ import type { Locator, Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 import { admin } from './base'
 import { exigir } from './leads'
-import { filaDeCatalogo, nombresEnLaLista } from './lista-de-catalogo'
+import { filaDeCatalogo } from './lista-de-catalogo'
 
 export const PREFIJO_DE_TIPO_E2E = 'E2E 9j'
 
@@ -91,15 +91,36 @@ export async function borrarTiposDePrueba(): Promise<void> {
 
 // --- La pantalla --------------------------------------------------------------------------------------
 
+// «Tipos de lead» es una tarjeta de `/configuracion/leads`; su lista vive en un modal (`?panel=tipos`) y «Nuevo», «Editar» y «Eliminar» son
+// otro modal que la reemplaza y, al cerrarse, vuelve a ella.
+export const listaDeTipos = (page: Page): Locator =>
+  page.getByRole('dialog', { name: 'Tipos de lead', exact: true })
+
 export async function abrirTipos(page: Page): Promise<void> {
-  await page.goto('/configuracion/leads/tipos')
-  await expect(page.getByRole('heading', { name: 'Tipos de lead', level: 1 })).toBeVisible()
+  await page.goto('/configuracion/leads?panel=tipos')
+  await expect(listaDeTipos(page)).toBeVisible()
 }
 
-// Lo de la lista (la fila, el «⋯», los nombres) es común a las tres pestañas: `soporte/lista-de-catalogo.ts`. Activar y desactivar ya no son un
+// Cierra la lista con Esc y espera a que se vaya (lo que sigue, como el alta con `N`, busca «el» diálogo).
+export async function cerrarLaListaDeTipos(page: Page): Promise<void> {
+  await page.keyboard.press('Escape')
+  await expect(listaDeTipos(page)).toBeHidden()
+}
+
+// Lo de la lista (la fila, el «⋯») es común a las tres listas: `soporte/lista-de-catalogo.ts`. Activar y desactivar ya no son un
 // interruptor sino una línea del «⋯» de la fila (`alternarActivo`, `lineaApagada`).
 export const filaDeTipo = filaDeCatalogo
-export const nombresEnPantalla = (page: Page): Promise<string[]> => nombresEnLaLista(page, 'tipos')
+
+// Los nombres de las filas de la lista, en el orden en que se ven.
+export async function nombresEnPantalla(page: Page): Promise<string[]> {
+  const nombres: string[] = []
+  for (const boton of await listaDeTipos(page)
+    .getByRole('button', { name: /^Abrir / })
+    .all()) {
+    nombres.push(((await boton.getAttribute('aria-label')) ?? '').replace(/^Abrir /, ''))
+  }
+  return nombres
+}
 
 export const modalDeTipo = (page: Page, titulo: 'Nuevo tipo' | 'Editar tipo'): Locator =>
   page.getByRole('dialog', { name: titulo })

@@ -12,7 +12,7 @@ describe('marcaDelEnlace', () => {
   })
 
   it('en una sub-sección, la sección es la rama y la sub-sección la página', () => {
-    const subrutas = ['/configuracion/leads/campos', '/configuracion/leads/embudo']
+    const subrutas = ['/configuracion/leads/campos', '/configuracion/leads/otra']
     expect(marcaDelEnlace('/configuracion/leads/campos', '/configuracion/leads', subrutas)).toBe(
       'true',
     )
@@ -20,7 +20,7 @@ describe('marcaDelEnlace', () => {
       'page',
     )
     expect(
-      marcaDelEnlace('/configuracion/leads/campos', '/configuracion/leads/embudo'),
+      marcaDelEnlace('/configuracion/leads/campos', '/configuracion/leads/otra'),
     ).toBeUndefined()
   })
 

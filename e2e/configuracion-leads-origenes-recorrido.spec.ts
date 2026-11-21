@@ -9,13 +9,15 @@ import {
 } from './soporte/base'
 import { borrarLeadsDePrueba, crearLead } from './soporte/leads'
 import { telefonoAlAzar } from './soporte/leads-alta'
-import { nombresDeLaLista } from './soporte/lista-de-catalogo'
 import {
   PREFIJO_DE_ORIGEN_E2E,
   abrirOrigenes,
   borrarOrigenesDePrueba,
+  cerrarOrigenes,
   grupoDelFiltro,
+  listaDeOrigenes,
   llenarHasta,
+  nombresDeOrigenes,
   origenEnLaBase,
   origenesEnLaBase,
   sembrarOrigen,
@@ -118,19 +120,23 @@ test('A · con 0 orígenes: la pantalla lo dice, y el alta de la dueña y de la 
 
   await entrar(page, duena)
   await abrirOrigenes(page)
-  await expect(page.getByText('Todavía no hay orígenes del lead')).toBeVisible()
-  await expect(page.getByText(/Sin ninguno, el alta guarda los leads sin origen/)).toBeVisible()
+  const lista = listaDeOrigenes(page)
+  await expect(lista.getByText('Todavía no hay orígenes del lead')).toBeVisible()
+  await expect(lista.getByText(/Sin ninguno, el alta guarda los leads sin origen/)).toBeVisible()
   await sinScrollHorizontal(page)
-  await recibeElClic(page.getByRole('button', { name: 'Nuevo origen' }))
+  await recibeElClic(lista.getByRole('button', { name: 'Nuevo origen' }))
   await capturar(page, info, 'duena-cero')
 
   // «Nuevo origen» desde el vacío.
-  await page.getByRole('button', { name: 'Nuevo origen' }).click()
+  await lista.getByRole('button', { name: 'Nuevo origen' }).click()
   const modal = page.getByRole('dialog', { name: 'Nuevo origen' })
   await expect(modal).toBeVisible()
   await capturar(page, info, 'duena-cero-modal')
   await page.keyboard.press('Escape')
   await expect(modal).toBeHidden()
+  // Al cerrarse, vuelve la lista; se cierra también antes del alta.
+  await expect(lista).toBeVisible()
+  await cerrarOrigenes(page)
 
   // El alta: el campo sale apagado y dice qué pasa.
   await abrirConN(page)
@@ -144,7 +150,7 @@ test('A · con 0 orígenes: la pantalla lo dice, y el alta de la dueña y de la 
 
   // La asesora: ni la pantalla ni el permiso; su alta funciona igual.
   await cambiarA(page, asesora)
-  await page.goto('/configuracion/leads/origenes')
+  await page.goto('/configuracion/leads?panel=origenes')
   await expect(page.getByText('No tienes permiso para ver esto')).toBeVisible()
   await capturar(page, info, 'asesora-sin-permiso')
   await abrirConN(page)
@@ -178,12 +184,12 @@ test('B · con 12 orígenes, uno desactivado y uno con leads: la lista, el alta 
 
   await entrar(page, duena, { fresco: true })
   await abrirOrigenes(page)
-  await expect(page.getByText('12 de 100 orígenes posibles.')).toBeVisible()
+  await expect(listaDeOrigenes(page).getByText('12 de 100 orígenes posibles.')).toBeVisible()
   await sinScrollHorizontal(page)
   await lasAcciones(page)
   await page.evaluate(() => window.scrollTo(0, 0))
   await capturar(page, info, 'duena-doce')
-  await volcarArbol(page.getByRole('region', { name: 'Orígenes del lead' }), info, 'duena-doce')
+  await volcarArbol(listaDeOrigenes(page), info, 'duena-doce')
 
   // El modal de edición, en el celular también cabe.
   await page.getByRole('button', { name: `Abrir ${conLeads?.nombre ?? ''}`, exact: true }).click()
@@ -191,6 +197,10 @@ test('B · con 12 orígenes, uno desactivado y uno con leads: la lista, el alta 
   await sinScrollHorizontal(page)
   await capturar(page, info, 'duena-doce-editar')
   await page.keyboard.press('Escape')
+  // Al cerrarse el modal del origen, vuelve la lista; se cierra también antes del alta.
+  await expect(page.getByRole('dialog', { name: 'Editar origen' })).toBeHidden()
+  await expect(listaDeOrigenes(page)).toBeVisible()
+  await cerrarOrigenes(page)
 
   // El alta ofrece los 11 activos, no el apagado.
   await abrirConN(page)
@@ -220,15 +230,16 @@ test('C · con el máximo (100): lo dice, «Nuevo origen» se apaga y la lista s
   await llenarHasta(100)
   await entrar(page, duena, { fresco: true })
   await abrirOrigenes(page)
-  await expect(page.getByText('Llegaste al máximo de 100 orígenes.')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Nuevo origen' })).toBeDisabled()
-  await expect(page.getByText('100 de 100 orígenes posibles.')).toBeVisible()
-  await expect(nombresDeLaLista(page, 'origenes')).toHaveCount(100)
+  const lista = listaDeOrigenes(page)
+  await expect(lista.getByText('Llegaste al máximo de 100 orígenes.')).toBeVisible()
+  await expect(lista.getByRole('button', { name: 'Nuevo origen' })).toBeDisabled()
+  await expect(lista.getByText('100 de 100 orígenes posibles.')).toBeVisible()
+  await expect(nombresDeOrigenes(page)).toHaveCount(100)
   await sinScrollHorizontal(page)
   await capturar(page, info, 'duena-cien')
 
   // Al fondo de la lista y en el filtro del listado con cien opciones.
-  await page.getByText('100 de 100 orígenes posibles.').scrollIntoViewIfNeeded()
+  await lista.getByText('100 de 100 orígenes posibles.').scrollIntoViewIfNeeded()
   await capturar(page, info, 'duena-cien-fondo')
   await page.goto('/leads?panel=filtros')
   const grupo = grupoDelFiltro(page, 'Origen del lead')

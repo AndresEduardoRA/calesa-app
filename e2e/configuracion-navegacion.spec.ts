@@ -147,20 +147,12 @@ test('E2E con sólo configurar los leads se ve sólo «Ventas › Leads»', asyn
   await page.context().clearCookies()
   await entrar(page, soloLeads, { fresco: true })
   await page.goto('/configuracion/leads')
-  await expect(page).toHaveURL('/configuracion/leads/origenes')
+  await expect(page).toHaveURL('/configuracion/leads')
   // Un solo grupo: las demás listas del menú son las sub-secciones de Leads, sin nombre.
   await expect(menu(page).getByRole('list', { name: /./ })).toHaveCount(1)
   await expect(menu(page).getByRole('list', { name: 'Ventas' })).toBeVisible()
   // «Campos» pide otro permiso: va apagada, sin enlace.
-  await expect(menu(page).getByRole('link')).toHaveText([
-    'Leads',
-    'Orígenes del lead',
-    'Tipos de lead',
-    'Tipos de seguimiento',
-    'Plantilla del embudo',
-    'Mensaje del portal',
-    'Teléfonos extra',
-  ])
+  await expect(menu(page).getByRole('link')).toHaveText(['Leads'])
 
   await volver(page).click()
   await expect(tituloDelInicio(page)).toBeVisible()

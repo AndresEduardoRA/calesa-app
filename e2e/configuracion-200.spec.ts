@@ -91,12 +91,7 @@ const PANTALLAS: Pantalla[] = [
   { titulo: 'la página de un origen › Fórmula › Hoja', url: DE_UN_ORIGEN('formula/hoja') },
   { titulo: 'la página de un origen › Tablas', url: DE_UN_ORIGEN('tablas') },
   { titulo: 'Leads › Campos', url: () => '/configuracion/leads/campos' },
-  { titulo: 'Leads › Orígenes del lead', url: () => '/configuracion/leads/origenes' },
-  { titulo: 'Leads › Tipos de lead', url: () => '/configuracion/leads/tipos' },
-  {
-    titulo: 'Leads › Tipos de seguimiento',
-    url: () => '/configuracion/leads/seguimientos',
-  },
+  { titulo: 'Leads', url: () => '/configuracion/leads' },
   {
     titulo: 'Catálogos › Niveles',
     url: () => '/configuracion/catalogos/niveles',
@@ -233,31 +228,31 @@ test('al 200 %: en Monedas se leen enteras las tarjetas de los tipos de cambio y
   await sinTextoCortado(page.getByRole('region', { name: 'Moneda base', exact: true }))
 })
 
-// c.1: cada parte de Configuración › Leads es una sub-ruta. Con el texto al 200 % el menú pasa al selector de sección, que dice cuál se
+// c.1: Configuración › Leads es una página de tarjetas y «Campos» su sub-ruta. Con el texto al 200 % el menú pasa al selector de sección, que dice cuál se
 // ve, y el título de la página queda a la vista: antes de cargar y al ampliar con la página abierta.
-const SECCIONES_DE_LEADS = ['campos', 'origenes', 'tipos', 'seguimientos'] as const
+const SECCIONES_DE_LEADS = ['/configuracion/leads/campos', '/configuracion/leads'] as const
 
-for (const seccion of SECCIONES_DE_LEADS) {
-  test(`al 200 % antes de cargar: el selector dice «${seccion}» de Leads y su título está a la vista`, async ({
+for (const ruta of SECCIONES_DE_LEADS) {
+  test(`al 200 % antes de cargar: el selector dice «${ruta}» y su título está a la vista`, async ({
     page,
   }) => {
     await textoGrandeAlCargar(page)
     await entrar(page)
-    await page.goto(`/configuracion/leads/${seccion}`)
-    await expect(page.getByLabel('Sección')).toHaveValue(`/configuracion/leads/${seccion}`)
-    await aLaVistaSinDesplazar(page.getByRole('heading', { level: 1 }), `el título de «${seccion}»`)
+    await page.goto(ruta)
+    await expect(page.getByLabel('Sección')).toHaveValue(ruta)
+    await aLaVistaSinDesplazar(page.getByRole('heading', { level: 1 }), `el título de «${ruta}»`)
   })
 
-  test(`al ampliar el texto con la página abierta: el título de «${seccion}» de Leads sigue a la vista`, async ({
+  test(`al ampliar el texto con la página abierta: el título de «${ruta}» sigue a la vista`, async ({
     page,
   }) => {
     await entrar(page)
-    await page.goto(`/configuracion/leads/${seccion}`)
+    await page.goto(ruta)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
     await page.evaluate(() => {
       document.documentElement.style.fontSize = '200%'
     })
-    await aLaVistaAlAcomodarse(page.getByRole('heading', { level: 1 }), `el título de «${seccion}»`)
+    await aLaVistaAlAcomodarse(page.getByRole('heading', { level: 1 }), `el título de «${ruta}»`)
   })
 }
 
@@ -269,7 +264,7 @@ for (const zoom of ['100', '200'] as const) {
   }) => {
     if (zoom === '200') await textoGrandeAlCargar(page)
     await entrar(page)
-    await page.goto('/configuracion/leads/seguimientos')
+    await page.goto('/configuracion/leads?panel=seguimientos')
     await page.getByRole('button', { name: 'Nuevo tipo' }).click()
     const modal = page.getByRole('dialog', { name: 'Nuevo tipo de seguimiento' })
     await expect(modal).toBeVisible()

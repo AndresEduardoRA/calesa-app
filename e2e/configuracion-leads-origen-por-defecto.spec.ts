@@ -16,6 +16,7 @@ import {
   abrirOrigenes,
   borrarOrigenesDePrueba,
   filaDeOrigen,
+  listaDeOrigenes,
   origenEnLaBase,
   sembrarOrigen,
 } from './soporte/origenes-de-lead'
@@ -64,7 +65,9 @@ test('marcar por defecto desde el «⋯»: una insignia, uno solo, y «Deshacer�
   const b = await sembrarOrigen(nombre('Defecto B'))
   await entrar(page, duena)
   await abrirOrigenes(page)
-  await expect(page.getByText('Por defecto', { exact: true })).toHaveCount(0)
+  const lista = listaDeOrigenes(page)
+  // Sólo la lista abierta: la tarjeta de atrás también nombra el «Por defecto».
+  await expect(lista.getByText('Por defecto', { exact: true })).toHaveCount(0)
 
   await elegirDelMenu(page, a.nombre, 'Marcar por defecto')
   await expect(filaDeOrigen(page, a.nombre).getByText('Por defecto', { exact: true })).toBeVisible()
@@ -80,19 +83,19 @@ test('marcar por defecto desde el «⋯»: una insignia, uno solo, y «Deshacer�
   await expect(filaDeOrigen(page, a.nombre).getByText('Por defecto', { exact: true })).toHaveCount(
     0,
   )
-  await expect(page.getByText('Por defecto', { exact: true })).toHaveCount(1)
+  await expect(lista.getByText('Por defecto', { exact: true })).toHaveCount(1)
   expect(await porDefectoEnLaBase()).toEqual([b.nombre])
   await sinScrollHorizontal(page)
   await capturar(page, info, 'origenes-por-defecto')
 
   // «Deshacer»: la marca vuelve a «A».
-  await page.getByRole('button', { name: 'Deshacer' }).click()
+  await page.locator('[data-sonner-toast] button', { hasText: 'Deshacer' }).click()
   await expect(filaDeOrigen(page, a.nombre).getByText('Por defecto', { exact: true })).toBeVisible()
   await expect.poll(porDefectoEnLaBase).toEqual([a.nombre])
 
   // Quitarla deja a la empresa sin origen por defecto (es opcional).
   await elegirDelMenu(page, a.nombre, 'Quitar «por defecto»')
-  await expect(page.getByText('Por defecto', { exact: true })).toHaveCount(0)
+  await expect(lista.getByText('Por defecto', { exact: true })).toHaveCount(0)
   expect(await porDefectoEnLaBase()).toEqual([])
 })
 

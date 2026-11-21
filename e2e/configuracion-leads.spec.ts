@@ -81,7 +81,13 @@ test('los campos de fábrica están, uno es privado y ninguno se elimina', async
   await page.goto('/configuracion/inicio')
   // La tarjeta del hub, no el ítem «Leads» del menú (que lleva al listado).
   await page.getByRole('region').locator('a[href="/configuracion/leads"]').click()
-  // La sección no tiene índice: abre su primera sub-ruta.
+  // La sección es una página de tarjetas; «Campos» es su sub-sección, en el menú.
+  await expect(page).toHaveURL('/configuracion/leads')
+  await expect(page.getByRole('heading', { name: 'Leads', level: 1 })).toBeVisible()
+  await page
+    .getByRole('navigation', { name: 'Secciones de Configuración' })
+    .getByRole('link', { name: 'Campos', exact: true })
+    .click()
   await expect(page).toHaveURL('/configuracion/leads/campos')
   await expect(page.getByRole('heading', { name: 'Campos', level: 1 })).toBeVisible()
   await expect(page).toHaveTitle(/^Campos de los leads/)
@@ -105,7 +111,7 @@ test('se crea un campo de opciones, se ordena, se vuelve privado y se desactiva'
   page,
 }) => {
   await entrar(page, duena)
-  await page.goto('/configuracion/leads')
+  await page.goto('/configuracion/leads/campos')
 
   await page.getByRole('button', { name: 'Nuevo campo' }).click()
   const panel = page.getByRole('dialog')
@@ -181,7 +187,7 @@ test('un campo con datos no cambia de tipo ni se elimina: se desactiva', async (
     atributos: { [CLAVE_DEL_CAMPO]: 'leo' },
   })
   await entrar(page, duena)
-  await page.goto('/configuracion/leads')
+  await page.goto('/configuracion/leads/campos')
   await page.getByRole('button', { name: `Editar ${ETIQUETA}` }).click()
   const panel = page.getByRole('dialog')
 
@@ -210,12 +216,13 @@ test('sin el permiso no se entra y la tarjeta no aparece', async ({ page }) => {
   await expect(page.locator('a[href="/configuracion/leads"]')).toHaveCount(0)
 })
 
-test('sin el permiso de los campos, «Campos» está apagada con su motivo y su URL abre la primera habilitada', async ({
+test('sin el permiso de los campos, «Campos» está apagada con su motivo y su URL lleva a las tarjetas', async ({
   page,
 }) => {
   await entrar(page, soloConfigurar)
   await page.goto('/configuracion/leads')
-  await expect(page).toHaveURL('/configuracion/leads/origenes')
+  await expect(page).toHaveURL('/configuracion/leads')
+  await expect(page.getByRole('region', { name: 'Orígenes del lead', exact: true })).toBeVisible()
   const menu = page.getByRole('navigation', { name: 'Secciones de Configuración' })
   await expect(menu.getByText('Campos', { exact: true })).toHaveAttribute('aria-disabled', 'true')
   await expect(menu.getByRole('link', { name: 'Campos', exact: true })).toHaveCount(0)
@@ -223,28 +230,52 @@ test('sin el permiso de los campos, «Campos» está apagada con su motivo y su 
     menu.getByText('Te falta el permiso «Gestionar los campos de los leads».'),
   ).toBeVisible()
 
+  // La URL de «Campos» abre las tarjetas, que sí puede.
   await page.goto('/configuracion/leads/campos')
-  await expect(page).toHaveURL('/configuracion/leads/origenes')
-  await expect(page.getByRole('heading', { name: 'Orígenes del lead', level: 1 })).toBeVisible()
-  // La URL vieja de una apagada también abre la primera habilitada, sin sus parámetros.
-  await page.goto('/configuracion/leads?seccion=campos&panel=nuevo-campo')
-  await expect(page).toHaveURL('/configuracion/leads/origenes')
+  await expect(page).toHaveURL('/configuracion/leads')
+  await expect(page.getByRole('heading', { name: 'Leads', level: 1 })).toBeVisible()
 })
 
-test('la URL vieja con su panel llega a la sub-ruta con el panel abierto', async ({ page }) => {
+test('las URL viejas llegan a la página de tarjetas con su panel abierto', async ({ page }) => {
   await entrar(page, duena)
-  await page.goto('/configuracion/leads?seccion=tipos&panel=nuevo-tipo')
-  await expect(page).toHaveURL('/configuracion/leads/tipos?panel=nuevo-tipo')
-  await expect(page.getByRole('heading', { name: 'Tipos de lead', level: 1 })).toBeVisible()
+  // La sub-ruta vieja, con su panel y el resto de la consulta.
+  await page.goto('/configuracion/leads/tipos?panel=nuevo-tipo')
+  await expect(page).toHaveURL('/configuracion/leads?panel=nuevo-tipo')
   await expect(page.getByRole('dialog', { name: 'Nuevo tipo' })).toBeVisible()
+  // El `?seccion=` viejo pasa a ser el panel de la lista.
+  await page.goto('/configuracion/leads?seccion=tipos')
+  await expect(page).toHaveURL('/configuracion/leads?panel=tipos')
+  await expect(page.getByRole('dialog', { name: 'Tipos de lead' })).toBeVisible()
 })
+
+// Las seis sub-rutas viejas son una redirección permanente que conserva el panel y el resto de la consulta.
+for (const [vieja, panel] of [
+  ['origenes', 'origenes'],
+  ['tipos', 'tipos'],
+  ['seguimientos', 'seguimientos'],
+  ['embudo', 'embudo'],
+  ['portal', 'portal'],
+  ['telefonos', 'telefonos'],
+] as const) {
+  test(`/configuracion/leads/${vieja} redirige (308) a ?panel=${panel}`, async ({ page }) => {
+    await entrar(page, duena)
+    const sin = await page.request.get(`/configuracion/leads/${vieja}`, { maxRedirects: 0 })
+    expect(sin.status()).toBe(308)
+    expect(sin.headers()['location']).toMatch(new RegExp(`/configuracion/leads\\?panel=${panel}$`))
+    const con = await page.request.get(`/configuracion/leads/${vieja}?panel=otro&x=1`, {
+      maxRedirects: 0,
+    })
+    expect(con.status()).toBe(308)
+    expect(con.headers()['location']).toContain('x=1')
+  })
+}
 
 test('dos personas editando el mismo campo: la segunda ve el conflicto', async ({
   page,
   browser,
 }) => {
   await entrar(page, duena)
-  await page.goto('/configuracion/leads')
+  await page.goto('/configuracion/leads/campos')
   await page.getByRole('button', { name: `Editar ${ETIQUETA}` }).click()
   const primera = page.getByRole('dialog')
   await primera.getByLabel('Nombre', { exact: true }).fill('E2E Signo')
@@ -254,7 +285,7 @@ test('dos personas editando el mismo campo: la segunda ve el conflicto', async (
   await segunda.goto('/ingreso')
   await ingresar(segunda, duena, CLAVE)
   await expect(segunda).toHaveURL('/')
-  await segunda.goto('/configuracion/leads')
+  await segunda.goto('/configuracion/leads/campos')
   await segunda.getByRole('button', { name: `Editar ${ETIQUETA}` }).click()
   const edicion = segunda.getByRole('dialog')
   await edicion.getByLabel('Nombre', { exact: true }).fill('E2E Signo del zodiaco')

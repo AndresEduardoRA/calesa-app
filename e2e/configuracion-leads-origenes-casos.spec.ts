@@ -14,12 +14,13 @@ import {
   PREFIJO_DE_ORIGEN_E2E,
   abrirOrigenes,
   borrarOrigenesDePrueba,
+  listaDeOrigenes,
   llenarHasta,
   modalDeOrigen,
   origenEnLaBase,
   sembrarOrigen,
 } from './soporte/origenes-de-lead'
-import { elegirDelMenu, masAccionesDe } from './soporte/lista-de-catalogo'
+import { elegirDelMenu } from './soporte/lista-de-catalogo'
 import {
   cicloDeUnaConfirmacion,
   dobleClicManda,
@@ -126,11 +127,14 @@ test('dos personas editando el mismo origen: la segunda ve el conflicto y lo esc
 test('una URL que nombra un origen que no existe no abre nada y lo dice', async ({ page }) => {
   await entrar(page, duena)
   await page.goto(
-    '/configuracion/leads?seccion=origenes&panel=editar-origen&origen=00000000-0000-4000-8000-000000000000',
+    '/configuracion/leads?panel=editar-origen&origen=00000000-0000-4000-8000-000000000000',
   )
   await expect(page.getByText('Ese origen ya no existe.').first()).toBeVisible()
-  await expect(page.getByRole('dialog')).toHaveCount(0)
-  await expect.poll(() => page.url()).not.toContain('panel=')
+  // No abre el modal del origen: la URL vuelve a la lista de su tarjeta.
+  await expect(listaDeOrigenes(page)).toBeVisible()
+  await expect(modalDeOrigen(page, 'Editar origen')).toHaveCount(0)
+  await expect.poll(() => page.url()).toContain('panel=origenes')
+  expect(page.url()).not.toContain('editar-origen')
 })
 
 // @sin-celular: igual en pasos y elementos en escritorio y celular, y su JS del celular lo ejecuta otra prueba que se queda (scripts/comparar-anchos.mjs, 5a-fix-3)
@@ -138,11 +142,14 @@ test('el tope de 100: lo dice, apaga «Nuevo origen» y la base no deja pasar', 
   await llenarHasta(100)
   await entrar(page, duena)
   await abrirOrigenes(page)
-  await expect(page.getByText('Llegaste al máximo de 100 orígenes.')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Nuevo origen' })).toBeDisabled()
-  // Por la URL tampoco abre.
-  await page.goto('/configuracion/leads?seccion=origenes&panel=nuevo-origen')
-  await expect(page.getByRole('dialog')).toHaveCount(0)
+  const lista = listaDeOrigenes(page)
+  await expect(lista.getByText('Llegaste al máximo de 100 orígenes.')).toBeVisible()
+  await expect(lista.getByRole('button', { name: 'Nuevo origen' })).toBeDisabled()
+  // Por la URL tampoco abre: vuelve a la lista.
+  await page.goto('/configuracion/leads?panel=nuevo-origen')
+  await expect(listaDeOrigenes(page)).toBeVisible()
+  await expect(modalDeOrigen(page, 'Nuevo origen')).toHaveCount(0)
+  await expect.poll(() => page.url()).not.toContain('nuevo-origen')
   await borrarOrigenesDePrueba().catch(() => undefined)
 })
 
@@ -154,7 +161,8 @@ test('eliminar un origen: su URL, Esc, atrás, recarga, sin red y un solo pedido
   await sembrarOrigen(url)
   await entrar(page, duena, { fresco: true })
   await abrirOrigenes(page)
-  const disparador = masAccionesDe(page, url)
+  // Al cerrarse la confirmación vuelve la lista, que lleva el foco a su «Nuevo origen» (la confirmación no lo devuelve al «⋯»).
+  const disparador = listaDeOrigenes(page).getByRole('button', { name: 'Nuevo origen' })
   const dialogo = page.getByRole('dialog', { name: `Eliminar el origen «${url}»` })
   await cicloDeUnaConfirmacion(page, {
     abrir: async () => {
@@ -172,7 +180,7 @@ test('eliminar un origen: su URL, Esc, atrás, recarga, sin red y un solo pedido
 
   await noAbre(
     page,
-    '/configuracion/leads?seccion=origenes&panel=eliminar-origen&origen=00000000-0000-4000-8000-000000000999',
+    '/configuracion/leads?panel=eliminar-origen&origen=00000000-0000-4000-8000-000000000999',
     'Ese origen ya no existe.',
     /panel=eliminar-origen/,
   )

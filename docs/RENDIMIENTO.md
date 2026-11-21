@@ -140,7 +140,7 @@ que asserta `pnpm db:medir:volumen` o el e2e. Mide `medir-escala.sql` salvo que 
 - Teléfonos extra: ≤ 20 por lead (el `check` de `telefonos_extra_maximo`), una sola respuesta con la lista entera, `leads_telefonos_unico (lead_id, telefono)`.
   El panel de edición, un pedido (`lead_ficha()` ya trae los extras y el máximo). Con «Los teléfonos extra cuentan como el principal» encendida,
   `_lead_verificar()` suma una búsqueda por `leads_telefonos_telefono_idx` sólo si el número no es principal de nadie.
-- Choques de teléfonos (Configuración › Leads › «Teléfonos extra»): `telefonos_extra_choques()` por cursor sobre `leads_telefonos_pkey`, de a 20 (hasta 50),
+- Choques de teléfonos (Configuración › Leads › tarjeta «Teléfonos extra» › «Números repetidos», leídos desde el navegador al abrir el modal): `telefonos_extra_choques()` por cursor sobre `leads_telefonos_pkey`, de a 20 (hasta 50),
   con tope de recorrido de 10.000 filas por llamada («Seguir buscando») y `limit n + 1`, sin total; cada fila busca su choque por `leads_telefono_unico`
   y `leads_telefonos_telefono_idx`. Mide: `MEDIR_SOLO=medir-telefonos-choques pnpm db:medir:volumen` (los buffers por relación no crecen con N): peor caso ≈ 90 ms con 30.000 extras y ≈ 105 ms con 60.000 (tope 400 ms), la página con choques ≈ 70 ms.
 - Quien tiene pocos leads («la chica»): «míos» por `leads_cartera_vista` e
