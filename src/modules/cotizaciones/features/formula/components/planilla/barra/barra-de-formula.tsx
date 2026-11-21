@@ -3,6 +3,7 @@
 import { Button } from '@/shared/ui/button'
 import { useLive } from '@/shared/ui/live'
 import { filaDe } from '../../../../../entities/formula/hoja-de-la-planilla'
+import { useGrillaQuieta } from '../../../hooks/use-grilla-quieta'
 import type { Planilla } from '../../../hooks/use-planilla'
 import { idsDeLaEdicion } from '../ids-de-la-edicion'
 import { esMontoQueSeEscribe } from '../monto-secreto'
@@ -47,16 +48,38 @@ function textoDeLaCelda(planilla: Planilla, live: boolean) {
 
 // La barra de fórmula (D15, D16): la celda activa («C5»), `fx` y lo que se escribe con sus referencias de color, su leyenda, el autocompletar y el error con su
 // salida; escribiendo, «Aplicar» y «Descartar». Va pegada arriba (también en el celular).
+// Con algo escrito: «Aplicar» (sin mover la celda activa) y «Descartar».
+function AplicarODescartar({ planilla }: { planilla: Planilla }) {
+  return (
+    <div className="flex shrink-0 flex-wrap gap-2">
+      <Button
+        type="button"
+        className={BOTON}
+        onClick={() => {
+          planilla.aplicarYSeguir(null)
+        }}
+      >
+        Aplicar
+      </Button>
+      <Button type="button" variant="outline" className={BOTON} onClick={planilla.descartar}>
+        Descartar
+      </Button>
+    </div>
+  )
+}
+
 export function BarraDeFormula({ planilla, puedeCambiarTiposDeCambio }: Props) {
   const { live } = useLive()
   const e = planilla.edicion.edicion
   const ids = idsDeLaEdicion(planilla.prefijo)
   const activa = textoDeLaCelda(planilla, live)
+  const caja = useGrillaQuieta()
   return (
     <section
+      ref={caja}
       aria-label="Barra de fórmula"
       data-barra-de-formula=""
-      className="sticky top-0 z-20 grid min-w-0 gap-1.5 border-b border-(--color-line) bg-(--color-surface) py-2"
+      className="sticky top-(--topbar) z-20 grid min-w-0 gap-1.5 border-b border-(--color-line) bg-(--color-surface) py-2"
     >
       <div className="flex min-w-0 flex-wrap items-start gap-2 sm:flex-nowrap">
         <span
@@ -85,22 +108,7 @@ export function BarraDeFormula({ planilla, puedeCambiarTiposDeCambio }: Props) {
             />
           )}
         </div>
-        {e === null ? null : (
-          <div className="flex shrink-0 flex-wrap gap-2">
-            <Button
-              type="button"
-              className={BOTON}
-              onClick={() => {
-                planilla.aplicarYSeguir(null)
-              }}
-            >
-              Aplicar
-            </Button>
-            <Button type="button" variant="outline" className={BOTON} onClick={planilla.descartar}>
-              Descartar
-            </Button>
-          </div>
-        )}
+        {e === null ? null : <AplicarODescartar planilla={planilla} />}
       </div>
       <LeyendaDeReferencias leyenda={planilla.leyenda} anuncio={planilla.anuncio} />
       <ListaDeSugerencias sugerencias={planilla.sugerencias} ids={ids} />
