@@ -75,8 +75,9 @@ export async function menuDeLaFila(page: Page, id: string): Promise<Locator> {
   return menu
 }
 
-// Arrastra la fila por su número hasta antes o después de otra, con el mouse por pasos (el arrastre empieza a los 4 px), y suelta cuando la fila de destino ya
-// marca dónde cae.
+// Arrastra la fila por su número hasta antes o después de otra y suelta cuando la fila de destino ya marca dónde cae. Sin medir cajas (el spec puede ir sin
+// celular): Playwright apunta relativo a cada elemento. El arrastre empieza al moverse 4 px dentro del asa; «antes» cae en el borde de arriba del destino y
+// «después», 4 px sobre la fila que le sigue (el borde de abajo del destino).
 export async function arrastrarFila(
   page: Page,
   id: string,
@@ -84,29 +85,22 @@ export async function arrastrarFila(
   lado: 'antes' | 'despues',
 ): Promise<void> {
   const destino = filaDe(page, hacia)
-  // Al medio de la ventana: arriba la taparían la cabecera y la barra pegadas. Las cajas se miden después de desplazar.
+  // Al medio de la ventana: arriba la taparían la cabecera y la barra pegadas.
   await destino.evaluate((tr) => {
     tr.scrollIntoView({ block: 'center' })
   })
-  // Un panel que se cierra deja su fondo encima mientras sale: se espera a que el asa reciba el puntero.
+  // Sin `force`, `hover()` espera a que el asa reciba el puntero: un panel que se cierra deja su fondo encima mientras sale.
   const delAsa = filaDe(page, id).locator('[data-asa]')
-  await expect
-    .poll(() =>
-      delAsa.evaluate((th) => {
-        const c = th.getBoundingClientRect()
-        return th.contains(document.elementFromPoint(c.left + c.width / 2, c.top + c.height / 2))
-      }),
-    )
-    .toBe(true)
-  const asa = await delAsa.boundingBox()
-  const caja = await destino.boundingBox()
-  if (asa === null || caja === null) throw new Error('sin caja para arrastrar')
-  const x = asa.x + asa.width / 2
-  await page.mouse.move(x, asa.y + asa.height / 2)
+  await delAsa.hover()
   await page.mouse.down()
-  await page.mouse.move(x, asa.y + asa.height / 2 + 8, { steps: 4 })
-  const y = caja.y + caja.height * (lado === 'antes' ? 0.25 : 0.75)
-  await page.mouse.move(x, y, { steps: 12 })
+  await delAsa.hover({ position: { x: 1, y: 1 }, force: true })
+  if (lado === 'antes') await destino.hover({ position: { x: 4, y: 3 }, force: true })
+  else {
+    // La que le sigue puede ser de otro tramo (otro `<tbody>`, con su cabecera): la siguiente `tr` del documento, no la hermana.
+    const siguiente = destino.locator('xpath=following::tr[1]')
+    await expect(siguiente, `nada debajo de «${hacia}» donde soltar «después»`).toHaveCount(1)
+    await siguiente.hover({ position: { x: 4, y: -4 }, force: true })
+  }
   await expect(destino).toHaveAttribute('data-soltar', lado)
   await page.mouse.up()
   await expect(destino).not.toHaveAttribute('data-soltar', lado)
