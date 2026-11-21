@@ -95,7 +95,10 @@ async function Formula({ id }: { id: string }) {
       {!conPermiso(abierta, 'formula') ? (
         <PasoSinPermiso abierta={abierta} paso="formula" />
       ) : formula === null ? (
-        <Empezar abierta={abierta} />
+        <>
+          <Empezar abierta={abierta} />
+          <Seguir origenId={id} paso="formula" estado={abierta.estado} />
+        </>
       ) : (
         <Planilla abierta={abierta} formula={formula} />
       )}

@@ -11,6 +11,7 @@ import { NoSeAbre } from '../../no-se-abre'
 import { abrirLaPuestaEnMarcha } from '../abrir'
 import { MarcoDelPaso, PasoSinPermiso, conPermiso } from '../marco-del-paso'
 import { SinFormula } from '../sin-formula'
+import { Seguir } from '../seguir'
 
 export const metadata: Metadata = { title: 'Puesta en marcha: Publicar' }
 
@@ -62,6 +63,7 @@ async function Publicar({ id }: { id: string }) {
           alListo={rutaDeLaPuestaEnMarcha(id, 'listo')}
         />
       )}
+      <Seguir origenId={id} paso="publicar" estado={abierta.estado} sinSeguir />
     </MarcoDelPaso>
   )
 }
