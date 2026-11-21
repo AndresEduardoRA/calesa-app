@@ -1,9 +1,10 @@
-// Los grupos de la fórmula en el editor (4.21-3c; docs/UX.md › «Cotización: fórmula»): editar uno de los que hay (etiqueta, plazo, tono, el bucket que le da su tipo de cambio
-// y qué filas suman a él), sin sumar ni quitar grupos (P2: la plantilla de la tarjeta nombra exactamente los grupos de la fórmula). Puro y nunca lanza: lo que no sirve es un
-// error por campo. Lo que vale la fórmula entera lo dice después `validarFormula()` (un grupo vacío, el doble conteo), como tras el «Aplicar» de una fila.
+// Los grupos de la fórmula en la planilla (las bandas; docs/UX.md › «Cotización: fórmula»): editar uno (etiqueta, plazo, color, su tipo de cambio y qué filas suman a
+// él). Sumar, quitar una banda y mover una fila entre bandas están en `bandas.ts`; el bucket que da el tipo de cambio, en `buckets.ts`. Puro y nunca lanza: lo que no
+// sirve es un error por campo. Lo que vale la fórmula entera lo dice después `validarFormula()` (un grupo vacío, el doble conteo), como tras aplicar una fila.
 import type { Formula, Grupo } from '../formula'
 import { TOPE_DE_COLORES } from '../colores'
 import { daMonto, esMonto, type Nodo } from '../nodos'
+import { bucketPara, sinBucketsSueltos, type ConModos } from './buckets'
 import { filasDe } from './filas'
 
 // El catálogo de colores (`tonos`) no pasa de 48: el tope de `_tonos_tope()` en la base, `TOPE_DE_COLORES` del núcleo.
@@ -17,13 +18,18 @@ export type CambiosDelGrupo = {
   // Vacío quita el plazo.
   plazo: string
   tono: string
-  bucket: string
+  // La fila «Tipo de cambio» que convierte la banda (`bucketPara()` elige o crea su bucket).
+  tipoDeCambio: string
   // Los ids de las filas que quedan en el grupo; las demás que estaban salen sin grupo.
   miembros: readonly string[]
 }
 
-export type CampoDelGrupo = 'grupo' | 'etiqueta' | 'plazo' | 'tono' | 'bucket' | 'miembros'
+export type CampoDelGrupo =
+  'grupo' | 'etiqueta' | 'plazo' | 'tono' | 'tipo_de_cambio' | 'miembros' | 'total_en'
 export type ErrorDelGrupo = { campo: CampoDelGrupo; mensaje: string }
+
+// Lo que hace falta para revisar una banda: los colores del catálogo y si la hoja tiene modos de tipo de cambio (D14).
+export type ContextoDelGrupo = ConModos & { readonly tonos: ReadonlySet<string> }
 
 // Lo que el «Aplicar» movió: la fila que entró (y la etiqueta del grupo de donde vino, o nula si no tenía) y la que quedó sin grupo.
 export type FilaQueEntro = { id: string; etiqueta: string; desde: string | null }
@@ -49,20 +55,6 @@ export const filasQuePuedenSumar = (formula: Formula): Nodo[] =>
 export const miembrosDe = (formula: Formula, grupoId: string): Nodo[] =>
   formula.definicion.nodos.filter((n) => n.grupo === grupoId)
 
-// Cada bucket con el tipo de cambio que lo convierte, para el selector «Tipo de cambio».
-export type OpcionDeBucket = { bucket: string; etiqueta: string; clave: string | null }
-export function opcionesDeBucket(formula: Formula): OpcionDeBucket[] {
-  const nodos = new Map(formula.definicion.nodos.map((n) => [n.id, n]))
-  return Object.entries(formula.definicion.buckets ?? {}).map(([bucket, id]) => {
-    const n = nodos.get(id)
-    return {
-      bucket,
-      etiqueta: n?.etiqueta ?? id,
-      clave: n?.tipo === 'tipo_cambio' ? n.clave : null,
-    }
-  })
-}
-
 // El grupo de un rechazo de `validarFormula()` (`grupo_vacio`, `bucket_inexistente`…): `donde` es el id de un grupo. Se pregunta después de que no nombró una fila.
 export function grupoDelRechazo(
   rechazo: { donde?: string | undefined },
@@ -73,11 +65,19 @@ export function grupoDelRechazo(
   return grupos.some((g) => g.id === donde) ? donde : null
 }
 
-function erroresDeLosCampos(
+// Los errores de los campos y, si el tipo de cambio sirve, el bucket elegido con los `buckets` que quedan.
+export type RevisionDelGrupo = {
+  errores: ErrorDelGrupo[]
+  bucket: string | null
+  buckets: Record<string, string>
+}
+
+export function revisarCambiosDelGrupo(
   formula: Formula,
   cambios: CambiosDelGrupo,
-  tonos: ReadonlySet<string>,
-): ErrorDelGrupo[] {
+  { tonos, conModos }: ContextoDelGrupo,
+  preferido?: string,
+): RevisionDelGrupo {
   const errores: ErrorDelGrupo[] = []
   const etiqueta = cambios.etiqueta.trim()
   if (etiqueta === '')
@@ -88,27 +88,32 @@ function erroresDeLosCampos(
     errores.push({ campo: 'plazo', mensaje: 'El plazo pasa de 40 caracteres.' })
   if (!tonos.has(cambios.tono))
     errores.push({ campo: 'tono', mensaje: 'Elige un color de la lista.' })
-  if (!Object.hasOwn(formula.definicion.buckets ?? {}, cambios.bucket))
-    errores.push({ campo: 'bucket', mensaje: 'Elige un tipo de cambio de la lista.' })
+  const elegido = bucketPara(formula, cambios.tipoDeCambio, {
+    conModos,
+    ...(preferido === undefined ? {} : { preferido }),
+  })
+  if (!elegido.ok) errores.push({ campo: 'tipo_de_cambio', mensaje: elegido.mensaje })
   const pueden = new Set(filasQuePuedenSumar(formula).map((n) => n.id))
   if (cambios.miembros.some((id) => !pueden.has(id)))
     errores.push({ campo: 'miembros', mensaje: MENSAJE_FILA_QUE_NO_SUMA })
-  return errores
+  return elegido.ok
+    ? { errores, bucket: elegido.bucket, buckets: elegido.buckets }
+    : { errores, bucket: null, buckets: { ...(formula.definicion.buckets ?? {}) } }
 }
 
-function grupoNuevo(grupo: Grupo, cambios: CambiosDelGrupo): Grupo {
+export function grupoNuevo(id: string, cambios: CambiosDelGrupo, bucket: string): Grupo {
   const plazo = cambios.plazo.trim()
   return {
-    id: grupo.id,
+    id,
     etiqueta: cambios.etiqueta.trim(),
     ...(plazo === '' ? {} : { plazo }),
     tono: cambios.tono,
-    bucket: cambios.bucket,
+    bucket,
   }
 }
 
 // Sólo cambia `grupo` del nodo raíz de cada fila movida: su texto, sus auxiliares y su lugar quedan igual.
-function nodoConGrupo(n: Nodo, grupo: string | null): Nodo {
+export function nodoConGrupo(n: Nodo, grupo: string | null): Nodo {
   if (grupo !== null) return { ...n, grupo }
   const { grupo: _quitado, ...resto } = n
   return resto as Nodo
@@ -118,7 +123,7 @@ export function aplicarGrupo(
   formula: Formula,
   grupoId: string,
   cambios: CambiosDelGrupo,
-  tonos: ReadonlySet<string>,
+  contexto: ContextoDelGrupo,
 ): ResultadoDelGrupo {
   const grupos = formula.definicion.grupos ?? []
   const grupo = grupos.find((g) => g.id === grupoId)
@@ -128,8 +133,10 @@ export function aplicarGrupo(
       errores: [{ campo: 'grupo', mensaje: 'Ese grupo ya no está en la fórmula.' }],
     }
   }
-  const errores = erroresDeLosCampos(formula, cambios, tonos)
-  if (errores.length > 0) return { ok: false, errores }
+  const revision = revisarCambiosDelGrupo(formula, cambios, contexto, grupo.bucket)
+  if (revision.errores.length > 0 || revision.bucket === null)
+    return { ok: false, errores: revision.errores }
+  const { bucket, buckets } = revision
 
   const etiquetas = new Map(grupos.map((g) => [g.id, g.etiqueta]))
   const quedan = new Set(cambios.miembros)
@@ -150,15 +157,17 @@ export function aplicarGrupo(
     }
     return n
   })
+  const definicion = {
+    ...formula.definicion,
+    nodos,
+    buckets,
+    grupos: grupos.map((g) => (g.id === grupoId ? grupoNuevo(g.id, cambios, bucket) : g)),
+  }
   return {
     ok: true,
     formula: {
       ...formula,
-      definicion: {
-        ...formula.definicion,
-        nodos,
-        grupos: grupos.map((g) => (g.id === grupoId ? grupoNuevo(g, cambios) : g)),
-      },
+      definicion: contexto.conModos ? definicion : sinBucketsSueltos(definicion),
     },
     entraron,
     quitadas,

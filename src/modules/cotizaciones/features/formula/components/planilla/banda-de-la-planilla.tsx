@@ -6,7 +6,7 @@ import type { ReactNode } from 'react'
 import { RUTAS } from '@/shared/lib/rutas'
 import { Button } from '@/shared/ui/button'
 import type { Grupo } from '../../../../entities/formula'
-import type { OpcionDeBucket } from '../../../../entities/formula/grupos'
+import type { OpcionDeTipoDeCambio } from '../../../../entities/formula/buckets'
 import type { BandaDeLaPlanilla, OpcionNumerada } from '../../../../entities/formula/planilla'
 import type { FilaParaDibujar } from '../../hooks/use-editor-de-la-formula.soporte'
 import type { EstadoDeLosTonos } from '../../hooks/use-tonos'
@@ -23,7 +23,7 @@ import { FilaDeLaPlanilla } from './fila-de-la-planilla'
 export type ContextoDeLasBandas = {
   tonos: EstadoDeLosTonos
   alReintentarTonos: () => void
-  buckets: readonly OpcionDeBucket[]
+  tiposDeCambio: readonly OpcionDeTipoDeCambio[]
   conModos: boolean
   miembros: ReadonlyMap<string, readonly Miembro[]>
   candidatas: readonly FilaCandidata[]
@@ -146,7 +146,7 @@ function CabeceraDelGrupo({
               candidatas={bandas.candidatas}
               errores={abierto.errores}
               tonos={bandas.tonos}
-              buckets={bandas.buckets}
+              tiposDeCambio={bandas.tiposDeCambio}
               conModos={bandas.conModos}
               alAplicar={editor.grupos.aplicar}
               alCancelar={editor.grupos.cancelar}

@@ -5,11 +5,12 @@ import { Button } from '@/shared/ui/button'
 import { Campo } from '@/shared/ui/campo'
 import { CampoSeleccion } from '@/shared/ui/campo-seleccion'
 import type { Grupo } from '../../../../entities/formula'
+import type { OpcionDeTipoDeCambio } from '../../../../entities/formula/buckets'
 import type {
   CambiosDelGrupo,
   CampoDelGrupo,
+  ContextoDelGrupo,
   ErrorDelGrupo,
-  OpcionDeBucket,
 } from '../../../../entities/formula/grupos'
 import { useMiembrosDelGrupo } from '../../hooks/use-miembros-del-grupo'
 import type { EstadoDeLosTonos } from '../../hooks/use-tonos'
@@ -22,15 +23,15 @@ type Props = {
   candidatas: readonly FilaCandidata[]
   errores: readonly ErrorDelGrupo[]
   tonos: EstadoDeLosTonos
-  buckets: readonly OpcionDeBucket[]
+  tiposDeCambio: readonly OpcionDeTipoDeCambio[]
   // El diseño de la versión leída tiene modos de tipo de cambio: la hoja usa los del modo.
   conModos: boolean
-  alAplicar: (cambios: CambiosDelGrupo, tonos: ReadonlySet<string>) => void
+  alAplicar: (cambios: CambiosDelGrupo, contexto: ContextoDelGrupo) => void
   alCancelar: () => void
   alReintentarTonos: () => void
 }
 
-const ORDEN: CampoDelGrupo[] = ['etiqueta', 'plazo', 'tono', 'bucket', 'miembros']
+const ORDEN: CampoDelGrupo[] = ['etiqueta', 'plazo', 'tono', 'tipo_de_cambio', 'miembros']
 
 function opcionesDeTono(tonos: EstadoDeLosTonos, actual: string) {
   if (tonos.tipo === 'leyendo') return [{ valor: actual, etiqueta: 'Cargando los colores…' }]
@@ -107,13 +108,13 @@ function CamposDeTexto(p: {
 function SelectoresDelGrupo(p: {
   uid: string
   tono: string
-  bucket: string
+  tipoDeCambio: string
   tonos: EstadoDeLosTonos
-  buckets: readonly OpcionDeBucket[]
+  tiposDeCambio: readonly OpcionDeTipoDeCambio[]
   conModos: boolean
   deError: (campo: CampoDelGrupo) => string | undefined
   alCambiarTono: (tono: string) => void
-  alCambiarBucket: (bucket: string) => void
+  alCambiarTipoDeCambio: (id: string) => void
 }) {
   return (
     <>
@@ -130,19 +131,20 @@ function SelectoresDelGrupo(p: {
         }}
       />
       <CampoSeleccion
-        nombre={`${p.uid}-bucket`}
+        nombre={`${p.uid}-tipo_de_cambio`}
         etiqueta="Tipo de cambio"
-        opciones={p.buckets.map((b) => ({
-          valor: b.bucket,
-          etiqueta: `${b.bucket} · ${b.etiqueta}${b.clave === null ? '' : ` (${b.clave})`}`,
+        opciones={p.tiposDeCambio.map((o) => ({
+          valor: o.id,
+          etiqueta: `${o.etiqueta} (${o.clave})`,
+          ...(o.motivo === null ? {} : { deshabilitada: true }),
         }))}
-        value={p.bucket}
-        error={p.deError('bucket')}
+        value={p.tipoDeCambio}
+        error={p.deError('tipo_de_cambio')}
         ayuda={
-          p.conModos ? 'En la hoja, cada modo elige el tipo de cambio de cada bucket.' : undefined
+          p.conModos ? 'En la hoja, cada modo elige el tipo de cambio de cada banda.' : undefined
         }
         onChange={(evento) => {
-          p.alCambiarBucket(evento.target.value)
+          p.alCambiarTipoDeCambio(evento.target.value)
         }}
       />
     </>
@@ -175,13 +177,15 @@ function BotonesDelGrupo(p: { listo: boolean; alAplicar: () => void; alCancelar:
 // El formulario «Grupo <etiqueta>» de la sección «Grupos» (4.21-3c, C2 a C4): etiqueta, plazo de pago, tono, tipo de cambio y sus filas, sin campo de id. «Aplicar» o Ctrl/Cmd+Enter
 // aplican; «Cancelar» o Esc cierran sin cambiar nada; un error queda junto a su campo, con lo escrito y el foco en el primero. Sin el catálogo leído, «Aplicar» espera.
 export function FormularioDelGrupo(props: Props) {
-  const { grupo, miembros, errores, tonos, buckets, conModos, alCancelar } = props
+  const { grupo, miembros, errores, tonos, tiposDeCambio, conModos, alCancelar } = props
   const filas = useMiembrosDelGrupo(miembros, props.candidatas)
   const uid = useId()
   const [etiqueta, setEtiqueta] = useState(grupo.etiqueta)
   const [plazo, setPlazo] = useState(grupo.plazo ?? '')
   const [tono, setTono] = useState(grupo.tono)
-  const [bucket, setBucket] = useState(grupo.bucket)
+  const [tipoDeCambio, setTipoDeCambio] = useState(
+    () => tiposDeCambio.find((o) => o.buckets.includes(grupo.bucket))?.id ?? '',
+  )
   const deError = (campo: CampoDelGrupo) => errores.find((e) => e.campo === campo)?.mensaje
 
   // Al abrir el foco va a la etiqueta; con errores nuevos, al primero.
@@ -193,7 +197,10 @@ export function FormularioDelGrupo(props: Props) {
   const listo = tonos.tipo === 'listo'
   const aplicar = () => {
     if (tonos.tipo !== 'listo') return
-    props.alAplicar({ etiqueta, plazo, tono, bucket, miembros: filas.ids }, tonos.claves)
+    props.alAplicar(
+      { etiqueta, plazo, tono, tipoDeCambio, miembros: filas.ids },
+      { tonos: tonos.claves, conModos },
+    )
   }
 
   return (
@@ -228,13 +235,13 @@ export function FormularioDelGrupo(props: Props) {
       <SelectoresDelGrupo
         uid={uid}
         tono={tono}
-        bucket={bucket}
+        tipoDeCambio={tipoDeCambio}
         tonos={tonos}
-        buckets={buckets}
+        tiposDeCambio={tiposDeCambio}
         conModos={conModos}
         deError={deError}
         alCambiarTono={setTono}
-        alCambiarBucket={setBucket}
+        alCambiarTipoDeCambio={setTipoDeCambio}
       />
       <FilasDelGrupo
         uid={uid}

@@ -666,6 +666,13 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   `$` se aceptan y se ignoran.
 - **Rango (de la planilla)** — `C5:C9`: las filas seguidas de la columna C, sólo dentro de `SUMA`, `MAX` o `MIN`. Se guarda como la lista de ids
   (`SUMA(a; b; c)`) y una función con 3 filas o más muestra cada corrida de filas seguidas como rango. No es el **Rango (de la tarjeta)**.
+- **Celda de la planilla** — una casilla de la cuadrícula de la planilla (`role="gridcell"`): la columna (A concepto, B %, C valor, D de dónde sale) de
+  una fila numerada. Se nombra con su **Referencia (de la planilla)**. No es la **Celda (de la hoja)** (la `XCell` del diseño) ni la **Celda de la tarjeta**.
+- **Tipo de celda** — `TipoDeCelda`, `cambiarTipo()` (`entities/formula/tipo-de-celda.ts`): qué es una fila, con su nombre en la UI: «Valor fijo»
+  (`constante`), «Cálculo» (`calculo`), «Lo escribe el asesor» (`input`), «Dato del vehículo» (`campo_vehiculo`), «Tipo de cambio» (`tipo_cambio`),
+  «Interruptor Sí/No» (`bandera`), «De una tabla» (`tabla`; un `tramo` se ve así y no se ofrece) y «Variante» (`opcion`, una por fórmula). Un número
+  escrito en C es «Valor fijo» y lo que empieza con `=`, «Cálculo»; los demás se eligen en el menú. Cambiarlo conserva id, etiqueta, descripción, la
+  salida y la banda (si la fila sigue sumando) y se rechaza con el motivo si la fórmula deja de valer.
 - **Cifras de prueba** — `calcularLaVistaPrevia()`, «Vista previa» del editor: `evaluar()` con datos en 0, opciones apagadas, variante por
   defecto, tipos de cambio de hoy y tablas vivas; no se guarda.
 - **Texto vigente** — `textoVigente()` (`entities/formula/texto-vigente.ts`): el texto de una fila con el valor del ⚙ de una constante escrito

@@ -2,7 +2,8 @@
 
 import { Button } from '@/shared/ui/button'
 import type { Grupo } from '../../../../entities/formula'
-import type { CambiosDelGrupo, OpcionDeBucket } from '../../../../entities/formula/grupos'
+import type { OpcionDeTipoDeCambio } from '../../../../entities/formula/buckets'
+import type { CambiosDelGrupo, ContextoDelGrupo } from '../../../../entities/formula/grupos'
 import type { GrupoAbierto, MovidasDelGrupo } from '../../hooks/use-grupos-del-editor'
 import type { EstadoDeLosTonos } from '../../hooks/use-tonos'
 import type { FilaCandidata, FilaDelGrupo } from './filas-del-grupo'
@@ -15,7 +16,7 @@ export type GrupoDelEditorProps = {
   // Todas las filas que pueden sumar a un grupo, en el orden de la fórmula.
   candidatas: readonly FilaCandidata[]
   tonos: EstadoDeLosTonos
-  buckets: readonly OpcionDeBucket[]
+  tiposDeCambio: readonly OpcionDeTipoDeCambio[]
   conModos: boolean
   abierto: GrupoAbierto | null
   // Otra cosa abierta o guardándose: «Editar» espera.
@@ -25,7 +26,7 @@ export type GrupoDelEditorProps = {
   movidas: MovidasDelGrupo | null
   alAbrir: (id: string) => void
   alCancelar: () => void
-  alAplicar: (cambios: CambiosDelGrupo, tonos: ReadonlySet<string>) => void
+  alAplicar: (cambios: CambiosDelGrupo, contexto: ContextoDelGrupo) => void
   alReintentarTonos: () => void
 }
 
@@ -54,8 +55,8 @@ export function LoMovido({ movidas }: { movidas: MovidasDelGrupo }) {
 }
 
 function Cabecera(p: GrupoDelEditorProps) {
-  const { grupo, buckets, miembros } = p
-  const cambio = buckets.find((b) => b.bucket === grupo.bucket)
+  const { grupo, tiposDeCambio, miembros } = p
+  const cambio = tiposDeCambio.find((o) => o.buckets.includes(grupo.bucket))
   return (
     <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
       <span className="font-semibold break-words text-(--color-ink)">{grupo.etiqueta}</span>
@@ -65,8 +66,7 @@ function Cabecera(p: GrupoDelEditorProps) {
       </span>
       <span className="text-(--color-ink-soft)">Color: {nombreDelTono(p.tonos, grupo.tono)}</span>
       <span className="text-(--color-ink-soft)">
-        Tipo de cambio: {grupo.bucket}
-        {cambio ? ` · ${cambio.etiqueta}` : ''}
+        Tipo de cambio: {cambio ? cambio.etiqueta : grupo.bucket}
       </span>
       <span className="text-(--color-ink-soft)">
         {miembros.length} {miembros.length === 1 ? 'fila' : 'filas'}
@@ -115,7 +115,7 @@ export function GrupoDelEditor(p: GrupoDelEditorProps) {
           candidatas={p.candidatas}
           errores={p.abierto.errores}
           tonos={p.tonos}
-          buckets={p.buckets}
+          tiposDeCambio={p.tiposDeCambio}
           conModos={p.conModos}
           alAplicar={p.alAplicar}
           alCancelar={p.alCancelar}

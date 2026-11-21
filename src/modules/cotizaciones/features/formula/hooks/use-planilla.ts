@@ -4,7 +4,7 @@ import { useCallback, useId, useMemo, useState } from 'react'
 import { useRegional } from '@/shared/ui/regional'
 import type { Nodo } from '../../../entities/nodos'
 import { contextoDeDondeSale, deDondeSale } from '../../../entities/formula/de-donde-sale'
-import { opcionesDeBucket } from '../../../entities/formula/grupos'
+import { opcionesDeTipoDeCambio } from '../../../entities/formula/buckets'
 import { bandasDeLaPlanilla } from '../../../entities/formula/planilla'
 import { totalesDeLaUnidad } from '../../../entities/formula/totales-de-la-planilla'
 import {
@@ -159,13 +159,17 @@ function useDeLasBandas(p: PropsDeLaPlanilla, c: Calculo): ContextoDeLasBandas {
     () => (hayGrupoAbierto ? candidatasDe(editor.trabajo) : SIN_CANDIDATAS),
     [hayGrupoAbierto, editor.trabajo],
   )
-  const buckets = useMemo(() => opcionesDeBucket(editor.trabajo), [editor.trabajo])
+  const conModos = c.modos.length > 0
+  const tiposDeCambio = useMemo(
+    () => opcionesDeTipoDeCambio(editor.trabajo, { conModos }),
+    [editor.trabajo, conModos],
+  )
   const deOmision = editor.trabajo.definicion.buckets ?? {}
   return {
     tonos: tonos.estado,
     alReintentarTonos: tonos.reintentar,
-    buckets,
-    conModos: c.modos.length > 0,
+    tiposDeCambio,
+    conModos,
     miembros,
     candidatas,
     tipoDeCambioDe: (bucket) => {

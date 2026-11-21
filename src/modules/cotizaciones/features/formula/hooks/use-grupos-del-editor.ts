@@ -5,6 +5,7 @@ import type { Formula } from '../../../entities/formula'
 import {
   aplicarGrupo,
   type CambiosDelGrupo,
+  type ContextoDelGrupo,
   type ErrorDelGrupo,
   type FilaQueEntro,
   type FilaQuitada,
@@ -31,9 +32,9 @@ export function useGruposDelEditor({
   const [movidas, setMovidas] = useState<MovidasDelGrupo | null>(null)
 
   const aplicar = useCallback(
-    (cambios: CambiosDelGrupo, tonos: ReadonlySet<string>) => {
+    (cambios: CambiosDelGrupo, contexto: ContextoDelGrupo) => {
       if (abierto === null || enCurso) return
-      const r = aplicarGrupo(trabajo, abierto.id, cambios, tonos)
+      const r = aplicarGrupo(trabajo, abierto.id, cambios, contexto)
       if (!r.ok) {
         setAbierto({ id: abierto.id, errores: r.errores })
         return

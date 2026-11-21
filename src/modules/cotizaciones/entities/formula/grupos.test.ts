@@ -47,6 +47,9 @@ const FORMULA: Formula = {
 }
 
 const TONOS = new Set(['verde', 'naranja', 'azul'])
+// Con modos no se limpia ningún bucket: así T1 compara la definición entera.
+const CTX = { tonos: TONOS, conModos: true }
+const SIN_MODOS = { tonos: TONOS, conModos: false }
 
 // `dos` escrita en texto (`=suelta+2`) con su auxiliar `dos__1` antes. La auxiliar lleva formato `usd` a propósito: así da un monto sin salida y sólo la regla
 // «una auxiliar nunca suma a un grupo» (las filas raíz de `filasDe()`) la deja afuera.
@@ -73,7 +76,7 @@ const cambiosDe = (formula: Formula, id: string): CambiosDelGrupo => {
     etiqueta: g.etiqueta,
     plazo: g.plazo ?? '',
     tono: g.tono,
-    bucket: g.bucket,
+    tipoDeCambio: formula.definicion.buckets?.[g.bucket] ?? '',
     miembros: miembrosDe(formula, id).map((n) => n.id),
   }
 }
@@ -97,7 +100,7 @@ const ENTRADA = {
 }
 
 describe('aplicarGrupo: los campos', () => {
-  it('T1: cambia etiqueta, plazo, tono y bucket del grupo en su lugar, y nada más', () => {
+  it('T1: cambia etiqueta, plazo, tono y tipo de cambio (su bucket) del grupo en su lugar, y nada más', () => {
     valida(FORMULA)
     const r = aplicarGrupo(
       FORMULA,
@@ -107,9 +110,9 @@ describe('aplicarGrupo: los campos', () => {
         etiqueta: '  Nuevo  ',
         plazo: ' 3 días ',
         tono: 'azul',
-        bucket: 'b',
+        tipoDeCambio: 'tcb',
       },
-      TONOS,
+      CTX,
     )
     if (!r.ok) throw new Error(JSON.stringify(r.errores))
     expect(r.formula.definicion.grupos).toEqual([
@@ -125,15 +128,15 @@ describe('aplicarGrupo: los campos', () => {
     valida(r.formula)
   })
 
-  it('T2: plazo vacío quita la clave; los topes, la etiqueta en blanco, el tono y el bucket ajenos dan error en su campo; nunca lanza', () => {
+  it('T2: plazo vacío quita la clave; los topes, la etiqueta en blanco, el tono y un tipo de cambio ajenos dan error en su campo; nunca lanza', () => {
     const base = cambiosDe(FORMULA, 'ga')
-    const r = aplicarGrupo(FORMULA, 'ga', { ...base, plazo: '   ' }, TONOS)
+    const r = aplicarGrupo(FORMULA, 'ga', { ...base, plazo: '   ' }, CTX)
     if (!r.ok) throw new Error(JSON.stringify(r.errores))
     const g = r.formula.definicion.grupos?.[0]
     expect(g && 'plazo' in g).toBe(false)
 
     const campos = (c: Partial<CambiosDelGrupo>) => {
-      const x = aplicarGrupo(FORMULA, 'ga', { ...base, ...c }, TONOS)
+      const x = aplicarGrupo(FORMULA, 'ga', { ...base, ...c }, CTX)
       return x.ok ? [] : x.errores.map((e) => e.campo)
     }
     expect(campos({ plazo: 'x'.repeat(40) })).toEqual([])
@@ -142,15 +145,34 @@ describe('aplicarGrupo: los campos', () => {
     expect(campos({ etiqueta: 'x'.repeat(61) })).toEqual(['etiqueta'])
     expect(campos({ etiqueta: '   ' })).toEqual(['etiqueta'])
     expect(campos({ tono: 'rojo' })).toEqual(['tono'])
-    expect(campos({ bucket: 'c' })).toEqual(['bucket'])
-    expect(campos({ etiqueta: '', plazo: 'x'.repeat(41), tono: 'rojo', bucket: 'c' })).toEqual([
-      'etiqueta',
-      'plazo',
-      'tono',
-      'bucket',
-    ])
-    const sinGrupo = aplicarGrupo(FORMULA, 'zz', base, TONOS)
+    expect(campos({ tipoDeCambio: 'remate' })).toEqual(['tipo_de_cambio'])
+    expect(
+      campos({ etiqueta: '', plazo: 'x'.repeat(41), tono: 'rojo', tipoDeCambio: 'nada' }),
+    ).toEqual(['etiqueta', 'plazo', 'tono', 'tipo_de_cambio'])
+    const sinGrupo = aplicarGrupo(FORMULA, 'zz', base, CTX)
     expect(sinGrupo.ok).toBe(false)
+  })
+
+  it('el tipo de cambio es una fila: sin modos, el bucket que queda sin uso se limpia y uno nuevo lleva la clave', () => {
+    const r = aplicarGrupo(
+      FORMULA,
+      'ga',
+      { ...cambiosDe(FORMULA, 'ga'), tipoDeCambio: 'tcb' },
+      SIN_MODOS,
+    )
+    if (!r.ok) throw new Error(JSON.stringify(r.errores))
+    expect(r.formula.definicion.buckets).toEqual({ b: 'tcb' })
+    expect(r.formula.definicion.grupos?.map((g) => g.bucket)).toEqual(['b', 'b'])
+    valida(r.formula)
+    const otro = aplicarGrupo(
+      r.formula,
+      'ga',
+      { ...cambiosDe(r.formula, 'ga'), tipoDeCambio: 'tca' },
+      SIN_MODOS,
+    )
+    if (!otro.ok) throw new Error(JSON.stringify(otro.errores))
+    expect(otro.formula.definicion.buckets).toEqual({ b: 'tcb', oficial: 'tca' })
+    valida(otro.formula)
   })
 })
 
@@ -160,7 +182,7 @@ describe('aplicarGrupo: las filas', () => {
       FORMULA,
       'gb',
       { ...cambiosDe(FORMULA, 'gb'), miembros: ['cinco', 'suelta'] },
-      TONOS,
+      CTX,
     )
     if (!r.ok) throw new Error(JSON.stringify(r.errores))
     expect(r.entraron).toEqual([
@@ -188,7 +210,7 @@ describe('aplicarGrupo: las filas', () => {
       CON_AUXILIAR,
       'ga',
       { ...cambiosDe(CON_AUXILIAR, 'ga'), miembros: ['cinco', 'uno', 'dos'] },
-      TONOS,
+      CTX,
     )
     if (!r.ok) throw new Error(JSON.stringify(r.errores))
     const nodos = r.formula.definicion.nodos
@@ -204,7 +226,7 @@ describe('aplicarGrupo: quién suma y el dinero', () => {
   it('T4: una salida, un pct, una bandera o un id que no existe no pueden sumar; puedeSumarAlGrupo coincide con validarFormula()', () => {
     const base = cambiosDe(FORMULA, 'ga')
     for (const id of ['total', 'pct', 'bandera', 'tca', 'no_existe']) {
-      const r = aplicarGrupo(FORMULA, 'ga', { ...base, miembros: [...base.miembros, id] }, TONOS)
+      const r = aplicarGrupo(FORMULA, 'ga', { ...base, miembros: [...base.miembros, id] }, CTX)
       expect(r.ok, id).toBe(false)
       if (!r.ok) expect(r.errores.map((e) => e.campo)).toEqual(['miembros'])
     }
@@ -218,7 +240,7 @@ describe('aplicarGrupo: quién suma y el dinero', () => {
       CON_AUXILIAR,
       'ga',
       { ...cambiosDe(CON_AUXILIAR, 'ga'), miembros: ['cinco', 'uno', 'dos__1'] },
-      TONOS,
+      CTX,
     )
     expect(conAux.ok ? [] : conAux.errores.map((e) => e.campo)).toEqual(['miembros'])
     // Cada nodo, solo como miembro de `gb` junto a `dos`: puede sumar si y sólo si validarFormula() no lo rechaza como miembro.
@@ -237,7 +259,7 @@ describe('aplicarGrupo: quién suma y el dinero', () => {
       FORMULA,
       'gb',
       { ...cambiosDe(FORMULA, 'gb'), miembros: ['cinco', 'dos'] },
-      TONOS,
+      CTX,
     )
     if (!r.ok) throw new Error(JSON.stringify(r.errores))
     const despues = evaluar(valida(r.formula), ENTRADA)
@@ -258,7 +280,7 @@ describe('aplicarGrupo: quién suma y el dinero', () => {
 describe('grupoDelRechazo', () => {
   it('T6: da el grupo de `grupo_vacio` y de `bucket_inexistente`; nulo para una fila o una auxiliar', () => {
     const grupos = FORMULA.definicion.grupos ?? []
-    const vacio = aplicarGrupo(FORMULA, 'gb', { ...cambiosDe(FORMULA, 'gb'), miembros: [] }, TONOS)
+    const vacio = aplicarGrupo(FORMULA, 'gb', { ...cambiosDe(FORMULA, 'gb'), miembros: [] }, CTX)
     if (!vacio.ok) throw new Error('debía aplicar')
     const v = validarFormula(vacio.formula.definicion, { ...FORMULA.params.constantes })
     expect(v.ok).toBe(false)

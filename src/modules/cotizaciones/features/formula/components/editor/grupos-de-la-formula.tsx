@@ -5,7 +5,8 @@ import { textoDelTope } from '@/shared/lib/conteo'
 import { TOPE_DE_LO_CARGADO } from '@/shared/lib/paginacion'
 import { AvisoDeTope } from '@/shared/ui/aviso-de-tope'
 import type { Formula } from '../../../../entities/formula'
-import { opcionesDeBucket, type CambiosDelGrupo } from '../../../../entities/formula/grupos'
+import { opcionesDeTipoDeCambio } from '../../../../entities/formula/buckets'
+import type { CambiosDelGrupo, ContextoDelGrupo } from '../../../../entities/formula/grupos'
 import type { Diseno } from '../../../../entities/diseno'
 import type { EditorDeLaFormula, RechazoEnElEditor } from '../../hooks/use-editor-de-la-formula'
 import type { GrupoAbierto, MovidasDelGrupo } from '../../hooks/use-grupos-del-editor'
@@ -28,7 +29,7 @@ type Props = {
   conModos: boolean
   alAbrir: (id: string) => void
   alCancelar: () => void
-  alAplicar: (cambios: CambiosDelGrupo, tonos: ReadonlySet<string>) => void
+  alAplicar: (cambios: CambiosDelGrupo, contexto: ContextoDelGrupo) => void
 }
 
 // Se monta sólo con grupos: una fórmula sin grupos no la dibuja, no ofrece convertirla (P2) y no lee los tonos.
@@ -61,7 +62,11 @@ function SeccionDeGrupos(p: Props) {
   const tonos = useTonos()
   const idDelTitulo = useId()
   const grupos = p.trabajo.definicion.grupos ?? []
-  const buckets = useMemo(() => opcionesDeBucket(p.trabajo), [p.trabajo])
+  const { conModos } = p
+  const tiposDeCambio = useMemo(
+    () => opcionesDeTipoDeCambio(p.trabajo, { conModos }),
+    [p.trabajo, conModos],
+  )
   const miembros = useMemo(() => miembrosPorGrupo(p.trabajo), [p.trabajo])
   // Sólo con un grupo abierto: «Sumar una fila» dibuja sus opciones con el formulario.
   const hayAbierto = p.abierto !== null
@@ -84,8 +89,8 @@ function SeccionDeGrupos(p: Props) {
               miembros={miembros.get(grupo.id) ?? SIN_MIEMBROS}
               candidatas={candidatas}
               tonos={tonos.estado}
-              buckets={buckets}
-              conModos={p.conModos}
+              tiposDeCambio={tiposDeCambio}
+              conModos={conModos}
               abierto={abierto}
               bloqueada={p.bloqueada}
               rechazo={p.rechazo?.grupoId === grupo.id ? p.rechazo.mensaje : null}
