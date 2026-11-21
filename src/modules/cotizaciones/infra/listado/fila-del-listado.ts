@@ -18,6 +18,7 @@ export const esquemaDeFila = z.object({
   creado_en: z.string(),
   vence_el: z.string(),
   vencida: z.boolean(),
+  privada: z.boolean(),
 })
 
 export function filaDesde(f: z.infer<typeof esquemaDeFila>): FilaDelListado {
@@ -36,5 +37,6 @@ export function filaDesde(f: z.infer<typeof esquemaDeFila>): FilaDelListado {
     creadoEn: f.creado_en,
     venceEl: f.vence_el,
     vencida: f.vencida,
+    privada: f.privada,
   }
 }

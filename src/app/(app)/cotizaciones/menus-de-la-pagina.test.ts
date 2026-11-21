@@ -23,6 +23,7 @@ const fila = {
   vehiculoId: 'veh' as string | null,
   leadId: 'lead' as string | null,
   aprobada: false,
+  privada: false,
 }
 const marcas = {
   estado: 'activa' as 'activa' | 'reportada' | 'invalida',
@@ -49,6 +50,22 @@ describe('ofertasDeLaFila', () => {
     expect(ofrece([concesion('cotizaciones.final.gestionar', OTRO)])).not.toContain('final')
     expect(ofrece([concesion('cotizaciones.moderar')])).toEqual(
       expect.arrayContaining(['invalidar', 'papelera']),
+    )
+  })
+
+  it('«Hacer privada» / «Hacer pública», sólo a quien la creó; una final o la aprobada, apagada con su motivo', () => {
+    const permisos = [concesion('cotizaciones.ver', ORIGEN)]
+    expect(ofrece(permisos)).not.toContain('hacer-privada')
+    expect(ofrece(permisos, { ...fila, privada: true })).not.toContain('hacer-publica')
+    const mia = { ...fila, creadoPor: YO }
+    const de = (f: typeof fila) => ofertasDeLaFila(f, marcas, { permisos, usuarioId: YO })
+    expect(de(mia)['hacer-privada']).toEqual({ motivo: null })
+    expect(de({ ...mia, privada: true })['hacer-publica']).toEqual({ motivo: null })
+    expect(de({ ...mia, clase: 'final' })['hacer-privada']?.motivo).toBe(
+      'Una final no se hace privada.',
+    )
+    expect(de({ ...mia, aprobada: true })['hacer-privada']?.motivo).toBe(
+      'Es la aprobada de su vehículo: no se hace privada.',
     )
   })
 

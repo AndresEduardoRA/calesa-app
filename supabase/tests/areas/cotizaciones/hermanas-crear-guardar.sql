@@ -353,7 +353,7 @@ begin;
 do $$
 declare f text;
 begin
-  foreach f in array array['public.cotizacion_crear_en_par(uuid[], uuid, uuid, jsonb, text, uuid, text, boolean, boolean, text, boolean)',
+  foreach f in array array['public.cotizacion_crear_en_par(uuid[], uuid, uuid, jsonb, text, uuid, text, boolean, boolean, text, boolean, boolean)',
                            'public.cotizacion_guardar_en_par(uuid[], uuid[], timestamptz[], jsonb, text, text, text[], uuid, boolean, boolean)',
                            'public.cotizacion_encima_en_par(uuid[], uuid[])'] loop
     if has_function_privilege('anon', f, 'execute') or not has_function_privilege('authenticated', f, 'execute') then raise exception '% no es de authenticated', f; end if;

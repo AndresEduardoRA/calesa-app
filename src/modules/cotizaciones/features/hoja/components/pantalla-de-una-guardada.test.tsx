@@ -16,6 +16,7 @@ vi.mock('next-safe-action/hooks', () => ({ useAction: () => ({ executeAsync: vi.
 vi.mock('../actions/guardar-cotizacion', () => ({ guardarCotizacion: {} }))
 vi.mock('../../encima/actions/cotizar-encima', () => ({ cotizarEncima: {} }))
 vi.mock('../../encima/actions/cotizar-encima-en-par', () => ({ cotizarEncimaEnPar: {} }))
+vi.mock('../../privada/actions/cambiar-privada', () => ({ cambiarPrivadaDeLaCotizacion: {} }))
 
 const PERSONA = '3b7a2f0e-1c2d-4e5f-8a9b-0c1d2e3f4a5b'
 

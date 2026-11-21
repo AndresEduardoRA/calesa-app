@@ -23,6 +23,7 @@ describe('la sección Catálogos de Configuración', () => {
     ).toEqual([
       ['Colores', '/configuracion/catalogos/colores', 'Cotizaciones'],
       ['Niveles', '/configuracion/catalogos/niveles', 'Cotizaciones'],
+      ['Quién crea y quién ve', '/configuracion/catalogos/quien-crea-y-quien-ve', 'Cotizaciones'],
       ['Vigencia', '/configuracion/catalogos/vigencia', 'Cotizaciones'],
       ['Puertos', '/configuracion/catalogos/puertos', 'Logística'],
       ['Navieras', '/configuracion/catalogos/navieras', 'Logística'],
@@ -49,15 +50,17 @@ describe('la sección Catálogos de Configuración', () => {
     ])
   })
 
-  it('quien configura la cotización sin ver los roles: Niveles apagada con su motivo', () => {
+  it('quien configura la cotización sin ver los roles: Niveles y Quién crea y quién ve apagadas con su motivo', () => {
     const visibles = conSubseccionesVisibles(SECCION_DE_CATALOGOS, con('cotizaciones.configurar'))
     expect(visibles.subsecciones.map((sub) => [sub.clave, sub.apagada ?? false])).toEqual([
       ['colores', false],
       ['niveles', true],
+      ['quien-crea-y-quien-ve', true],
       ['vigencia', false],
       ['tablas', false],
     ])
     expect(visibles.subsecciones[1]?.motivoSinPermiso).toBe('Te falta el permiso «Ver roles».')
+    expect(visibles.subsecciones[2]?.motivoSinPermiso).toBe('Te falta el permiso «Ver roles».')
   })
 
   it('quien configura un flujo sólo ve los tipos de documento, y la sección abre ahí', () => {

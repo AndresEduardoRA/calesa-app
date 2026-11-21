@@ -21,7 +21,7 @@ export const getMatriz: LectorDeMatriz = cache(async () => {
       .order('nombre'),
     supabase.rpc('roles_personas'),
     // Los permisos de un nivel de acceso (`cotizaciones.nivel.<clave>.*`) traen su nivel por la FK: hasta 18 filas más (tope de 10 niveles,
-    // `_niveles_tope()`), sobre las 72 del catálogo. `clave` desempata el `orden` que comparten.
+    // `_niveles_tope()`), sobre las 80 del catálogo. `clave` desempata el `orden` que comparten.
     supabase
       .from('permisos')
       .select(

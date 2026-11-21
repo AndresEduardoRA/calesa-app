@@ -14,6 +14,7 @@ import {
   type HojaDeUnaGuardada,
 } from '../../../entities/hoja-de-una-guardada'
 import { AvisoDeVersion } from '../../encima/components/aviso-de-version'
+import { PrivadaDelMenu } from '../../privada/components/privada-del-menu'
 import { useGuardadoDeUnaGuardada } from '../hooks/use-guardado-de-una-guardada'
 import { useLecturaDeUnaGuardada } from '../hooks/use-lectura-de-una-guardada'
 import { useTituloDeLaCotizacion } from '../hooks/use-titulo-de-la-cotizacion'
@@ -112,6 +113,18 @@ function useAperturaDeLaGuardada(hoja: HojaDeUnaGuardada, vehiculoNuevo: string 
   )
 }
 
+// Encima de la hoja: el aviso de la versión y la línea de la marca de privada del «⋯» (las dos esperan con cambios sin guardar).
+function encimaDe(hoja: HojaDeUnaGuardada, personaId: string) {
+  return function Encima(hayCambios: boolean) {
+    return (
+      <>
+        <AvisoDeVersion hoja={hoja} hayCambios={hayCambios} />
+        <PrivadaDelMenu hoja={hoja} personaId={personaId} hayCambios={hayCambios} />
+      </>
+    )
+  }
+}
+
 // El marco de la hoja de una cotización guardada (`/cotizaciones/[id]`, 4.15-3). La hoja calcula por SU cotización (nunca por un origen) y abre con lo guardado como lo tipeado,
 // así abrirla sin tocar nada no deja borrador. Quien no la puede guardar la lee en sólo lectura (P13). **Lo de hoy no siempre es lo guardado:** el recálculo usa las tablas de
 // referencia y los datos del vehículo de hoy; si da otra cosa se dice y se muestra el total con que se guardó (C11, P2). Se decide una vez, al abrir: tipear después no lo cambia.
@@ -170,7 +183,7 @@ export function PantallaDeUnaGuardada({
       guardado={null}
       abre={abre}
       alRecargar={lectura.recargar}
-      encima={(hayCambios) => <AvisoDeVersion hoja={hoja} hayCambios={hayCambios} />}
+      encima={encimaDe(hoja, personaId)}
       soloLectura={!hoja.puedeGuardar}
       deLoGuardado={{ calculo: calculoDeLaTarjeta, difiere: hayAviso }}
       {...(pasos ? { pasos } : {})}

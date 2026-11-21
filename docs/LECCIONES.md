@@ -16,6 +16,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Rechaza `NaN` explícito junto a `monto > 0` en toda RPC de dinero: en Postgres `'NaN' > 0` es verdadero y `numeric(18,2)` lo guarda, así que el `check` no basta.
 - `db:lint` no admite avisos sin motivo: declara STABLE (no IMMUTABLE) una función que usa `jsonb_build_object` e inicia un `uuid[]` vacío con `array[]::uuid[]`, no con `'{}'`.
 - No declares la variable de un `for i in 1 .. n` de plpgsql: el `for` crea la suya. Declarada, `plpgsql_check` la marca sin uso y cada `for` nuevo suma una sombra, así que `db:lint` cae contra la cuenta de `supabase/tests/advisors-con-motivo.json`.
+- Al sumar una columna de salida a una función que llena sus OUT con `return query execute` (`cotizaciones_buscar`, `vehiculos_inventario`), sube su cuenta en `supabase/tests/advisors-con-motivo.json`: `plpgsql_check` da un «maybe unmodified» por columna. `pnpm db:lint` sale 0 igual; la cuenta la compara `pnpm db:lint > f.txt; pnpm exec tsx scripts/despliegue/revisar-base.mjs db-lint f.txt` (el job Base del CI).
 - Un trigger `before insert` corre antes del `with check` de la policy: quien no puede recibe 23514 en vez de 42501. Ordena las defensas sabiéndolo.
 - Los triggers BEFORE corren en orden alfabético del nombre: el que depende de otros se nombra para ir último (`trg_lead_z_cliente_desde`).
 - Un borrado suave por `update` da 42501 si la policy de leer no admite la fila nueva (aun sin `returning`): borrar así pide una RPC `security definer`.
@@ -42,6 +43,7 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Cambiar argumentos o tipo de retorno es `drop` + `create` (parámetro nuevo al final, con default si hay llamadas posicionales): `create or replace` deja dos sobrecargas.
 - Repite siempre `revoke`/`grant` explícitos (también `anon` en `web.*`), aunque `create or replace` conserve privilegios, y pruébalo con una mutación que conceda a `anon` o PUBLIC.
 - Prefiere una función de lectura aparte a cambiar el tipo de retorno de una existente: el `drop` rompe pruebas, infra y la definición que otros recrean.
+- Al traer `main`, cruza las funciones que redefine tu migración con las de las migraciones nuevas de `main` (con y sin comillas: el volcado escribe `"public"."x"`): git no ve el choque y tu `create or replace`, que corre después, borra lo de la otra. Rehazla desde la definición de `main`.
 - Parte un trigger si su `when` nombra `old`: ese `when` no puede ir en un trigger de `insert`.
 - Al crear un permiso o cambiar su `aplicado_en`, cámbialo también en `supabase/seed.sql` y prueba la migración re-ejecutándola sobre la base sembrada: el seed corre después con `on conflict … do update` y la pisa, y antes del seed la tabla está vacía.
 - Valida en la RPC el texto que la nube puede tener con otros valores; un `check` nuevo sobre una tabla con datos nace `not valid` y se valida en otra sentencia sólo si ninguna fila lo rompe (si no, `raise notice`): la migración no debe caer en la nube.
@@ -167,6 +169,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 ## Interfaz
 
 - Con el texto al 200 % los media queries siguen en px: escribe una columna lateral como `minmax(0, 24rem)`, no rem fijos, y en una rejilla de 12 pistas que colapsa usa `gap-x-0 @lg:gap-x-3` (las pistas van a 0 y los 11 huecos fijos desbordan).
+- En el celular, la fila de `<Flotantes>` del marco («Copiar el enlace» y la burbuja del chat) flota a 80–124 px del borde inferior y a 16–112 px del derecho: un control alineado a la derecha en algo pegado abajo (el resumen de la hoja) queda debajo sin que ningún desplazamiento lo libere; dale `max-md:pr-[96px]` a su fila, y si la fila suma un botón, súmale su ancho.
+- `TableCell` y `TableHead` de `src/shared/ui/table` son `whitespace-nowrap`: una celda con un texto que debe partirse (un motivo debajo de un control) lleva `whitespace-normal`, o el texto se derrama sobre la columna de al lado sin que nada falle.
 - Nombra los contenedores (`@container/hoja`, `@4xl/hoja`): una consulta de contenedor la resuelve el contenedor más cercano al descendiente, no el que lleva la clase.
 - Un estilo que depende del desplazamiento (la sombra de una columna pegada) va con `container-type: scroll-state` y
   `@container scroll-state(…)`, no con una animación ligada al desplazamiento (`animation-timeline`): cada celda sumaría una animación que
@@ -205,6 +209,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
   destino: al cerrarse, el menú le devuelve el foco a su botón y pisa el salto.
 - Un título del servidor al que salta un ancla (`#…` con el foco) no se le pasa a una isla diferida para que lo dibuje: al cambiar de árbol se vuelve a
   montar y pierde el foco. Se queda en el servidor con una ranura vacía al lado y la isla pone lo suyo ahí con `createPortal`.
+- Un foco que se da al montar (el encabezado de la conversación abierta) no se lo quita a lo que ya está enfocado dentro de su zona: el efecto
+  corre al hidratar, y quien entró pudo haber empezado a escribir antes en el campo (`ZonaDelHilo`).
 - Una barra pegada abajo que aparece con la primera tecla (`sticky bottom-0`) tapa el campo donde se escribe si estaba en el borde de la pantalla: al
   aparecer, desplaza lo justo para dejarlo a la vista (`BarraDeCambiosSinGuardar`).
 - Un submenú de un menú (`DropdownMenuSubTrigger`) que se abre al pasar el puntero se vuelve a cerrar con el clic que le sigue: ponle `openOnHover={false}` y que lo abran el clic, el toque o el teclado.
@@ -325,6 +331,8 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - En un DOM grande busca por texto, no por rol (con un CPU pasa los 5 s), y llega al tope con pocas filas; un test que corre un script entero lleva su tope con el motivo.
 - Mockea `server-only` en el test de un `client.ts` que reexporta una Server Action: la arrastra transitivamente.
 - Prueba un registro por área con el área simulada, nunca con el archivo real: la prueba cae en cuanto alguien registra algo.
+- Un componente que empieza a usar `useRouter()` o un hook de nuqs rompe los tests de todo lo que lo dibuja («invariant expected app router to be mounted»,
+  «nuqs requires an adapter»): esos tests montan con `withNuqsTestingAdapter()` y mockean `next/navigation`; lo que la URL escribe llega tarde (`waitFor`).
 
 ## CI, entorno y herramientas
 
@@ -333,11 +341,15 @@ semilla, en `(semilla)`: al integrarse, el orquestador las sube solas al kit (`d
 - Lee pronto el log de una corrida roja: `gh run view --log-failed` sale vacío al rato y la causa queda sin verificar.
 - `supabase db lint` cambia de formato si detecta un agente (`AI_AGENT`, `CLAUDECODE`): lee con `leerDbLint()` aceptando las dos formas y, para reproducir el CI, quita esas variables.
 - Corre Splinter con los schemas de `[api]` (`pgrst.db_schemas`): sin ellos sólo revisa `public` y no ve los avisos de `web`.
+- Un job que levanta la pila de Supabase la levanta con `./.github/acciones/pila`, nunca con `supabase start` suelto: reserva los puertos efímeros y, si aun así «address already in use», muestra quién tiene el puerto (`ss`), baja la pila y reintenta una vez (otro error cae a la primera). Un «Base» o un e2e rojo con ese texto en `supabase start` no es del código: mira ese diagnóstico antes de tocar nada.
 - El lint con tipos (`projectService`) del repo entero roza los 4 GB del heap de Node que da el runner: `pnpm lint` y `lint:fix` van con
   `NODE_OPTIONS=--max-old-space-size=8192`. Sin eso, el PR que suma archivos cae por `heap out of memory` (código 134) aunque el lint
   no tenga nada que decir.
 - Excluye del typecheck y del lint toda carpeta ignorada por git que el orquestador enlaza en el worktree (la copia de V1 en `docs/referencias/cotizador-actual`), y también del recorrido de `scripts/enlaces-internos.mjs`: `tsconfig` incluye `**/*.ts` y el mapa sigue el enlace.
 - Si `next build` cae con «Type '/x' is not assignable to RouteImpl», corre `pnpm typecheck` (hace `next typegen`): no es del código.
+- El permiso de reintentar tras el `SecurityFatalError` de `next build` vence 5 minutos después de que _empezó_ el build que cayó
+  (`.next-e2e/cache/next-agentic-upgrade-retries/`): con un build más largo, el reintento de `scripts/compilar-e2e.sh` cae igual; vuelve a correrlo
+  antes de que pasen 5 minutos desde que empezó ese segundo intento.
 - No nombres `<Confirmar>` con sus signos en un comentario: `scripts/guardas/confirmar-con-url.test.ts` busca el texto crudo (comentarios incluidos) y pide registrar un diálogo que no existe; escribe el nombre sin `<…>`.
 - Usa `set -o pipefail` en los arneses: el código de salida de una tubería es el del último comando y una mutación «cae» o «pasa» en falso.
 - Antes de culpar al código por e2e que caen, mira que la base del carril tenga las migraciones (`pnpm db:reset` tras traer main; `supabase_migrations.schema_migrations`): dos worktrees con la misma letra en `.env.carril` comparten la pila y se pisan; `bash scripts/worktree/preparar.sh <letra libre>` pasa el worktree a otra.

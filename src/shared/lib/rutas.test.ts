@@ -276,6 +276,7 @@ describe('Catálogos', () => {
     expect([
       RUTAS.coloresDeCotizacion,
       RUTAS.nivelesDeCotizacion,
+      RUTAS.quienCreaYQuienVe,
       RUTAS.vigenciaDeCotizacion,
       RUTAS.puertosDeLogistica,
       RUTAS.navierasDeLogistica,
@@ -285,6 +286,7 @@ describe('Catálogos', () => {
     ]).toEqual([
       '/configuracion/catalogos/colores',
       '/configuracion/catalogos/niveles',
+      '/configuracion/catalogos/quien-crea-y-quien-ve',
       '/configuracion/catalogos/vigencia',
       '/configuracion/catalogos/puertos',
       '/configuracion/catalogos/navieras',

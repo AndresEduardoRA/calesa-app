@@ -22,5 +22,6 @@ export function tarjetaDeEsteVehiculo(
     vencida: fila.vencida,
     cliente: null,
     leadId: null,
+    privada: fila.privada,
   }
 }

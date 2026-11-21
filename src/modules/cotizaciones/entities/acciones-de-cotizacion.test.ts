@@ -15,6 +15,8 @@ const DE_LA_LISTA: readonly ClaveDeAccionDeCotizacion[] = [
   'compartir',
   'aprobar',
   'final',
+  'hacer-privada',
+  'hacer-publica',
   'favorita',
   'reportar',
   'invalidar',
@@ -49,11 +51,11 @@ describe('accionesDeCotizacion', () => {
     ).toEqual([['aprobar']])
   })
 
-  it('el «⋯» de la lista no cambia: compartir, aprobar y final, favorita y reportar, moderar y la papelera', () => {
+  it('el «⋯» de la lista: compartir, aprobar y final, la marca privada, favorita y reportar, moderar y la papelera', () => {
     expect(accionesDeCotizacion(deLaLista)).toEqual([
       ['compartir'],
       ['aprobar', 'final'],
-      ['favorita', 'reportar'],
+      ['hacer-privada', 'hacer-publica', 'favorita', 'reportar'],
       ['invalidar', 'descartar', 'reactivar'],
       ['papelera'],
     ])
@@ -71,6 +73,8 @@ describe('accionesDeCotizacion', () => {
       'Marcar final…',
       'Emitir comprobante…',
       'Cotizar encima',
+      'Hacer privada',
+      'Hacer pública',
       'Favorita',
       'Reportar…',
       'Invalidar…',

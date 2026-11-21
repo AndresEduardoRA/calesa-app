@@ -33,6 +33,7 @@ const fila = (i: number, extra: Record<string, unknown> = {}) => ({
   vence_el: '2026-11-27',
   aprobada: false,
   fijada: false,
+  privada: false,
   ...extra,
 })
 

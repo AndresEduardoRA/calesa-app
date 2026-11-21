@@ -46,6 +46,8 @@ const esquemaDelPendiente = z.object({
   // El título (T307): uno de antes no lo traía y se reenvía como salió (automático).
   titulo: z.string().nullable().default(null),
   tituloManual: z.boolean().default(false),
+  // La marca de privada: uno de antes no la traía y se reenvía pública, como salió.
+  privada: z.boolean().optional(),
 })
 
 export const serializarPendiente = (pedido: PedidoDeGuardado): string => JSON.stringify(pedido)

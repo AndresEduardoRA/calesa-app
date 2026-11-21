@@ -794,6 +794,7 @@ export type Database = {
           numero: number
           origen_id: string
           plantilla_id: string | null
+          privada: boolean
           reportes_count: number
           tarjeta_retoques: Json | null
           tipos_cambio: NonNullable<Json>
@@ -829,6 +830,7 @@ export type Database = {
           numero?: never
           origen_id: string
           plantilla_id?: string | null
+          privada?: boolean
           reportes_count?: number
           tarjeta_retoques?: Json | null
           tipos_cambio: NonNullable<Json>
@@ -863,6 +865,7 @@ export type Database = {
           numero?: never
           origen_id?: string
           plantilla_id?: string | null
+          privada?: boolean
           reportes_count?: number
           tarjeta_retoques?: Json | null
           tipos_cambio?: NonNullable<Json>
@@ -10273,7 +10276,11 @@ export type Database = {
       }
       cotizacion_adjunto_quitar: { Args: { p_adjunto: string }; Returns: Json }
       cotizacion_aprobar: {
-        Args: { p_actualizado_en_esperado: string; p_cotizacion: string }
+        Args: {
+          p_actualizado_en_esperado: string
+          p_cotizacion: string
+          p_hacerla_publica?: boolean
+        }
         Returns: Json
       }
       cotizacion_comentar: {
@@ -10317,6 +10324,7 @@ export type Database = {
           p_lead: string
           p_modo_tc?: string
           p_origen: string
+          p_privada?: boolean
           p_titulo?: string
           p_titulo_manual?: boolean
           p_vehiculo?: string
@@ -10334,6 +10342,7 @@ export type Database = {
           p_lead: string
           p_modo_tc?: string
           p_origen: string
+          p_privada?: boolean
           p_titulo?: string
           p_titulo_manual?: boolean
           p_vehiculo?: string
@@ -10410,6 +10419,10 @@ export type Database = {
         }
         Returns: Json
       }
+      cotizacion_privada_cambiar: {
+        Args: { p_actualizado_en_esperado: string; p_cotizacion: string; p_privada: boolean }
+        Returns: Json
+      }
       cotizacion_puede_adjuntar: { Args: { p_cot: string }; Returns: boolean }
       cotizacion_reportar: { Args: { p_cotizacion: string; p_motivo: string }; Returns: Json }
       cotizacion_reporte_retirar: { Args: { p_cotizacion: string }; Returns: Json }
@@ -10460,6 +10473,7 @@ export type Database = {
           moneda_mostrar: string
           numero: number
           origen_id: string
+          privada: boolean
           titulo: string
           total_base: number
           vehiculo_id: string
@@ -10483,6 +10497,7 @@ export type Database = {
           numero: number
           origen: string
           origen_id: string
+          privada: boolean
           titulo: string
           total: number
           vence_el: string
@@ -10511,6 +10526,7 @@ export type Database = {
           moneda_mostrar: string
           numero: number
           origen_id: string
+          privada: boolean
           titulo: string
           total_base: number
           vehiculo_id: string
@@ -10542,6 +10558,7 @@ export type Database = {
           orden_en: string
           orden_id: string
           origen_id: string
+          privada: boolean
           tipo: string
           titulo: string
           total_base: number

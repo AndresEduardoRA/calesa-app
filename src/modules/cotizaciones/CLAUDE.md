@@ -100,6 +100,14 @@ El dominio (nodos, motor, reglas, niveles, cómo se guarda) está en `docs/COTIZ
   encima, `cotizar-encima-en-par.ts` (`encimaEnParDe()`). La tarjeta de la vista previa suma la de la hermana (`hermana` de `PropsDeLaVistaPrevia`,
   `TarjetaDeLaHermana`), el PDF una página por hermana (`hermanaDelPdf()`) y «Compartir» sus `versiones` y las dos imágenes de la tarjeta apiladas (`apilarImagenes()`). Una
   hermana abierta sola no cambia el vehículo (`cambioDeVehiculo({ hermanaSola })`).
+- **La cotización privada** (glosario: «Cotización privada»; `docs/COTIZADOR.md` › «Cotizaciones privadas»): quién la ve lo decide la base; la de otra persona sin
+  `cotizaciones.privadas.ver` del origen no existe para ninguna lectura. La pantalla sólo ofrece (`entities/privada.ts`, del núcleo, con los textos): el interruptor
+  «Privada» de la hoja nueva y en par (`useMarcaDeLaNueva()` de `features/privada/`, en el resumen sobre «Guardar»; el valor vive en `?privada=si`, sobrevive a que la
+  hoja se vuelva a montar y se borra al guardar; el pedido lleva `privada` sólo encendido, `p_privada`); «Hacer privada» / «Hacer pública» en el «⋯» de la guardada
+  (`<PrivadaDelMenu>`, por `encima`) y del listado (`cambiarLaPrivada()` de `pantallas/listado.ts`) sólo a quien la creó (`ofertaDePrivada()`: apagada con su motivo en
+  una final o la aprobada; en la guardada, si es la aprobada lo anota el área `aprobada` en `useAprobadaAnotada()`, y sin anotación decide la base), con la action `cambiarPrivadaDeLaCotizacion` (`cotizacion_privada_cambiar`, con la versión; al entrar, `router.refresh()`); y la insignia
+  «Privada» con candado (`<InsigniaPrivada>`: tabla, tarjeta, resumen y cabecera de la guardada). Aprobarla (área `aprobada`) o marcarla final (área `final`) la hace
+  pública: las dos lo dicen antes.
 - **`/cotizaciones/comparar?ids=a,b[,c]&returnTo=`** (pide sesión; `cotizaciones.ver` de cada una lo decide la base): «Comparar cotizaciones», del área
   `aprobada` (`areas/aprobada/CLAUDE.md` › «Comparar cotizaciones»; `pantallas/aprobada-comparar.ts` y `aprobada-esqueleto-de-comparar.ts`). Lo guardado sin
   recálculo. El enlace (`rutaDeComparar`) y la lectura de `ids` (`idsParaComparar`: 2 o 3 guids distintos, en minúsculas, en el orden de la URL) son del
@@ -294,7 +302,7 @@ por `pantallas/<área>-<pantalla>.ts`. Un hueco vacío es un objeto sin componen
   (`features/listado/components/fichas/`) dibuja `TarjetasDeLaFicha` (estados + tarjetas, `TarjetasDeLaFichaDiferida` para el hueco del vehículo) y `TarjetasDelLead` (al acercarse; `useTarjetasDelLead()` y
   `leerTarjetasDelLead()` de `infra/listado/tarjetas-del-lead.client.ts`: `cotizaciones_listado(p_lead)`, 10 + 1 por `cotizaciones_lead_creado_idx`, y en paralelo autores, modos y aprobadas de esas 10; monta
   `DialogoDeCompartirDeLaFila` por `dialogos` sólo con el resumen cerrado); `aprobada` (`features/aprobada/components/fichas/`) lleva la isla del vehículo (`cotizaciones_de_este_vehiculo()` con la aprobada fijada
-  primero, `useDeEsteVehiculo`, `tarjetaDeEsteVehiculo()`, la casilla, «Aprobar esta» y «Comparar»). Sin «⋯» en la tarjeta: el resumen lo trae.
+  primero, `useDeEsteVehiculo`, `tarjetaDeEsteVehiculo()`, la casilla, «Aprobar esta» —una privada abre su pregunta con `desde=ficha`— y «Comparar»). Las dos lecturas traen `privada`: la tarjeta lleva la insignia. Sin «⋯» en la tarjeta: el resumen lo trae.
 - **El listado** (`HuecosDelListado`): `Junto`, en el grupo «Más» de «Vista y opciones» (el vacío ofrece sólo «Nueva»), y `hayJunto(permisos)`: la página pasa
   `Junto` sólo si quien mira lo vería (si no, «Más» quedaría vacío); lo llena `pantallas/papelera-listado.ts`.
 - **La lista** (`HuecosDeLaLista`, `features/listado/components/tipos.ts`): `Imagen` (la imagen de cada tarjeta, en frío: `pantallas/tarjeta-imagen.ts`) y

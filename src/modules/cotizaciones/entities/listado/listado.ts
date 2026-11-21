@@ -47,6 +47,8 @@ export type FilaDelListado = {
   // La fecha (AAAA-MM-DD) hasta la que vale, por día en la zona de la empresa; `vencida` si ya pasó.
   venceEl: string
   vencida: boolean
+  // La marca de quien la creó: sólo la ven ella y quien ve las privadas de su origen (la base ya filtró las demás).
+  privada: boolean
 }
 
 // Una página del listado: con búsqueda, `acotada` dice que alguna fuente (clientes, vehículos o personas) tenía más coincidencias que el tope y quedaron fuera las más viejas.

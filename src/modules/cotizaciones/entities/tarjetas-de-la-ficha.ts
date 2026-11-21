@@ -19,6 +19,8 @@ export type DatosDeLaTarjeta = {
   vencida: boolean
   cliente: string | null
   leadId: string | null
+  // La insignia «Privada»: sólo llega la ajena a quien tiene `cotizaciones.privadas.ver` del origen (lo decide la base).
+  privada: boolean
 }
 
 // Las que se dibujan: las primeras `TARJETAS_EN_LA_FICHA`, cada cotización una vez, y si había más (otra página o una de más que el tope: la aprobada fijada suma una a las diez).

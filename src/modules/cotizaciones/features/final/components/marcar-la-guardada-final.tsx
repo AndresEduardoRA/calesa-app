@@ -17,6 +17,7 @@ export function MarcarLaGuardadaFinal({
       id={cotizacion.id}
       numero={cotizacion.numero}
       motivo={motivoParaNoMarcar(cotizacion, puedeGuardar)}
+      privada={cotizacion.privada === true}
     />
   )
 }

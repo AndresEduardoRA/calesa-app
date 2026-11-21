@@ -23,7 +23,7 @@
 --     cartera: 0 o 1) y el tiempo a lo sumo `greatest(1,5 × t, t + 3 ms)`; y las llamadas, iguales;
 --   - ningún recorrido entero de `cotizaciones`;
 --   - los índices que lee cada caso, por nombre (uno que no existe es una falla), y ningún otro índice de `cotizaciones` con bloques;
---   - las llamadas: `mis_leads()` una vez si la ruta de la cartera está activa y ninguna si no; `origenes_con_alcance()` a lo sumo 2 + 2 por ruta activa; `en_cartera()` a lo sumo
+--   - las llamadas: `mis_leads()` una vez si la ruta de la cartera está activa y ninguna si no; `origenes_con_alcance()` a lo sumo 2 + 3 por ruta activa (los tres InitPlan de la policy: ver «todos», ver «propios» y las privadas); `en_cartera()` a lo sumo
 --     una vez por fila leída de la cartera o del vehículo (su máximo por caso); ninguna a `alcance_de()` ni a `_bajas_en_curso()`.
 -- La guarda (queda): «lo de hoy», la consulta que leería el listado por PostgREST (`order by creado_en desc, id desc limit n + 1` con la RLS), con los mismos datos, rompe los
 -- topes de Ana y de la «chica» (4-14: recorre `cotizaciones_listado_idx` descartando lo ajeno). Si no los rompe, «la guarda no muerde».
@@ -379,7 +379,7 @@ begin
       if coalesce((r.llamadas ->> 'mis_leads')::int, 0) <> v_mis then
         v_fallas := v_fallas || format(E'\n  %s · %s · %s llama a mis_leads %s veces: %s', r.fase, r.caso, r.pagina, coalesce(r.llamadas ->> 'mis_leads', '0'), r.llamadas);
       end if;
-      if coalesce((r.llamadas ->> 'origenes_con_alcance')::int, 0) > 2 + 2 * r.rutas then
+      if coalesce((r.llamadas ->> 'origenes_con_alcance')::int, 0) > 2 + 3 * r.rutas then
         v_fallas := v_fallas || format(E'\n  %s · %s · %s calcula los orígenes de más (%s rutas): %s', r.fase, r.caso, r.pagina, r.rutas, r.llamadas);
       end if;
       if coalesce((r.llamadas ->> 'en_cartera')::int, 0) > r.max_en_cartera then

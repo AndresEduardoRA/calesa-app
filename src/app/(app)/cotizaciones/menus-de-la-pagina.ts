@@ -3,6 +3,7 @@ import {
   leerMarcasDeLaPagina,
   motivoParaNoAprobar,
   motivoParaNoMarcar,
+  ofertaDePrivada,
   puedeAprobar,
   puedeEnviarLaCotizacion,
   puedeGuardarDesdeElListado,
@@ -25,7 +26,7 @@ type Quien = { permisos: Permisos; usuarioId: string }
 export function ofertasDeLaFila(
   fila: Pick<
     CotizacionDelListado,
-    'clase' | 'origenId' | 'creadoPor' | 'vehiculoId' | 'leadId' | 'aprobada'
+    'clase' | 'origenId' | 'creadoPor' | 'vehiculoId' | 'leadId' | 'aprobada' | 'privada'
   >,
   marcas: Pick<MarcasDeUnaFila, 'estado' | 'reportesCount' | 'miMotivo'>,
   { permisos, usuarioId }: Quien,
@@ -39,6 +40,17 @@ export function ofertasDeLaFila(
   }
   if (puedeMarcarLaFinal(fila, permisos)) {
     ofertas['final'] = { motivo: motivoParaNoMarcar(fila, puedeGuardar) }
+  }
+  // Sólo quien la creó la hace privada o pública (la base lo exige): una final o la aprobada, apagada con su motivo.
+  const privada = ofertaDePrivada({
+    creadoPor: fila.creadoPor,
+    usuarioId,
+    clase: fila.clase,
+    aprobada: fila.aprobada,
+    privada: fila.privada,
+  })
+  if (privada !== null) {
+    ofertas[privada.clave] = { motivo: privada.motivo }
   }
   ofertas['favorita'] = { motivo: null }
   ofertas['reportar'] = { motivo: null }
@@ -71,6 +83,7 @@ export async function menusDeLaPagina(
         actualizadoEn: marcas.actualizadoEn,
         favorita: marcas.favorita,
         miMotivo: marcas.miMotivo,
+        privada: fila.privada,
         ofertas: ofertasDeLaFila(fila, marcas, quien),
       }
     }

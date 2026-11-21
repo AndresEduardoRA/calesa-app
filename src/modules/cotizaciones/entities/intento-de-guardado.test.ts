@@ -90,6 +90,12 @@ describe('el pendiente en la pestaña', () => {
     const conModo = { ...pedido('b', 2), modoTc: 'unificado', verTotalBs: true }
     expect(leerPendiente(serializarPendiente(conModo))).toEqual(conModo)
   })
+
+  it('la marca de privada va y vuelve; uno de antes, sin ella, se reenvía sin la marca (pública)', () => {
+    const privada = { ...pedido('c', 3), privada: true }
+    expect(leerPendiente(serializarPendiente(privada))).toEqual(privada)
+    expect(leerPendiente(serializarPendiente(pedido('d', 4)))?.privada).toBeUndefined()
+  })
 })
 
 describe('el pendiente de una edición (4.15-3, C9)', () => {

@@ -150,5 +150,8 @@ export { calculoDeLoGuardado } from '../../entities/calculo-de-la-tarjeta'
 export { referenciaPlana } from '../../entities/referencia-de-la-tarjeta'
 export type { ReferenciaDeLaTarjeta } from '../../entities/referencia-de-la-tarjeta'
 
+// La cotización privada (glosario: «Cotización privada»): qué ofrece el «⋯» del listado sobre la marca (la misma regla que la guardada).
+export { ofertaDePrivada } from '../../entities/privada'
+
 // Una fórmula del origen (id, nombre, si es la activa y su versión): la leen las rutas de Configuración y la pasan a la planilla, la hoja y la tarjeta.
 export type { FormulaDelOrigen } from '../../entities/formula-del-origen'

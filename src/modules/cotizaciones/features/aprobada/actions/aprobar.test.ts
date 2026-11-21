@@ -124,3 +124,30 @@ describe('aprobarCotizacion', () => {
     expect(h.llamadas).toEqual([])
   })
 })
+
+describe('aprobarCotizacion › una privada', () => {
+  it('una privada: sin hacerla pública vuelve con la causa «privada»; con ella, manda p_hacerla_publica', async () => {
+    h.respuesta = {
+      data: null,
+      error: { code: '22023', message: 'Al aprobarla deja de ser privada.', hint: 'privada' },
+    }
+    const sin = await aprobarCotizacion({ id: COTIZACION, actualizadoEn: VERSION })
+    expect(sin.data).toEqual({
+      ok: false,
+      error: { codigo: 'regla', mensaje: 'Al aprobarla deja de ser privada.', causa: 'privada' },
+    })
+    h.respuesta = {
+      data: { cotizacion: cotizacion(COTIZACION, 7), anterior: null },
+      error: null,
+    }
+    await aprobarCotizacion({ id: COTIZACION, actualizadoEn: VERSION, hacerlaPublica: true })
+    expect(h.llamadas.at(-1)).toEqual({
+      nombre: 'cotizacion_aprobar',
+      args: {
+        p_cotizacion: COTIZACION,
+        p_actualizado_en_esperado: VERSION,
+        p_hacerla_publica: true,
+      },
+    })
+  })
+})

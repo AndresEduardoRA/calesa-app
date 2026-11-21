@@ -7,6 +7,7 @@ import { Monto } from '@/shared/ui/monto'
 import { useRegional } from '@/shared/ui/regional'
 import { ETIQUETA_DE_APROBADA, ETIQUETA_DE_CLASE } from '../../../entities/historial-del-vehiculo'
 import { tituloDeLaCotizacion } from '../../../entities/titulo-de-la-cotizacion'
+import { InsigniaPrivada } from '../../privada/components/insignia-privada'
 import { SIN_NOMBRE, type FilaDeCotizacion } from './tipos'
 import { Vigencia } from './vigencia'
 
@@ -66,6 +67,7 @@ export function CabeceraDelResumen({ cotizacion, miniatura }: Props) {
           )}
           <Badge variant="secondary">{ETIQUETA_DE_CLASE[cotizacion.clase]}</Badge>
           {cotizacion.aprobada ? <Badge variant="secondary">{ETIQUETA_DE_APROBADA}</Badge> : null}
+          {cotizacion.privada ? <InsigniaPrivada /> : null}
           {cotizacion.vencida ? (
             <Vigencia venceEl={cotizacion.venceEl} vencida={cotizacion.vencida} />
           ) : null}

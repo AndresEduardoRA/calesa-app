@@ -32,4 +32,5 @@ export const esquemaDeGuardado = z.object({
   conLaAbierta: z.boolean(),
   titulo: esquemaDelTitulo,
   tituloManual: z.boolean(),
+  privada: z.boolean().optional(),
 })

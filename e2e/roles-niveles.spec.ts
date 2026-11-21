@@ -248,7 +248,7 @@ test('con el tope de niveles (18 filas más) la matriz no ensancha la página y 
   const total = await filas.count()
   const deNivel = await filasDeNivel(page).count()
   expect(deNivel).toBe(18)
-  expect(total).toBeGreaterThanOrEqual(72 + 18)
+  expect(total).toBeGreaterThanOrEqual(80 + 18)
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '200%'
   })

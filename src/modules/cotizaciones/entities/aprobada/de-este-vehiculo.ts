@@ -33,6 +33,8 @@ export type FilaDeEsteVehiculo = {
   // Hasta cuándo vale (la fecha, en la zona de la empresa).
   venceEl: string
   aprobada: boolean
+  // Privada (la insignia de la tarjeta). Aprobarla la hace pública: la pregunta la abre la respuesta de la base (`alSerPrivada`), con la marca al día.
+  privada: boolean
 }
 
 export type PaginaDeEsteVehiculo = {
@@ -62,6 +64,7 @@ const esquemaDeLaFila = z.object({
   vence_el: z.string(),
   aprobada: z.boolean(),
   fijada: z.boolean(),
+  privada: z.boolean(),
 })
 
 // Una fila que no cumple hace de la lectura un error (`null`), no una fila: el cursor no sabría por dónde seguir.
@@ -89,6 +92,7 @@ export function paginaDeEsteVehiculoDesde(filas: unknown): PaginaDeEsteVehiculo 
       vencida: fila.vencida,
       venceEl: fila.vence_el,
       aprobada: fila.aprobada,
+      privada: fila.privada,
     }
     if (fila.fijada) {
       pagina.fijada = leida

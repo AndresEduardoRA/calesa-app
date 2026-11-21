@@ -130,6 +130,7 @@ const fila = (numero: number) => ({
   creadoEn: '2026-11-14T10:00:00.000001+00:00',
   venceEl: '2026-11-21',
   vencida: false,
+  privada: false,
   cliente: null,
   vehiculo: null,
   autor: 'Ana',

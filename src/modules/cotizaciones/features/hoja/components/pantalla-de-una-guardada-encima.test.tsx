@@ -22,6 +22,7 @@ vi.mock('next-safe-action/hooks', () => ({ useAction: () => ({ executeAsync: eje
 vi.mock('../actions/guardar-cotizacion', () => ({ guardarCotizacion: {} }))
 vi.mock('../../encima/actions/cotizar-encima', () => ({ cotizarEncima: {} }))
 vi.mock('../../encima/actions/cotizar-encima-en-par', () => ({ cotizarEncimaEnPar: {} }))
+vi.mock('../../privada/actions/cambiar-privada', () => ({ cambiarPrivadaDeLaCotizacion: {} }))
 
 // «Cotizar encima» en la hoja de una guardada (4.15-3b, C8 y C9, P1 a): el aviso de otra versión lleva el botón, y con cambios sin guardar queda apagado.
 const PERSONA = '3b7a2f0e-1c2d-4e5f-8a9b-0c1d2e3f4a5b'

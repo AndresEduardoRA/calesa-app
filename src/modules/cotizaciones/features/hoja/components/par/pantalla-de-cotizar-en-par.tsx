@@ -14,6 +14,7 @@ import type { AperturaDeHoja } from '../../hooks/use-hoja'
 import { useGuardadoEnPar } from '../../hooks/use-guardado-en-par'
 import { useSoltarLoAbierto } from '../../hooks/urls-de-la-hoja'
 import { useTituloDeLaCotizacion } from '../../hooks/use-titulo-de-la-cotizacion'
+import { useMarcaDeLaNueva } from '../../../privada/hooks/use-marca-de-la-nueva'
 import type { PasosDeLaPagina } from '../pasos-de-la-hoja'
 import { HermanasGuardadas } from './hermanas-guardadas'
 import { HojaEnPar } from './hoja-en-par'
@@ -111,6 +112,7 @@ export function PantallaDeCotizarEnPar({ leadId, personaId, seEligen, ...props }
     setClaveVista(clave)
     guardado.olvidarAviso()
   }
+  const privada = useMarcaDeLaNueva(guardado.ocupado)
   const guardada = guardado.estado.tipo === 'guardada' ? guardado.estado : null
   if (guardada) {
     return (
@@ -140,6 +142,7 @@ export function PantallaDeCotizarEnPar({ leadId, personaId, seEligen, ...props }
       seEligen={elegibles}
       borrador={{ clave: borrador, alDescartar: () => setVuelta((v) => v + 1) }}
       guardado={guardado}
+      privada={privada}
       {...(hoja.pasos ? { pasos: hoja.pasos } : {})}
     />
   )

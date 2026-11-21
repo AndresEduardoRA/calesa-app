@@ -12,6 +12,7 @@ import type {
 import { useGuardado } from '../hooks/use-guardado'
 import { useSoltarLoAbierto } from '../hooks/urls-de-la-hoja'
 import { useTituloDeLaCotizacion } from '../hooks/use-titulo-de-la-cotizacion'
+import { useMarcaDeLaNueva } from '../../privada/hooks/use-marca-de-la-nueva'
 import { CotizacionGuardada } from './cotizacion-guardada'
 import { HojaDeCotizar } from './hoja-de-cotizar'
 import type { PasosDeLaPagina } from './pasos-de-la-hoja'
@@ -94,6 +95,7 @@ export function PantallaDeCotizar({ leadId, personaId, seEligen, ...props }: Pro
     setClaveVista(clave)
     guardado.olvidarAviso()
   }
+  const privada = useMarcaDeLaNueva(guardado.ocupado)
   if (guardado.estado.tipo === 'guardada') {
     return (
       <CotizacionGuardada
@@ -115,6 +117,7 @@ export function PantallaDeCotizar({ leadId, personaId, seEligen, ...props }: Pro
       seEligen={elegibles}
       borrador={{ clave: borrador, alDescartar: otraVuelta }}
       guardado={guardado}
+      privada={privada}
     />
   )
 }

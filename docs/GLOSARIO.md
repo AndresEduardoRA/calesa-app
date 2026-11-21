@@ -120,7 +120,7 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   con su encabezado, «Para cotizar y mover» y seis **pestañas**: Datos, Campos, Categorías, Flujo, Fórmulas (la lista de las fórmulas del origen;
   cada una se edita en `/formulas/<fórmula>` con sus pestañas Planilla, Hoja y Tarjeta) y Tablas. Cada pestaña pide su permiso en ese origen; la que no se abre va apagada con su motivo.
 - **Catálogos (Configuración)** — `SECCION_DE_CATALOGOS`, `/configuracion/catalogos/<clave>`: lo que es de toda la empresa y no de un origen, en
-  tres tramos: «Cotizaciones» (Colores, Niveles, Vigencia), «Logística» (Puertos, Navieras, Categorías de gasto, Tipos de documento) y las Tablas
+  tres tramos: «Cotizaciones» (Colores, Niveles, Quién crea y quién ve, Vigencia), «Logística» (Puertos, Navieras, Categorías de gasto, Tipos de documento) y las Tablas
   compartidas. No es el catálogo de repuestos ni el de apibara.
 - **Flujo de repuestos** — `/configuracion/repuestos/flujo` (`FLUJO_DE_REPUESTOS_EN_CONFIGURACION`): el flujo de los repuestos, que se configura en
   la sección Repuestos con el mismo editor que la pestaña Flujo de un origen.
@@ -412,6 +412,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Cotización aprobada** — `cotizaciones_aprobadas`, `cotizacion_aprobar()`, `cotizaciones.aprobar` (por origen): la elegida de un vehículo, una sola por
   vehículo (la clave primaria es el vehículo). Nace aprobada la primera activa; si la aprobada se invalida o va a la papelera pasa a la más antigua que sigue
   activa. No es la **Final** (marcar una no aprueba ni al revés). Se ve como la insignia «Aprobada» y, en `/vehiculos`, como el **Costo estimado**.
+- **Cotización privada** — `cotizaciones.privada`, `cotizacion_privada_cambiar()`, `cotizaciones.privadas.ver` (por origen; `entities/privada.ts`): la que ven sólo
+  quien la creó y quien tiene `cotizaciones.privadas.ver` de su origen; para el resto no existe. La marca la pone y la quita sólo quien la creó (el
+  interruptor «Privada» al guardar, o «Hacer privada» / «Hacer pública» en su «⋯»); aprobarla o marcarla final la hace pública. Se ve como la insignia
+  «Privada» con candado. No: «oculta», «borrador», «personal».
 - **Costo estimado** — `ROTULO_DEL_COSTO_ESTIMADO`, `costoEstimadoDe()` (`vehiculos/entities/cotizacion-aprobada-de-la-fila.ts`), `cotizaciones_aprobadas_de_vehiculos()`:
   la cotización aprobada de un vehículo en `/vehiculos` (columna de la tabla y fila de la tarjeta de la lista): su primer resultado con su moneda y el modo de tipo
   de cambio de la cotización («US$27.999 · Unificado»), en un botón que abre «Compartir la cotización» de la aprobada sin salir de la lista. No son los campos de apibara «Costo estimado desde / hasta / mediano (USD)».
@@ -743,6 +747,10 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   entre las filas de `cotizacion_tabla` en el panel del vehículo (`datosParaElegirDe()`, `guardarDatoDelVehiculo`).
 - **Nivel de acceso** — `cotizaciones_niveles` / permisos `cotizaciones.nivel.<clave>.ver|editar` (`permisos.nivel_clave`) /
   `nivel_crear|renombrar|retirar|restaurar|eliminar()`: quién ve y edita una celda o sección.
+- **Quién crea y quién ve** — `entities/cuadro-de-cotizaciones.ts` de `equipo` (`celdaDelCuadro()`, `cambiosDelCuadro()`),
+  `/configuracion/catalogos/quien-crea-y-quien-ve`: el cuadro rol × lugar («Todos los orígenes» o un origen) con «Crea» (`cotizaciones.crear`) y «Ve»,
+  una escalera de cuatro escalones (`Ve`): «No ve», «Sólo las suyas» (`cotizaciones.ver` con «lo propio»), «Todas menos las privadas» (con «todo») y
+  «Todas, también las privadas» (además `cotizaciones.privadas.ver`). Escribe en la matriz de Roles; no es otro permiso. No: «visibilidad», «alcance».
 - **Retirar un nivel** — `nivel_retirar()` / `cotizaciones_niveles.retirado_en`: deja de ofrecerse.
 - **Restaurar un nivel** — `nivel_restaurar()`: deshace un retiro; no cambia clave, permisos ni concesiones.
 - **Motivo de uso (de un nivel)** — `_nivel_motivo_de_uso()` / `motivo_de_uso` de `niveles_con_uso()`: por qué un nivel no se elimina.

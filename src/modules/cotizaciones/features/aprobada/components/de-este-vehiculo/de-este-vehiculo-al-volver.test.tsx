@@ -1,4 +1,5 @@
 import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { withNuqsTestingAdapter } from 'nuqs/adapters/testing'
 import { Activity } from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Resultado } from '@/shared/lib/errores'
@@ -35,6 +36,7 @@ const fila = (i: number) => ({
   vencida: false,
   venceEl: '2026-11-27',
   aprobada: false,
+  privada: false,
 })
 
 beforeEach(() => {
@@ -49,7 +51,8 @@ describe('DeEsteVehiculo al volver a la pantalla', () => {
         <DeEsteVehiculo vehiculo={{ id: VEHICULO, titulo: 'Toyota Hilux' }} aprobarEn="todos" />
       </Activity>
     )
-    const { rerender } = render(bloque('visible'))
+    // La pregunta de aprobar una privada vive en la URL (nuqs).
+    const { rerender } = render(bloque('visible'), { wrapper: withNuqsTestingAdapter() })
     await waitFor(() => {
       expect(pedidos).toHaveLength(1)
     })
