@@ -12,6 +12,7 @@ import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { BLOQUEA, CON_DEPENDENCIAS, PASA } from './bloquear-peligrosos.casos'
+import { BLOQUEA_SECRETOS, PASA_SECRETOS } from './bloquear-secretos.casos'
 
 // `bloquear-peligrosos.sh` es el hook PreToolUse de Bash: lo irreversible, lo de afuera, las dependencias y saltarse el candado de
 // la base se rechazan siempre; una etiqueta nueva sí se empuja, y agregar con pnpm, sólo lo de la lista aprobada del repo.
@@ -111,6 +112,36 @@ describe('bloquear-peligrosos.sh', () => {
       expect(correr(c, { cwd: conBip }).estado, c).toBe(2)
     expect(correr('supabase db push --project-ref abc', { cwd: conBip }).estado).toBe(0)
     expect(correr('supabase db push', { cwd: enOtra }).estado).toBe(0)
+  })
+})
+
+// Ni la clave de la app del orquestador ni el token de GitHub se leen o se imprimen (bloquear-secretos.sh).
+describe('los secretos de GitHub', () => {
+  it.each(BLOQUEA_SECRETOS)('bloquea: %s', (comando) => {
+    const { estado, motivo } = correr(comando, { cwd: enOtra })
+    expect({ estado, motivo: /clave de la app|token de GitHub/.test(motivo) }).toEqual({
+      estado: 2,
+      motivo: true,
+    })
+  })
+
+  it.each(PASA_SECRETOS)('deja pasar: %s', (comando) => {
+    expect(correr(comando, { cwd: enOtra }).estado).toBe(0)
+  })
+
+  it('sin bloquear-secretos.sh al lado, el hook bloquea todo', () => {
+    const suelto = join(raiz, 'hook-sin-secretos')
+    mkdirSync(suelto)
+    copyFileSync(HOOK, join(suelto, 'bloquear-peligrosos.sh'))
+    copyFileSync(
+      resolve('.claude/hooks/bloquear-peligrosos-dependencias.sh'),
+      join(suelto, 'bloquear-peligrosos-dependencias.sh'),
+    )
+    const { estado, motivo } = correr('git status', {
+      hook: join(suelto, 'bloquear-peligrosos.sh'),
+    })
+    expect(estado).toBe(2)
+    expect(motivo).toContain('bloquear-secretos.sh')
   })
 })
 

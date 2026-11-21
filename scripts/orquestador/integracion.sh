@@ -60,7 +60,13 @@ encender_auto_merge() {
   local id=$1 pr=$2 sha=$3 salida
   est_set "$id" auto_encendido "$sha"
   est_set "$id" cola_sha "$sha"
+  local f
   if salida=$(ghr pr merge "$pr" --auto --squash 2>&1); then return 0; fi
+  # A la app le falta un permiso: se dice cuál (app.sh).
+  f=$(mktemp)
+  printf '%s' "$salida" >"$f"
+  explicar_sin_permiso "$f" pr merge "$pr" && salida=$SIN_PERMISO_TEXTO
+  rm -f "$f"
   log "$id: no pude encender el auto-merge del PR #$pr: $(head -c 300 <<<"$salida")"
   return 1
 }

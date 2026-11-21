@@ -30,8 +30,8 @@ kit_semanal() {
   [ "$(cat "$EST/.kit-semana" 2>/dev/null)" = "$semana" ] && return 0
   [ "$(date +%s)" -lt "$(cat "$EST/.kit-reintento" 2>/dev/null || echo 0)" ] && return 0
   salida=$(ghc api --paginate "repos/{owner}/{repo}/issues?labels=kit&state=open&per_page=100") || return 1
-  if jq -s -e --argjson ok "$CON_PERMISO" '[add[]? | select(has("pull_request") | not)
-      | select(.author_association as $a | $ok | index($a))] | length > 0' <<<"$salida" >/dev/null; then
+  if jq -s -e --argjson ok "$CON_PERMISO" --arg app "${APP_ID:-}" "$JQ_CON_PERMISO"'[add[]? | select(has("pull_request") | not)
+      | select(con_permiso($ok; $app))] | length > 0' <<<"$salida" >/dev/null; then
     echo "$semana" >"$EST/.kit-semana"
     return 0
   fi
@@ -122,9 +122,14 @@ avisar_al_kit() { # ID
   titulo=$(jq -r .titulo <<<"$j")
   printf '%s\n' "$titulo" >"$EST/$id/al-kit-titulo"
   jq -r .cuerpo <<<"$j" >"$EST/$id/al-kit-cuerpo.md"
-  # El token del dueño del kit; un kit de una organización no tiene sesión de gh (docs/LECCIONES.md): vale el de la máquina.
-  KIT_TOK=$(gh auth token --user "${kit%%/*}" 2>/dev/null) || KIT_TOK=""
-  [ -n "$KIT_TOK" ] || KIT_TOK=${GH_TOKEN:-$(gh auth token 2>/dev/null)}
+  # Como la app, su token (la misma instalación cubre el kit). Sin ella, el del dueño del kit; un kit de una organización no tiene
+  # sesión de gh (docs/LECCIONES.md): vale el de la máquina.
+  if [ "${ORQ_GH_TOKEN_APP:-0}" = 1 ]; then
+    KIT_TOK=$GH_TOKEN
+  else
+    KIT_TOK=$(gh auth token --user "${kit%%/*}" 2>/dev/null) || KIT_TOK=""
+    [ -n "$KIT_TOK" ] || KIT_TOK=${GH_TOKEN:-$(gh auth token 2>/dev/null)}
+  fi
   [ -n "$KIT_TOK" ] || { aviso_kit_fallo "$id" "sin sesión de gh de ${kit%%/*} (gh auth login)"; return 0; }
   url=$(ghk api -X POST "repos/$kit/issues" -f title="$titulo" -F body=@"$EST/$id/al-kit-cuerpo.md" -f 'labels[]=cola' --jq .html_url)
   rc=$?
@@ -151,7 +156,11 @@ aviso_kit_fallo() { # ID motivo [final | el código de ghc: 1 GitHub falló, 2 e
   kit=$(kit_del_kit)
   a_mano="revisa estado/$id/al-kit.md"
   if [ -s "$EST/$id/al-kit-cuerpo.md" ]; then
-    a_mano="GH_TOKEN=\$(gh auth token --user ${kit%%/*}) gh api -X POST repos/$kit/issues -f title='$(cat "$EST/$id/al-kit-titulo")'"
+    if [ "${ORQ_GH_TOKEN_APP:-0}" = 1 ]; then
+      a_mano="bash scripts/orquestador/como-app.sh gh api -X POST repos/$kit/issues -f title='$(cat "$EST/$id/al-kit-titulo")'"
+    else
+      a_mano="GH_TOKEN=\$(gh auth token --user ${kit%%/*}) gh api -X POST repos/$kit/issues -f title='$(cat "$EST/$id/al-kit-titulo")'"
+    fi
     a_mano="$a_mano -F body=@$EST/$id/al-kit-cuerpo.md -f 'labels[]=cola'"
   fi
   echo "A mano: $a_mano" >>"$EST/$id/aviso_kit.md"

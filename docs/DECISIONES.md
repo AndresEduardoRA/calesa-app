@@ -25,6 +25,9 @@ las trampas, en `docs/LECCIONES.md`.
   PR en verde lo rompe la combinación con lo de delante: cuenta como choque (`MAX_CHOQUES`), no como arreglo. La cola pide squash (por
   eso `HEAD^1` es la base) y un repo de una organización; sin ella el auto-merge integra sin probar combinado, y `main` en rojo frena lo
   nuevo hasta la urgente que lo arregla (`scripts/orquestador/main-en-tanda.sh`), que queda de red de seguridad.
+- **El orquestador escribe en GitHub como una GitHub App.** Ni un PAT ni una cuenta máquina: la app es gratis, no ocupa un asiento,
+  su token dura una hora, se ve como bot y sus PRs sí disparan los workflows (el `GITHUB_TOKEN` de Actions no). Sin la clave, la sesión
+  de gh de la persona. La app no va en ningún bypass de `main` (`scripts/orquestador/README.md` › «Como la app de GitHub»).
 - **Un e2e que cae en `main` y no es de la rama se espera, no se arregla ni se traba.** La sesión de arreglo termina en `RESULTADO: AJENO — <spec>:<línea> [<proyecto>] — <evidencia>`:
   el orquestador crea una sola urgente por `<spec>:<línea>` (`plantillas/e2e-roto-en-main.md`), la tarea que lo encontró la suma a su `depende` y sigue
   `esperando_ci` (sin estado nuevo, sin retener sus llaves de área, sin gastar `MAX_ARREGLOS`), y al integrarse la urgente se pone al día con main sin

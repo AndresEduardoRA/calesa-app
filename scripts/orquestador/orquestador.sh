@@ -72,6 +72,9 @@ TMP_TAREAS="${TMP_TAREAS:-${XDG_CACHE_HOME:-$HOME/.cache}/orquestador/$PROYECTO}
 # La cola en los issues: lo que habla con GitHub y el espejo.
 # shellcheck source=github.sh
 source "$ORQ/github.sh"
+# GitHub como la app del orquestador (token_gh): su token de instalación, o la sesión de gh de la persona.
+# shellcheck source=app.sh
+source "$ORQ/app.sh"
 # shellcheck source=cola-github.sh
 source "$ORQ/cola-github.sh"
 # shellcheck source=cola-entrada.sh
@@ -169,12 +172,6 @@ dueno_del_repo() { # la cuenta del manifiesto; sin manifiesto, la del remoto
   [ -n "$d" ] || d=$(git -C "$REPO" remote get-url origin | sed -nE 's#.*github\.com[:/]([^/]+)/.*#\1#p')
   echo "$d"
 }
-token_gh() { # la cuenta dueña del repo, aunque la activa sea otra (igual que publicar.sh)
-  [ -n "${GH_TOKEN:-}" ] && return 0
-  local d t
-  d=$(dueno_del_repo)
-  if [ -n "$d" ] && t=$(gh auth token --user "$d" 2>/dev/null) && [ -n "$t" ]; then export GH_TOKEN="$t"; fi
-}
 ghr() { (cd "$REPO" && gh "$@"); }
 
 pausado() { # la pausa manual de este proyecto, o la de la máquina por el límite del plan (maquina.sh)
@@ -249,6 +246,7 @@ bucle() {
   log "orquestador arriba · paralelo $PARALELO · turnos de la máquina $TURNOS · niveles rapido=$NIVEL_RAPIDO normal=$NIVEL_NORMAL capaz=$NIVEL_CAPAZ · $(ids | wc -w) tareas en la cola"
   ORQ_CARGADA=$(version_del_orquestador)
   while :; do
+    token_gh
     al_dia_y_relanzar
     avisar_turnos
     revisar_procesos
@@ -1023,7 +1021,8 @@ cmd_verificar() {
   fi
   echo "== GitHub"
   token_gh
-  if ghr api user --jq .login >/dev/null 2>&1; then echo "✓ gh con la cuenta $(ghr api user --jq .login)"; else echo "✗ gh sin sesión para $(dueno_del_repo) (gh auth login)"; ok=0; fi
+  if app_configurada; then verificar_app || ok=0
+  elif ghr api user --jq .login >/dev/null 2>&1; then echo "✓ gh con la cuenta $(ghr api user --jq .login)"; else echo "✗ gh sin sesión para $(dueno_del_repo) (gh auth login)"; ok=0; fi
   if [ "$(ghr api 'repos/{owner}/{repo}' --jq .allow_auto_merge 2>/dev/null)" = true ]; then echo "✓ auto-merge permitido en el repo"; else echo "✗ el repo no permite auto-merge"; ok=0; fi
   # No frena: sin la cola, el auto-merge integra como siempre (el kit decide si es opcional).
   if [ "$(cd "$REPO" && cola_activa)" = true ]; then echo "✓ main exige la cola de integración"

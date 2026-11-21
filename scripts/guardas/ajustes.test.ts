@@ -49,6 +49,10 @@ describe('.claude/settings.json › permisos', () => {
     expect(ajustes.permissions.deny.filter((r) => r.startsWith('Bash(pnpm up'))).toEqual([])
   })
 
+  it('no deja leer la clave de la app del orquestador', () => {
+    expect(ajustes.permissions.deny).toContain('Read(~/.config/orquestador/**)')
+  })
+
   it('sigue leyendo sin permiso los .env', () => {
     for (const env of ['.env', '.env.local', '.env.*.local']) {
       expect(ajustes.permissions.deny).toContain(`Read(${env})`)

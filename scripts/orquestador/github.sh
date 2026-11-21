@@ -20,11 +20,19 @@ con_issues() { [ "${ORQ_SOLO_LOCAL:-0}" != 1 ] && [ -n "$REPO_GH" ]; }
 
 # Quien abre un issue o comenta y puede escribir en el repo (author_association de la API). Lo demás no entra a la cola.
 CON_PERMISO='["OWNER","MEMBER","COLLABORATOR"]'
+# El filtro de quien abre un issue: lo de arriba o la app del orquestador (app.sh), que abre las tareas que entran solas (deps, kit,
+# cierre, la urgente de main) con author_association NONE; se la reconoce por su id (`performed_via_github_app.id` = APP_ID), que está
+# en config.env en cualquier máquina. Otro bot no entra. Uso: jq --argjson ok "$CON_PERMISO" --arg app "${APP_ID:-}" "$JQ_CON_PERMISO …".
+JQ_CON_PERMISO=$(cat <<'JQ'
+def con_permiso($ok; $app): (.author_association as $a | $ok | index($a)) != null
+  or (.user.type == "Bot" and $app != "" and ((.performed_via_github_app.id // "") | tostring) == $app);
+JQ
+)
 # El autor de un issue: además, github-actions[bot] en un issue `noche-roja`, el que abre el aviso de la noche (scripts/flujo/noche.mjs)
 # con GITHUB_TOKEN, sin una asociación de escritura; un fork no tiene ese token con escritura. Otro issue de un bot (un `pedido`, una
 # `cola` sin `noche-roja`) no entra. Ningún comentario de un bot cuenta como respuesta (buscar_respuestas, redaccion.mjs).
 con_permiso() {
-  jq -e --argjson ok "$CON_PERMISO" '(.author_association as $a | $ok | index($a)) != null
+  jq -e --argjson ok "$CON_PERMISO" --arg app "${APP_ID:-}" "$JQ_CON_PERMISO"' con_permiso($ok; $app)
     or (.user.login == "github-actions[bot]" and .user.type == "Bot"
       and any(.labels[]?; (if type == "string" then . else .name end) == "noche-roja"))' <<<"$1" >/dev/null
 }
@@ -45,7 +53,8 @@ ghc() {
       log "GitHub: límite de la API; el espejo de la cola espera hasta las $(date -d "@$(cat "$EST/.gh-espera-hasta")" '+%H:%M') (la cola local sigue)"
       rc=2
     else
-      head -c 300 "$err" | tr '\n' ' ' >"$EST/.gh-ultimo-error"
+      # Un permiso que le falta a la app se dice con su nombre (app.sh); otro error, como llegó.
+      explicar_sin_permiso "$err" "$@" || head -c 300 "$err" | tr '\n' ' ' >"$EST/.gh-ultimo-error"
       rc=1
     fi
   fi
