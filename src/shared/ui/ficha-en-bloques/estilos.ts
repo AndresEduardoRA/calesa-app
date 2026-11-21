@@ -19,9 +19,9 @@ export const EVENTO_DE_SALTO = 'ficha:salto-a-un-bloque'
 export const ATRIBUTO_DE_COLUMNA = 'data-columna-de-ficha'
 export type ColumnaDeFicha = 'lateral' | 'principal'
 
-// El alto de la ficha en dos columnas: la ventana menos la barra superior (`--topbar`) y el `md:p-6` de `<main>` (3 rem: 1,5 arriba y 1,5
-// abajo), para que la página no se desplace y lo haga cada columna por dentro. Con menos de 28 rem de alto (una ventana muy baja, o avisos
+// El alto de la ficha en dos columnas: la ventana menos la barra superior (`--topbar`) y el relleno de `<main>` (5 rem: 1,5 arriba y 3,5
+// abajo, que deja sitio a los botones flotantes), para que la página no se desplace y lo haga cada columna por dentro. Con menos de 28 rem de alto (una ventana muy baja, o avisos
 // altos arriba) la página vuelve a desplazarse: las columnas no se aplastan. Por debajo de 56 rem de contenedor (el celular, el texto al 200 %),
 // alto natural. Una clase literal, para que Tailwind la vea; la comparten la ficha y su esqueleto.
 export const ALTO_DE_LA_FICHA =
-  '@[56rem]/ficha:h-[calc(100dvh-var(--topbar)-3rem)] @[56rem]/ficha:min-h-[28rem]'
+  '@[56rem]/ficha:h-[calc(100dvh-var(--topbar)-5rem)] @[56rem]/ficha:min-h-[28rem]'

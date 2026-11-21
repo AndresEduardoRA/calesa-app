@@ -260,7 +260,7 @@ test('C · conflicto: la dueña guarda el lead mientras la asesora lo edita; la 
   )
   await volcarArbol(panel, info, 'conflicto-del-lead')
   await capturar(page, info, 'conflicto-del-lead')
-  await panel.getByRole('button', { name: 'Recargar' }).click()
+  await panel.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(panel.getByLabel('Nombre')).toHaveValue(
     nombre(`Conflicto de la dueña ${info.project.name}`),
   )

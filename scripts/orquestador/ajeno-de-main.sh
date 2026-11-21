@@ -8,8 +8,9 @@
 #      encontró y la deja esperando (`espera_a`). Una urgente por `<spec>:<línea>`: dos tareas con el mismo spec esperan a la misma.
 #      Sin red, la tarea sigue esperando y `vigilar_prs` lo reintenta en la vuelta siguiente.
 #   3. `esperar_al_arreglo_de_main` (en cada vuelta de `vigilar_prs`): mientras la urgente no se integre, el rojo del PR no abre sesión;
-#      al integrarse, la rama se pone al día con main sin sesión (`poner_al_dia_sin_sesion` o la API) y vuelve a esperar al CI. Si
-#      después cae otra cosa, sigue el camino de siempre.
+#      al integrarse, la rama se pone al día con main sin sesión (`poner_al_dia_sin_sesion`, el merge local en su worktree limpio) y
+#      vuelve a esperar al CI. Sin worktree limpio, o si después cae otra cosa, sigue el camino de siempre (la sesión de arreglo trae
+#      main). Nunca la puesta al día por la API de GitHub: es el arreglo de un e2e roto en main, no una de rutina.
 # Lo carga orquestador.sh con `source`; usa sus `EST`, `WTS`, `ORQ`, `PREVIO`, `log`, `avisar`, `campo`, `cuerpo`, `ids`, `spec_de`,
 # `estado_de`, `est_get`, `est_set`, `est_del`, `num`, `sumar`, `urgente`, `ghr`, `comentar`, `con_issues`, `dep_lista`, `trabar` y
 # `publicar_entrada`, y `poner_al_dia_sin_sesion` de sin-sesion.sh.
@@ -177,7 +178,7 @@ ajeno_de_la_sesion() {
 # id pr json-del-pr → 0 si esta vuelta ya está resuelta para el PR (espera a la urgente, o recién puesto al día y GitHub todavía muestra
 # el rojo de la punta vieja); 1 si el rojo (o el verde) se atiende como siempre.
 esperar_al_arreglo_de_main() {
-  local id=$1 j=$3 sha m merge_state rc
+  local id=$1 j=$3 sha m rc
   sha=$(jq -r .headRefOid <<<"$j")
   if [ -z "$(est_get "$id" ajeno_spec)" ]; then
     [ -n "$sha" ] && [ "$(est_get "$id" espera_sha)" = "$sha" ] && [ "$(date +%s)" -lt "$(num "$id" espera_hasta)" ] && return 0
@@ -191,7 +192,6 @@ esperar_al_arreglo_de_main() {
   dep_lista "$m" || return 0 # sigue esperando: `plan` dice a quién
   # La urgente se integró (o la persona la dio por hecha): la rama se pone al día con main y vuelve a esperar al CI.
   est_set "$id" espera_sha "$sha"
-  merge_state=$(jq -r .mergeStateStatus <<<"$j")
   rc=0
   ajeno_al_dia "$id" "$2" "$sha" || rc=$?
   if [ "$rc" = 0 ]; then
@@ -200,25 +200,20 @@ esperar_al_arreglo_de_main() {
     log "$id: $m integrada: el PR #$2 se puso al día con main sin abrir una sesión; vuelve a esperar al CI"
     return 0
   fi
-  if [ "$rc" = 1 ] && [[ "$merge_state" == BEHIND || "$merge_state" == UNKNOWN ]]; then
-    log "$id: $m integrada pero no pude poner al día el PR #$2: reintento en la vuelta siguiente"
-    return 0
-  fi
-  # Ya al día (o con un choque, que atiende vigilar_prs): lo que caiga ahora se atiende como siempre.
+  [ "$rc" = 1 ] && log "$id: $m integrada pero no pude poner al día el PR #$2 sin sesión: sigue el camino de siempre"
+  # Ya al día, sin worktree limpio o con un choque (que atiende vigilar_prs): lo que caiga ahora se atiende como siempre.
   ajeno_olvidar "$id"
   est_del "$id" espera_sha
   return 1
 }
 
-# id pr sha → 0 puesta al día (hay una punta nueva en camino); 1 no se pudo; 2 la rama ya tenía todo main.
+# id pr sha → 0 puesta al día (hay una punta nueva en camino); 1 no se pudo (sin worktree limpio o con un choque); 2 la rama ya
+# tenía todo main.
 ajeno_al_dia() {
   local id=$1 pr=$2 sha=$3
-  if poner_al_dia_sin_sesion "$id" "$pr"; then
-    [ "$(git -C "$WTS/$id" rev-parse HEAD 2>/dev/null)" != "$sha" ] && return 0
-    return 2
-  fi
-  # Sin worktree limpio (o con un choque): la API hace el merge, nunca fuerza, y no pisa un push nuevo (expected_head_sha).
-  ghr api -X PUT "repos/{owner}/{repo}/pulls/$pr/update-branch" -f expected_head_sha="$sha" >/dev/null 2>&1
+  poner_al_dia_sin_sesion "$id" "$pr" || return 1
+  [ "$(git -C "$WTS/$id" rev-parse HEAD 2>/dev/null)" != "$sha" ] && return 0
+  return 2
 }
 
 # id → « · espera a T<m> (e2e roto en main: <spec>:<línea>; <estado de T<m>>)» para `plan` y `estado`, o nada.

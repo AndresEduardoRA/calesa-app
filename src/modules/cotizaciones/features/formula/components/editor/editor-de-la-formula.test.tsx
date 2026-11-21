@@ -64,6 +64,7 @@ const montar = (alVolver = vi.fn()) =>
   render(
     <SesionDeLaFormula
       origen={ORIGEN}
+      formulaDelOrigenId="44444444-4444-4444-8444-444444444444"
       formulaId={FORMULA}
       sobre="Sobre la versión 3 publicada."
       avanzado

@@ -10,8 +10,9 @@ Primero entiende el estado: `git log --oneline origin/main..HEAD`, `git status -
 - **Choque con main:** `git fetch origin && git merge origin/main` (nunca rebase ni push forzado), resuelve conservando lo de las dos
   partes, commitea. Si una migración de esta rama quedó con fecha anterior a una ya integrada, créala de nuevo con
   `pnpm exec supabase migration new` y borra la vieja de la rama (el CI exige el orden). Después `pnpm db:reset`, `pnpm db:types`.
-- **Rama puesta al día por el orquestador** (`gh pr update-branch`) y luego en rojo por el **orden de migraciones**: otra tarea
-  integró antes una migración más nueva. Haz lo de arriba (migración nueva con fecha de hoy, la vieja fuera de la rama).
+- **Sacado de la cola de integración:** el CI del grupo (tu rama combinada con main y los PR de delante) cayó con tu PR en verde. Lo de
+  delante suele estar ya en main: `git fetch origin && git merge origin/main`, reproduce lo caído y arregla la causa. Si es el orden de
+  migraciones, la migración nueva con fecha de hoy (lo de arriba).
 - **CI en rojo:** lee el log de lo que cayó (`gh run view <id> --log-failed`, sólo los jobs caídos), reproduce en local el mismo comando
   y arregla **la causa**. Cambiar una prueba sólo si la prueba está mal, y se justifica en el PR. Un e2e que falla a veces y otras no
   no se reintenta hasta que pase: diagnostica con sus artefactos (`e2e-fallos/`, la traza) y arregla el producto o la prueba con
@@ -30,7 +31,8 @@ Primero entiende el estado: `git log --oneline origin/main..HEAD`, `git status -
   `pnpm view <paquete> version time`). Versión exacta, sola y desde la raíz del worktree; nunca dos librerías para lo mismo.
 - Verifica (Nivel 1): primero lo que cayó en el CI (el comando o el e2e que falló, solo, hasta que pase) y al final, una vez y en segundo
   plano, `bash scripts/flujo/verificar.sh` (lint, tipos, la suite y el mapa en paralelo; no corre si el árbol ya pasó). Además lo de
-  base si tocaste `supabase/`, y los e2e que cayeron más los del módulo, nombrados, en una sola corrida en segundo plano. Si fue un
+  base si tocaste `supabase/`, y los e2e que cayeron más los afectados (`node scripts/e2e-afectados.mjs`: dice cuáles y por qué), en una sola
+  corrida en segundo plano. Si fue un
   choque con main y tu lado sólo cambió docs al resolverlo: sólo `bash scripts/flujo/verificar.sh`, sin e2e. Lo temporal va en `$TMPDIR`, nunca en `/tmp`.
 - Publica de nuevo con `bash scripts/flujo/publicar.sh --sin-esperar --titulo '<el título actual del PR>'`. Agrega al cuerpo del PR
   (`gh pr edit` falla en este repo: `gh api -X PATCH 'repos/{owner}/{repo}/pulls/{{PR}}' -F body=@<archivo>`) qué cayó y cómo se arregló, en dos líneas.

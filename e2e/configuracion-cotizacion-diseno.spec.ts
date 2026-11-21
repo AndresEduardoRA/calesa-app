@@ -14,6 +14,7 @@ import {
   leerElBorradorDelDiseno,
   publicarFormulaDeTresSumandos,
 } from './soporte/diseno-editor'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // La pestaña «Diseño» de la Fórmula de un origen, sub-pestaña «Hoja» (4.22-2, `docs/UX.md` › «Cotización: hoja (estados propios)»): el camino feliz en escritorio. Se ven las secciones
 // y las celdas; poner a una celda el nivel «Costos» avisa que se deduce restando (sin bloquear) y alinea quién la edita; una sección pasa a «Avanzado»; «Guardar el
@@ -47,7 +48,7 @@ const guardar = (page: Page) =>
 const estado = (page: Page) => page.locator('[data-guardado] [role="status"]')
 
 async function abrirElDiseno(page: Page) {
-  await page.goto(`/configuracion/origenes/${origen.id}/formula/hoja`)
+  await abrirLaFormula(page, origen.id, 'hoja')
   await enLaPestana(page, 'Hoja')
   await expect(seccion(page, 'base')).toBeVisible()
 }

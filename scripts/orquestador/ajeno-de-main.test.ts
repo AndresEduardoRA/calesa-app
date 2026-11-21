@@ -3,7 +3,7 @@ import { cuerpo, escenario, TIEMPO } from './prueba/escenario'
 
 // Un e2e que cae también en main (ajeno-de-main.sh, README.md › «Un e2e roto en main»), con el gh falso (prueba/escenario.ts): una
 // sesión de arreglo que termina en AJENO crea una sola tarea urgente, la tarea queda esperando y, al integrarse la urgente, se pone al
-// día con main sin abrir otra sesión.
+// día con main sin abrir otra sesión si tiene su worktree limpio; si no, va la sesión de arreglo (nunca `update-branch`).
 const SPEC = 'e2e/menu-de-la-fila.spec.ts'
 const AJENO = `RESULTADO: AJENO — ${SPEC}:281 [movil] — cae igual sobre origin/main; la rama no lo toca`
 const LISTO_ROJO = {
@@ -87,7 +87,7 @@ it(
 )
 
 it(
-  'ajeno › mientras la urgente no se integra el rojo no abre sesión; al integrarse, la tarea se pone al día sin sesión',
+  'ajeno › mientras la urgente no se integra el rojo no abre sesión; al integrarse, sin worktree limpio, va la sesión de arreglo y nunca update-branch',
   () => {
     const t = conDosEnRojo()
     terminar(t, 'T7', AJENO)
@@ -105,33 +105,16 @@ it(
     expect(t.est('T7', 'estado')).toBe('esperando_ci')
     expect(t.orq('plan').salida).toContain(`${m} está trabada`)
 
-    // La urgente se integra: la rama se pone al día con main por la API (sin worktree) y el CI vuelve a empezar.
+    // La urgente se integra: sin worktree limpio no hay merge sin sesión (ni update-branch por la API); sigue el camino de siempre,
+    // la sesión de arreglo, que trae main.
     t.ponerEst(m, 'estado', 'integrado')
     t.orq('vigilar')
-    expect(t.gh().prs['Cuenta/tienda-app']?.[0]?.sha).toBe('al-dia-1')
-    expect(t.est('T7', 'estado')).toBe('esperando_ci')
+    expect(t.llamadas().some((l) => l.args.some((a) => a.includes('update-branch')))).toBe(false)
+    expect(t.gh().prs['Cuenta/tienda-app']?.[0]?.sha).toBe('aaa')
     expect(t.est('T7', 'espera_a')).toBe('')
-    expect(t.est('T7', 'espera_sha')).toBe('aaa')
-    expect(t.est('T7', 'arreglos')).toBe('0')
-    expect(t.log()).toContain(
-      `T7: ${m} integrada: el PR #70 se puso al día con main sin abrir una sesión`,
-    )
-
-    // Recién puesta al día, GitHub todavía puede mostrar el rojo viejo: no abre sesión.
-    t.cambiarGh((g) => {
-      g.prs['Cuenta/tienda-app']![0]!.sha = 'aaa'
-      g.prs['Cuenta/tienda-app']![0]!.checks = [LISTO_ROJO]
-    })
-    t.orq('vigilar')
-    expect(t.est('T7', 'estado')).toBe('esperando_ci')
-
-    // Si después cae otra cosa en la punta nueva, sigue el camino de siempre: una sesión de arreglo.
-    t.cambiarGh((g) => {
-      g.prs['Cuenta/tienda-app']![0]!.sha = 'al-dia-1'
-    })
-    t.orq('vigilar')
     expect(t.est('T7', 'estado')).toBe('por_arreglar')
     expect(t.est('T7', 'arreglos')).toBe('1')
+    expect(t.log()).toContain(`T7: ${m} integrada pero no pude poner al día el PR #70 sin sesión`)
   },
   TIEMPO,
 )

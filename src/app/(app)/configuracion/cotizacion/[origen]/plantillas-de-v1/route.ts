@@ -9,12 +9,14 @@ import { puede } from '@/shared/lib/permisos'
 // borradores del origen con la versión que esperan. Compone lo que `cotizaciones` no importa: los tipos de cambio activos de la empresa y los campos activos del
 // origen. Con la sesión de quien configura (la RLS decide; nunca la secret key). Se pide una vez por apertura, sin caché: lleva los borradores, que cambian.
 //
-//   GET /configuracion/cotizacion/<origen>/plantillas-de-v1
-//   200 application/json (`DatosDePlantillasDeV1`) | 307 al ingreso o a cerrar la sesión | 404 text/plain | 500 text/plain
+//   GET /configuracion/cotizacion/<origen>/plantillas-de-v1?formula=<fórmula del origen>
+//   200 application/json (`DatosDePlantillasDeV1`) | 307 al ingreso o a cerrar la sesión | 400 text/plain | 404 text/plain | 500 text/plain
 //
-// Sin `cotizaciones.configurar` del origen, un id que no es un uuid o un origen que no existe: el mismo 404, nunca 403.
+// Sin `cotizaciones.configurar` del origen, un id que no es un uuid o un origen que no existe: el mismo 404, nunca 403. Sin `?formula=` (o uno que no es un
+// uuid), 400: los borradores son los de esa fórmula del origen (una de otro origen no se ve: la RLS la esconde y no tiene borradores).
 const NO_DISPONIBLE = 'Este origen ya no está disponible: no existe o ya no lo configuras.'
 const NO_SE_PUDO = 'No se pudieron leer las plantillas.'
+const SIN_FORMULA = 'Falta la fórmula del origen.'
 const SIN_GUARDAR = { 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff' }
 
 const texto = (cuerpo: string, status: number) =>
@@ -24,7 +26,7 @@ const texto = (cuerpo: string, status: number) =>
   })
 
 export async function GET(
-  _peticion: Request,
+  peticion: Request,
   { params }: RouteContext<'/configuracion/cotizacion/[origen]/plantillas-de-v1'>,
 ) {
   // La segunda barrera tras el proxy: sin sesión, al ingreso; con la cuenta dada de baja, a cerrar la sesión. Antes de leer nada.
@@ -33,6 +35,8 @@ export async function GET(
   if (!z.guid().safeParse(id).success || !puede(sesion.permisos, 'cotizaciones.configurar', id)) {
     return texto(NO_DISPONIBLE, 404)
   }
+  const formula = z.guid().safeParse(new URL(peticion.url).searchParams.get('formula'))
+  if (!formula.success) return texto(SIN_FORMULA, 400)
   const [origenes, tipos, layout] = await Promise.all([
     getOrigenes(true),
     getTiposCambio(),
@@ -43,6 +47,7 @@ export async function GET(
   if (origen === undefined) return texto(NO_DISPONIBLE, 404)
   const datos = await leerPlantillasDeV1(
     { id, nombre: origen.nombre },
+    formula.data,
     {
       tiposDeCambio: tipos.map((t) => t.clave),
       campos: layout.data.campos.filter((c) => c.activo).map((c) => c.clave),

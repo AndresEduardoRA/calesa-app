@@ -11,34 +11,18 @@ import {
 import { fallo, ok, type Resultado } from '@/shared/lib/errores'
 import { createClient } from '@/shared/lib/supabase/server'
 import type { Database } from '@/shared/types/database.types'
-import { leerFormulaDeTrabajoSobre } from '../queries/formula-de-trabajo'
 import { leerAutores, leerEstado, leerPaginaSinAutores } from './consulta-de-versiones'
 
 type Cliente = SupabaseClient<Database>
 
-// Un origen sin fórmula del origen todavía: sin publicada, sin borrador y sin versiones (el primer guardado la crea).
-const SIN_FORMULA: LecturaDeLaFormula = {
-  formulaDelOrigen: null,
-  publicada: null,
-  borrador: null,
-  versiones: { filas: [], siguiente: null },
-}
-
-// La pestaña «Fórmula» de un origen, en el servidor: primero su fórmula de trabajo y, si tiene, lo suyo (`leerLaFormulaDelOrigen()`).
+// La planilla de una fórmula del origen, en el servidor (la que abre la ruta `…/formulas/<fórmula>/planilla`): lo suyo con la sesión de quien mira.
 export async function getFormulaDelOrigen(
-  origenId: string,
+  formula: FormulaDelOrigen,
 ): Promise<Resultado<LecturaDeLaFormula>> {
-  if (!z.guid().safeParse(origenId).success) {
-    return fallo('validacion', 'Ese origen no es válido.')
+  if (!z.guid().safeParse(formula.id).success) {
+    return fallo('validacion', 'Esa fórmula no es válida.')
   }
-  const supabase = await createClient()
-  const deTrabajo = await leerFormulaDeTrabajoSobre(supabase, origenId)
-  if (!deTrabajo.ok) {
-    return deTrabajo
-  }
-  return deTrabajo.data === null
-    ? ok(SIN_FORMULA)
-    : leerLaFormulaDelOrigen(supabase, deTrabajo.data)
+  return leerLaFormulaDelOrigen(await createClient(), formula)
 }
 
 // La publicada, el borrador y la primera página de versiones de una fórmula del origen (en paralelo), y los nombres de todos los que nombran en una sola

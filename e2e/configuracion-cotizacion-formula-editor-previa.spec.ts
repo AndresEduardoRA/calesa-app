@@ -18,6 +18,7 @@ import {
 } from './soporte/formula-editor-previa'
 import { abrirModoAvanzado } from './soporte/formula-editor'
 import { sql } from './soporte/sql'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // La vista previa del editor de la fórmula (4.21-3a-2, P5, `docs/UX.md` › «Cotización: fórmula»): al abrir el editor, «Cifras de prueba.» con el total y la cifra de cada
 // fila, calculados con `evaluar()` con los datos en 0, el tipo de cambio de hoy y las tablas vivas del origen (la del origen gana a la compartida; la congelada
@@ -68,8 +69,8 @@ const fila = (page: Page, id: string) => filas(page).locator(`li[data-fila="${id
 const previa = (page: Page) => page.getByRole('region', { name: 'Vista previa' })
 
 async function abrirEditor(page: Page, origenId: string) {
-  await page.goto(`/configuracion/origenes/${origenId}/formula`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origenId, 'planilla')
+  await enLaPestana(page, 'Planilla')
   await abrirModoAvanzado(page)
   await expect(filas(page)).toBeVisible()
 }

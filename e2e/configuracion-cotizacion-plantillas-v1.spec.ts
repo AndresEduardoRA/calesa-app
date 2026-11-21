@@ -10,6 +10,7 @@ import { telefonoAlAzar } from './soporte/leads-alta'
 import { literal, sql } from './soporte/sql'
 import { rgbDe } from './soporte/tarjeta-cuadricula'
 import { cargarVehiculos, vehiculoPorTitulo } from './soporte/vehiculos'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // Empezar un origen desde una plantilla de V1 (`docs/UX.md` › «Cotización: empezar desde una plantilla»): «Empezar desde una plantilla» abre el modal con las cuatro;
 // la primera crea los borradores de la fórmula y de la tarjeta (sin preguntar: no había); la segunda pregunta antes de reemplazarlos, y «Volver» no escribe nada.
@@ -74,7 +75,7 @@ const borrador = (tabla: 'formulas' | 'plantillas_tarjeta') =>
   )
 
 async function abrirElModal(page: Page): Promise<void> {
-  await page.goto(`/configuracion/origenes/${origen.id}/formula`)
+  await abrirLaFormula(page, origen.id, 'planilla')
   await page.getByRole('button', { name: 'Empezar desde una plantilla' }).click()
   await expect(page).toHaveURL(/panel=plantillas-de-v1/)
   await expect(modal(page)).toBeVisible()
@@ -137,13 +138,13 @@ test('E2E escritorio: publicadas la fórmula y la tarjeta, el origen cotiza y la
 }) => {
   await entrar(page, duena)
   // La fórmula.
-  await page.goto(`/configuracion/origenes/${origen.id}/formula?panel=publicar-formula`)
+  await abrirLaFormula(page, origen.id, 'planilla', `?panel=publicar-formula`)
   const publicarFormula = page.getByRole('dialog', { name: 'Publicar el borrador' })
   await publicarFormula.getByLabel('Nota').fill('Desde la plantilla de V1')
   await publicarFormula.getByRole('button', { name: 'Publicar', exact: true }).click()
   await expect(page.getByText('Se publicó el borrador.')).toBeVisible()
   // La tarjeta.
-  await page.goto(`/configuracion/origenes/${origen.id}/formula/tarjeta?panel=publicar-tarjeta`)
+  await abrirLaFormula(page, origen.id, 'tarjeta', `?panel=publicar-tarjeta`)
   const publicarTarjeta = page.getByRole('dialog', { name: /^Publicar la tarjeta de / })
   await publicarTarjeta.getByLabel('Nota de la versión').fill('Desde la plantilla de V1')
   await publicarTarjeta.getByRole('button', { name: 'Publicar', exact: true }).click()

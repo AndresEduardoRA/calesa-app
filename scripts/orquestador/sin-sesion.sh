@@ -5,12 +5,16 @@
 #     Docker, la red, el runner, GitHub) → se vuelven a correr los jobs caídos, hasta REINTENTOS_CI_POR_PUNTA veces por punta del PR
 #     (con un bloque de e2e entre lo caído, una sola vez por tarea).
 #   - `poner_al_dia_sin_sesion`: el PR choca con main sólo en docs Markdown (las listas que suman todas las tareas: PENDIENTES,
-#     DECISIONES, LECCIONES…) → merge de main con la unión de las dos partes en esos docs. Si choca algo más, va la sesión.
+#     DECISIONES, LECCIONES…) → merge de main con la unión de las dos partes en esos docs. Si choca algo más, va la sesión. Es el
+#     arreglo de un choque (o de un e2e roto en main), no una puesta al día de rutina: la cola de integración prueba el PR combinado.
 #   - `migraciones_tras_main`: otra tarea integró una migración más nueva que las de la rama (el CI exige que las del PR vayan después,
-#     scripts/guardas/orden-de-migraciones.test.ts) → merge de main y las de la rama renombradas, en su orden, con la hora de ahora.
+#     scripts/guardas/orden-de-migraciones.test.ts; en la cola de integración, contra lo de delante) → merge de main y las de la rama
+#     renombradas, en su orden, con la hora de ahora. Lo llaman el rojo del PR y la salida de la cola (integracion.sh).
+# `caidos_ajenos` (si todo lo caído es ajeno al PR) y `finales_de_logs` (el final del log de cada job caído) los usan también el motivo
+# del CI (orquestador.sh › `motivo_ci`) y la salida de la cola de integración (integracion.sh).
 # Lo carga orquestador.sh con `source`; usa sus `EST`, `WTS`, `log`, `est_get`, `est_set`, `ghr` y `campo`/`spec_de`.
 
-# Los nombres de los jobs de e2e del CI (`e2e · bloque i de 4`; `e2e · compilar la app` no: si no compila, es del PR).
+# Los nombres de los jobs de e2e del CI (`e2e · bloque i de n`; `e2e · compilar la app` no: si no compila, es del PR).
 ES_JOB_DE_E2E='^e2e · bloque '
 # Lo que en el log de un job caído dice que cayó la máquina del CI y no el PR. Estrecho a propósito: un falso positivo cuesta una vuelta
 # del CI; uno que falta, una sesión.
@@ -52,9 +56,51 @@ cayo_lo_del_pr() {
   return 1
 }
 
+# pr caídos(tsv de jobs_caidos) → 0 si todo lo caído es ajeno al PR: la máquina del CI, o un bloque de e2e cuyos specs caídos el PR no
+# toca. Deja en CAIDOS_QUE el qué («, <job> (por qué)» por job), en CAIDOS_RUNS las corridas y CAIDOS_E2E=1 si hay un bloque de e2e.
+# 1 si algo es del PR (lint, tipos, pruebas, base o el build sin la firma de la máquina; un spec que el PR toca) o no se pudo leer.
+caidos_ajenos() {
+  local pr=$1 nombre job run log propios=""
+  CAIDOS_QUE="" CAIDOS_RUNS="" CAIDOS_E2E=""
+  [ -n "$2" ] || return 1
+  while IFS=$'\t' read -r nombre job run; do
+    [ -n "$run" ] || return 1
+    log=$(log_del_job "$job" "$run")
+    if grep -qE "$ES_INFRA" <<<"$log"; then
+      CAIDOS_QUE="$CAIDOS_QUE, $nombre (la máquina del CI)"
+    elif grep -qE "$ES_JOB_DE_E2E" <<<"$nombre"; then
+      # Un spec caído que el PR toca es del PR: nada de reintentar.
+      [ -n "$propios" ] || propios=$(ghr api --paginate "repos/{owner}/{repo}/pulls/$pr/files?per_page=100" --jq '.[].filename' 2>/dev/null) || return 1
+      grep -oE 'e2e/[A-Za-z0-9_./-]+\.spec\.ts' <<<"$log" | grep -qxF -f <(printf '%s\n' "$propios") && return 1
+      CAIDOS_QUE="$CAIDOS_QUE, $nombre (e2e ajeno al PR)"
+      CAIDOS_E2E=1
+    else
+      # Lint, tipos, pruebas, base o el build caídos sin señal de la máquina: son del PR.
+      return 1
+    fi
+    [[ " $CAIDOS_RUNS " == *" $run "* ]] || CAIDOS_RUNS="$CAIDOS_RUNS $run"
+  done <<<"$2"
+}
+
+# caídos(tsv de jobs_caidos) → el final del log de hasta 3 jobs caídos, para el motivo de la sesión de arreglo.
+finales_de_logs() {
+  local nombre job run ver n=0
+  while IFS=$'\t' read -r nombre job run; do
+    [ -n "$run" ] || continue
+    n=$((n + 1))
+    [ "$n" -le 3 ] || break
+    echo
+    if [ -n "$job" ]; then ver="--job $job"; else ver=$run; fi
+    echo "### Final del log de «$nombre» (completo: gh run view $ver --log-failed)"
+    echo '```'
+    log_del_job "$job" "$run" | tail -n 120 | cut -c1-400
+    echo '```'
+  done <<<"$1"
+}
+
 # id pr json-del-pr → 0 si relanzó lo caído o espera el relanzamiento recién pedido (no hay que abrir sesión), 1 si no corresponde.
 reintentar_ci_ajeno() {
-  local id=$1 pr=$2 j=$3 sha n caidos nombre job run log propios="" runs="" que="" r e2e=""
+  local id=$1 pr=$2 j=$3 sha n caidos r
   sha=$(jq -r .headRefOid <<<"$j")
   [ -n "$sha" ] || return 1
   n=0
@@ -66,37 +112,20 @@ reintentar_ci_ajeno() {
     [ "$n" -lt "${REINTENTOS_CI_POR_PUNTA:-2}" ] || return 1
   fi
   caidos=$(jobs_caidos "$j")
-  [ -n "$caidos" ] || return 1
-  while IFS=$'\t' read -r nombre job run; do
-    [ -n "$run" ] || return 1
-    log=$(log_del_job "$job" "$run")
-    if grep -qE "$ES_INFRA" <<<"$log"; then
-      que="$que, $nombre (la máquina del CI)"
-    elif grep -qE "$ES_JOB_DE_E2E" <<<"$nombre"; then
-      # Un spec caído que el PR toca es del PR: nada de reintentar.
-      [ -n "$propios" ] || propios=$(ghr api --paginate "repos/{owner}/{repo}/pulls/$pr/files?per_page=100" --jq '.[].filename' 2>/dev/null) || return 1
-      grep -oE 'e2e/[A-Za-z0-9_./-]+\.spec\.ts' <<<"$log" | grep -qxF -f <(printf '%s\n' "$propios") && return 1
-      que="$que, $nombre (e2e ajeno al PR)"
-      e2e=1
-    else
-      # Lint, tipos, pruebas, base o el build caídos sin señal de la máquina: son del PR.
-      return 1
-    fi
-    [[ " $runs " == *" $run "* ]] || runs="$runs $run"
-  done <<<"$caidos"
+  caidos_ajenos "$pr" "$caidos" || return 1
   # Un bloque de e2e en rojo ya cayó dos veces (Playwright reintenta una en CI): relanzarlo rara vez lo pone verde (1 de 7 tareas en
-  # una tanda) y cada vuelta son ~20 min. Una vez por tarea, no por punta: cada puesta al día con main es una punta nueva.
-  if [ -n "$e2e" ]; then
+  # una tanda) y cada vuelta son ~20 min. Una vez por tarea, no por punta: cada arreglo es una punta nueva.
+  if [ -n "$CAIDOS_E2E" ]; then
     [ -z "$(est_get "$id" e2e_ajeno_relanzado)" ] || return 1
     est_set "$id" e2e_ajeno_relanzado "$sha"
   fi
   est_set "$id" reintento_ci "$sha"
   est_set "$id" reintento_ci_en "$(date +%s)"
   est_set "$id" reintentos_ci $((n + 1))
-  for r in $runs; do
+  for r in $CAIDOS_RUNS; do
     ghr run rerun "$r" --failed >/dev/null 2>&1 || { log "$id: no se pudo relanzar la corrida $r del PR #$pr"; return 1; }
   done
-  log "$id: el CI del PR #$pr cayó sólo en lo ajeno al PR (${que#, }): relanzo lo caído ($((n + 1)) de ${REINTENTOS_CI_POR_PUNTA:-2} en esta punta) antes de abrir una sesión"
+  log "$id: el CI del PR #$pr cayó sólo en lo ajeno al PR (${CAIDOS_QUE#, }): relanzo lo caído ($((n + 1)) de ${REINTENTOS_CI_POR_PUNTA:-2} en esta punta) antes de abrir una sesión"
   return 0
 }
 
@@ -146,7 +175,7 @@ renumerar_migraciones() {
 }
 
 # id pr → merge de main en la rama (un choque sólo en docs se une; otro choque deja todo como estaba), las migraciones de la rama
-# después de las de main, y push. 0 si empujó (o ya no había nada que hacer); 1 si va la sesión.
+# después de las de main, y push (el arreglo de un choque, de una salida de la cola o de un e2e roto en main). 0 si empujó (o ya no había nada que hacer); 1 si va la sesión.
 poner_al_dia_sin_sesion() {
   local id=$1 pr=$2 wt="$WTS/$1" rama chocan="" f base nuestro suyo renombradas hecho=""
   rama=$(worktree_listo "$id") || return 1
@@ -186,7 +215,7 @@ poner_al_dia_sin_sesion() {
 }
 
 # id pr → 0 si las migraciones de la rama quedaban antes de una de main y se pusieron después (empujado: el CI vuelve a correr); 1 si
-# no hacía falta o no se pudo (sigue lo de siempre: el reintento, la puesta al día de GitHub o la sesión).
+# no hacía falta o no se pudo (sigue lo de siempre: el reintento, volver a encolar o la sesión).
 migraciones_tras_main() {
   local id=$1 wt="$WTS/$1"
   worktree_listo "$id" >/dev/null || return 1

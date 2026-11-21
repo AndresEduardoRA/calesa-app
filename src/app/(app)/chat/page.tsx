@@ -50,7 +50,7 @@ async function Conversaciones({ parametros }: { parametros: PageProps<'/chat'>['
   const zona = (ajustes.ok ? ajustes.data.ajustes.zonaHoraria : null) ?? ZONA_POR_DEFECTO
   // En escritorio, las dos columnas; en el celular, una sola pantalla: con `?c=` el hilo, sin ella la lista.
   const pantalla = (
-    <div className="grid h-[calc(100dvh-var(--topbar)-2rem)] overflow-hidden rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) md:h-[calc(100dvh-var(--topbar)-3rem)] md:grid-cols-[22rem_1fr]">
+    <div className="grid h-[calc(100dvh-var(--topbar)-2rem)] overflow-hidden rounded-(--radius-card) border border-(--color-line) bg-(--color-surface) md:h-[calc(100dvh-var(--topbar)-5rem)] md:grid-cols-[22rem_1fr]">
       <aside
         className={`min-h-0 flex-col border-r border-(--color-line) md:flex ${abierta ? 'hidden' : 'flex'}`}
       >

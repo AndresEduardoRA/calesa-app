@@ -17,6 +17,7 @@ import {
 } from './soporte/formula-editor'
 import { publicarPlantillaDeLaMini } from './soporte/plantilla'
 import { literal, sql } from './soporte/sql'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // La planilla de la fórmula (`docs/UX.md` › «Cotización: fórmula (estados propios)»): la vista por defecto de la pestaña «Fórmula», con las cuatro columnas de V1 y
 // la frase de lo que se edita; cambiar una constante en C mueve «Totales» y la tarjeta en vivo; un cálculo se edita en la barra de fórmula; la unidad de ejemplo
@@ -69,8 +70,8 @@ test('la planilla: constante, barra de fórmula, unidad de ejemplo, guardar, pub
   page,
 }) => {
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/origenes/${origen.id}/formula`)
-  await enLaPestana(page, 'Fórmula')
+  await abrirLaFormula(page, origen.id, 'planilla')
+  await enLaPestana(page, 'Planilla')
 
   // (1) La planilla con sus cuatro columnas y la frase.
   for (const columna of ['A · concepto', 'B · %', 'C · valor', 'D · de dónde sale']) {

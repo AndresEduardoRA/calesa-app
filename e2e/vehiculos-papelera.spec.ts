@@ -315,7 +315,7 @@ test('purgar algo que otra persona ya restauró es un conflicto, y no purga nada
     dialogo.getByText('No se purgó nada. Recarga para ver cómo quedó el lote.'),
   ).toBeVisible()
   await expect(dialogo.getByRole('button', { name: 'Purgar' })).toBeDisabled()
-  await dialogo.getByRole('button', { name: 'Recargar' }).click()
+  await dialogo.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(dialogo).toBeHidden()
   await expect(loteDe(page, T.disputado)).toBeHidden()
   expect(await estadoDe(id(T.disputado))).toMatchObject({ eliminado_en: null })

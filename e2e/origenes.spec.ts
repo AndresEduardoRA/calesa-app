@@ -126,7 +126,7 @@ test('se crea un origen manual y uno de subasta, cada uno con su flujo y sus cam
   await expect(paso('Flujo')).toContainText('Sin fases: sus vehículos no se pueden mover')
   await expect(paso('Fórmula').getByRole('link')).toHaveAttribute(
     'href',
-    /\/configuracion\/origenes\/[0-9a-f-]{36}\/formula$/,
+    /\/configuracion\/origenes\/[0-9a-f-]{36}\/formulas$/,
   )
 
   const corea = await origenDeLaBase('corea')
@@ -305,7 +305,7 @@ test('dos personas editando el mismo origen: la segunda ve el conflicto y no pie
   await expect(
     page.getByText('Otra persona cambió este origen mientras lo editabas.'),
   ).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Recargar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Recargar', exact: true })).toBeVisible()
   await expect(page.getByLabel('Nombre', { exact: true })).toHaveValue('Corea Norte')
   expect((await origenDeLaBase('corea')).nombre).toBe('Corea del Sur')
 

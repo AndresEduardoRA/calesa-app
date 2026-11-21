@@ -27,7 +27,7 @@ describe('faltasPorSeccion', () => {
       origenes: [
         {
           clave: CHINA.id,
-          texto: 'China: falta configurar el flujo y publicar la fórmula',
+          texto: 'China: falta configurar el flujo y activar una fórmula',
           ruta: `/configuracion/origenes/${CHINA.id}/flujo`,
         },
       ],
@@ -72,7 +72,7 @@ describe('faltasPorSeccion', () => {
       },
     ])
     expect(faltas.origenes?.map((falta) => falta.texto)).toEqual([
-      'Japón: falta publicar la fórmula',
+      'Japón: falta activar una fórmula',
     ])
   })
 

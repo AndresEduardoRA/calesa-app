@@ -17,6 +17,7 @@ import {
   visibilidadDeLaMini,
   type TerrenoDePlantilla,
 } from './soporte/plantilla'
+import { urlDeLaFormula } from './soporte/rutas-de-la-formula'
 
 // @sin-celular-archivo: editor de Configuración que se usa en una pantalla de al menos 1.024 px; el celular ve un aviso y la tarjeta en sólo lectura
 
@@ -49,7 +50,7 @@ test.beforeEach(() => {
   borrarLasPlantillasDelOrigen(origenId())
 })
 
-const URL_DE_LA_TARJETA = () => `/configuracion/origenes/${origenId()}/formula/tarjeta`
+const URL_DE_LA_TARJETA = () => urlDeLaFormula(origenId(), 'tarjeta')
 
 async function abrirTarjeta(page: Page, extra = '') {
   await entrar(page, configuradora, { fresco: true })
@@ -141,7 +142,7 @@ test('E3: un PT409 porque otra persona guardó se dice tal cual, conserva la not
   await expect(publicarEnElModal(page)).toBeDisabled()
   expect(plantillaPublicada(origenId())).toBeNull()
   await enElModal(page)
-    .getByRole('button', { name: /Recargar/ })
+    .getByRole('button', { name: /^Recargar$/ })
     .click()
   await expect(enElModal(page).getByText(/El borrador de esta plantilla cambió/)).toHaveCount(0)
   // El modal sigue abierto y con la nota: la pestaña se leyó de nuevo sin remontarlo.
@@ -176,7 +177,7 @@ test('E4: un PT409 porque otra persona publicó dice que el borrador ya no está
     enElModal(page).getByText(/El borrador ya no está: la versión 1 se publicó/),
   ).toBeVisible()
   await enElModal(page)
-    .getByRole('button', { name: /Recargar/ })
+    .getByRole('button', { name: /^Recargar$/ })
     .click()
   await expect(
     enElModal(page).getByText(/El borrador ya no está: otra persona lo publicó o lo descartó\./),

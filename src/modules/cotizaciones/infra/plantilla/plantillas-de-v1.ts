@@ -36,8 +36,7 @@ const NADA = { data: [], error: null }
 const siHay = <T>(formulaDelOrigenId: string | null, consulta: (id: string) => T) =>
   formulaDelOrigenId === null ? NADA : consulta(formulaDelOrigenId)
 
-// Los dos borradores de la fórmula de trabajo del origen (la que escribe `cotizacion_paquete_aplicar()`, que va por el origen; nula si el origen todavía no tiene:
-// sin borradores) y el catálogo de colores, en paralelo; después el nombre de quien empezó el borrador de la fórmula (la tarjeta no lo guarda).
+// Los dos borradores de una fórmula del origen (la que escribe `cotizacion_paquete_aplicar()` con `p_formula_del_origen`; nula: sin borradores) y el catálogo de colores, en paralelo; después el nombre de quien empezó el borrador de la fórmula (la tarjeta no lo guarda).
 export async function leerEstadoParaPlantillasDeV1(
   cliente: Cliente,
   formulaDelOrigenId: string | null,
@@ -128,13 +127,14 @@ const ESPERADA_NULA = null as unknown as string
 
 export async function aplicarPlantillaDeV1(
   cliente: Cliente,
-  { origenId, pedido, formulaEsperada, plantillaEsperada }: PedidoDeAplicar,
+  { origenId, formulaDelOrigenId, pedido, formulaEsperada, plantillaEsperada }: PedidoDeAplicar,
 ): Promise<ResultadoDeAccion<Aplicada>> {
   const { data, error } = await cliente.rpc('cotizacion_paquete_aplicar', {
     p_origen: origenId,
     p_paquete: pedido as unknown as Json,
     p_formula_esperada: formulaEsperada ?? ESPERADA_NULA,
     p_plantilla_esperada: plantillaEsperada ?? ESPERADA_NULA,
+    p_formula_del_origen: formulaDelOrigenId,
   })
   if (error) return rechazoDeAplicar(error)
   const leida = esquemaDeAplicada.safeParse(data)

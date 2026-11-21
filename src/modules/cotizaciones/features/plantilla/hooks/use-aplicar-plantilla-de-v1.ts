@@ -17,7 +17,11 @@ export type RechazoDeAplicar =
 
 const NO_SE_LEYO = 'No se pudo aplicar la plantilla.'
 
-export function useAplicarPlantillaDeV1(origenId: string, alAplicar: () => void) {
+export function useAplicarPlantillaDeV1(
+  origenId: string,
+  formulaDelOrigenId: string,
+  alAplicar: () => void,
+) {
   const accion = useAction(aplicarLaPlantillaDeV1)
   const [rechazo, setRechazo] = useState<RechazoDeAplicar | null>(null)
   const aplicar = async (clave: ClaveDePlantillaDeV1, borradores: BorradoresDelOrigen) => {
@@ -25,6 +29,7 @@ export function useAplicarPlantillaDeV1(origenId: string, alAplicar: () => void)
     const r = await enviarAccion(
       accion.executeAsync({
         origenId,
+        formulaDelOrigenId,
         plantilla: clave,
         formulaEsperada: borradores.formula?.actualizadoEn ?? null,
         plantillaEsperada: borradores.tarjeta?.actualizadoEn ?? null,

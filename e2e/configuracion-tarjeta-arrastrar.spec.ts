@@ -14,6 +14,7 @@ import {
   quieto,
   type TerrenoDeArrastrar,
 } from './soporte/tarjeta-arrastrar'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // El editor de la tarjeta queda quieto tras arrastrar un borde (`docs/LECCIONES.md` › Interfaz): con «Ajustar» la escala depende del ancho del lienzo y el alto de la
 // página, de la escala; si la barra de la página o la del marco cambian el ancho medido, la escala, el alto y la barra entran en un ciclo de pocos píxeles. Tras
@@ -62,7 +63,7 @@ const asa = (page: Page, id: string) => page.locator(`[data-asa-de-fila="${id}"]
 
 async function abrirElEditor(page: Page) {
   await entrar(page, t().configuradora, { fresco: true })
-  await page.goto(`/configuracion/origenes/${t().origen.id}/formula/tarjeta`)
+  await abrirLaFormula(page, t().origen.id, 'tarjeta')
   await expect(page.getByRole('heading', { name: /^Tarjeta de / })).toBeVisible()
   await expect(lienzo(page)).toBeVisible()
 }

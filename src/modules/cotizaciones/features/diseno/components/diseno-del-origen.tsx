@@ -11,6 +11,8 @@ type Origen = { id: string; nombre: string; activo: boolean }
 
 type Props = {
   origen: Origen
+  // La fórmula del origen que se edita: va en la `key` del editor, para que otra fórmula no herede lo suyo.
+  formulaDelOrigenId: string
   // La versión que se edita; con diseño nulo no hay nada que editar.
   leida: DisenoParaEditar | null
   niveles: readonly NivelDelDiseno[]
@@ -23,7 +25,14 @@ type Props = {
 // La pestaña «Hoja» de la Fórmula de un origen (Configuración › Orígenes) (el diseño de la hoja, 4.22-2). Sin versión o sin diseño, un
 // vacío. El editor no se vuelve a montar al guardar (su `key` no lleva la versión); sólo «Recargar» tras un conflicto lo monta de nuevo, en la misma transición que
 // trae la pestaña, sobre lo que haya entonces.
-export function DisenoDelOrigen({ origen, leida, niveles, tonos, catalogo }: Props) {
+export function DisenoDelOrigen({
+  origen,
+  formulaDelOrigenId,
+  leida,
+  niveles,
+  tonos,
+  catalogo,
+}: Props) {
   const router = useRouter()
   const [vuelta, setVuelta] = useState(0)
   const [recargando, recargarPagina] = useTransition()
@@ -38,7 +47,7 @@ export function DisenoDelOrigen({ origen, leida, niveles, tonos, catalogo }: Pro
     <div className="grid min-w-0 gap-4">
       {leida === null ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">
-          Este origen todavía no tiene una fórmula.
+          Esta fórmula todavía no tiene una versión: guarda su planilla primero.
         </p>
       ) : diseno === null ? (
         <p className="text-(length:--text-sm) text-(--color-ink-soft)">
@@ -46,7 +55,7 @@ export function DisenoDelOrigen({ origen, leida, niveles, tonos, catalogo }: Pro
         </p>
       ) : (
         <EditorDelDiseno
-          key={`${origen.id}:${String(vuelta)}`}
+          key={`${formulaDelOrigenId}:${String(vuelta)}`}
           origen={origen}
           leida={leida}
           disenoLeido={diseno}

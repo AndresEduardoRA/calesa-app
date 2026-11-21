@@ -12,6 +12,7 @@ import { MARCA, borrarOrigenesDeCotizar, crearOrigenDeCotizar } from './soporte/
 import { abrirModoAvanzado, publicarFormulaConTexto } from './soporte/formula-editor'
 import { leerBorrador } from './soporte/formula-editor-guardar'
 import { sql } from './soporte/sql'
+import { abrirLaFormula } from './soporte/rutas-de-la-formula'
 
 // La sección «Grupos» del editor de la fórmula (4.21-3c, `docs/UX.md` › «Cotización: fórmula (estados propios)»): editar el plazo y el tono de un grupo y pasar una
 // fila a un grupo de otro bucket, que cambia «Total en Bs» en la vista previa; guardar el borrador lo escribe. La fórmula de prueba (`cotizar-formula.ts`) tiene
@@ -58,7 +59,7 @@ test('E1: plazo y tono de un grupo; pasar «Con ayuda» a `gx` cambia «Total en
   if (!otroTono || !nombreDelOtro) throw new Error('el catálogo de colores está vacío')
 
   await entrar(page, duena, { fresco: true })
-  await page.goto(`/configuracion/origenes/${origen.id}/formula`)
+  await abrirLaFormula(page, origen.id, 'planilla')
   await abrirModoAvanzado(page)
   await expect(grupos(page)).toBeVisible()
   await expect(previa(page)).toContainText(enBs(5 * tipoDeCambio('oficial')))

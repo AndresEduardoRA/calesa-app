@@ -9,6 +9,7 @@ import { borrarLeadsDePrueba, crearLead } from './leads'
 import { codigoDePaisDeLaEmpresa, telefonoAlAzar } from './leads-alta'
 import { origenPorClave } from './origenes'
 import { limpiarEspera, sembrarEspera } from './repuestos-espera'
+import { urlDeLaFormula } from './rutas-de-la-formula'
 import { literal, sql } from './sql'
 
 export type Grupo = 'acceso' | 'app'
@@ -70,14 +71,17 @@ export const DINAMICAS: Record<string, (t: Terreno) => Destino> = {
   '/configuracion/origenes/[id]/flujo': (t) => ({
     url: `/configuracion/origenes/${t.origen}/flujo`,
   }),
-  '/configuracion/origenes/[id]/formula': (t) => ({
-    url: `/configuracion/origenes/${t.origen}/formula`,
+  '/configuracion/origenes/[id]/formulas': (t) => ({
+    url: `/configuracion/origenes/${t.origen}/formulas`,
   }),
-  '/configuracion/origenes/[id]/formula/hoja': (t) => ({
-    url: `/configuracion/origenes/${t.origen}/formula/hoja`,
+  '/configuracion/origenes/[id]/formulas/[formula]/planilla': (t) => ({
+    url: urlDeLaFormula(t.origen, 'planilla'),
   }),
-  '/configuracion/origenes/[id]/formula/tarjeta': (t) => ({
-    url: `/configuracion/origenes/${t.origen}/formula/tarjeta`,
+  '/configuracion/origenes/[id]/formulas/[formula]/hoja': (t) => ({
+    url: urlDeLaFormula(t.origen, 'hoja'),
+  }),
+  '/configuracion/origenes/[id]/formulas/[formula]/tarjeta': (t) => ({
+    url: urlDeLaFormula(t.origen, 'tarjeta'),
   }),
   '/configuracion/origenes/[id]/tablas': (t) => ({
     url: `/configuracion/origenes/${t.origen}/tablas`,

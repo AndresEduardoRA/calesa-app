@@ -3,6 +3,7 @@ import { MOTIVO_SIN_PERMISO_DE_PLANTILLA } from '../../../entities/plantilla/esc
 import type { PedidoDeAplicar } from '../../../entities/plantillas-de-v1/pedido'
 
 const ORIGEN = '11111111-1111-4111-8111-111111111111'
+const FDO = '77777777-7777-4777-8777-777777777777'
 const OTRO_ORIGEN = '44444444-4444-4444-8444-444444444444'
 const PERSONA = '55555555-5555-4555-8555-555555555555'
 const HORA = '2026-11-07T15:00:00.123456+00:00'
@@ -36,8 +37,13 @@ vi.mock('@/shared/lib/supabase/server', () => ({
 }))
 vi.mock('../../../areas/plantilla/composicion', () => ({
   plantillasDeV1: {
-    leerEstado: () =>
-      Promise.resolve({ ok: true, data: { formula: null, tarjeta: null, catalogo: h.catalogo } }),
+    leerEstado: (formulaDelOrigenId: string) =>
+      formulaDelOrigenId !== FDO
+        ? Promise.reject(new Error(`leyó otra fórmula: ${formulaDelOrigenId}`))
+        : Promise.resolve({
+            ok: true,
+            data: { formula: null, tarjeta: null, catalogo: h.catalogo },
+          }),
     aplicar: (pedido: PedidoDeAplicar) => {
       h.pedidos.push(pedido)
       return Promise.resolve(h.respuesta)
@@ -49,6 +55,7 @@ const { aplicarLaPlantillaDeV1 } = await import('./aplicar-plantilla-de-v1')
 
 const entrada = {
   origenId: ORIGEN,
+  formulaDelOrigenId: FDO,
   plantilla: 'usa' as const,
   formulaEsperada: null,
   plantillaEsperada: HORA,
@@ -102,8 +109,12 @@ describe('aplicarLaPlantillaDeV1', () => {
     const r = await aplicarLaPlantillaDeV1(entrada)
     expect(r.data).toEqual({ ok: true, data: { formula: HORA, plantilla: HORA } })
     const [p] = h.pedidos
-    expect(p?.origenId).toBe(ORIGEN)
-    expect([p?.formulaEsperada, p?.plantillaEsperada]).toEqual([null, HORA])
+    expect(p).toMatchObject({
+      origenId: ORIGEN,
+      formulaDelOrigenId: FDO,
+      formulaEsperada: null,
+      plantillaEsperada: HORA,
+    })
     expect(p?.pedido.nota).toBe('Empezado desde la plantilla de V1 «USA (subasta)».')
     expect(p?.pedido.crear.map((c) => c.clave)).toContain('v1_usa_teal')
     expect(p?.pedido.crear.every((c) => /^[0-9a-f-]{36}$/.test(c.id))).toBe(true)
