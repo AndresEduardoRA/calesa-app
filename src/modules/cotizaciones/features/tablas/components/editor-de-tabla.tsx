@@ -9,12 +9,12 @@ import type { EstadoDelEditor } from '../../../entities/tablas/vista-del-editor'
 import type { DestinoDeLasTablas } from '../../../entities/tablas/rutas'
 import { useBorradorAlAbrir, useBorradorDeTabla } from '../hooks/use-borrador-de-tabla'
 import { useFilasDeTabla } from '../hooks/use-filas-de-tabla'
+import { useTablaEnLaBarra } from '../hooks/use-tabla-en-la-barra'
 import { AvisoDelPrimerError } from './aviso-del-primer-error'
-import { BarraDeCambios } from './barra-de-cambios'
 import { EncabezadoDelEditor } from './encabezado-del-editor'
 import { FilasDelEditor } from './filas-del-editor'
 import { PaginasDelEditor } from './paginas-del-editor'
-import { PublicarTabla } from './publicar-tabla'
+import { PieDelEditor } from './pie-del-editor'
 
 type Props = {
   // La viva, con su versión (la que «Publicar» manda como esperada) y `tapada` del ítem de la lista.
@@ -62,6 +62,8 @@ export function EditorDeTabla({ tabla, filas, destino }: Props) {
     })
   }
 
+  useTablaEnLaBarra(tabla, cambios, borrador.borrar)
+
   // Al abrir, una vez: qué pasó con el borrador.
   const avisado = useRef(false)
   useEffect(() => {
@@ -77,7 +79,12 @@ export function EditorDeTabla({ tabla, filas, destino }: Props) {
 
   return (
     <section aria-label={`Editar ${tabla.nombre}`} className="grid min-w-0 gap-3">
-      <EncabezadoDelEditor tabla={tabla} destino={destino} cambios={cambios} />
+      <EncabezadoDelEditor
+        tabla={tabla}
+        destino={destino}
+        cambios={cambios}
+        alDescartar={descartar}
+      />
       {edicion.error ? (
         <AvisoDelPrimerError
           error={edicion.error}
@@ -101,9 +108,7 @@ export function EditorDeTabla({ tabla, filas, destino }: Props) {
         pagina={edicion.pagina}
         alElegir={edicion.setPagina}
       />
-      <BarraDeCambios cambios={cambios} alDescartar={descartar}>
-        <PublicarTabla tabla={tabla} edicion={edicion} borrador={borrador} />
-      </BarraDeCambios>
+      <PieDelEditor tabla={tabla} edicion={edicion} borrador={borrador} alDescartar={descartar} />
     </section>
   )
 }

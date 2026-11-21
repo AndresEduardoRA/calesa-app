@@ -51,8 +51,25 @@ export function menuDeTablaEnElEditor({
   cambios,
   alAbrirColumnas,
   alDesactivar,
-}: Quehaceres & { cambios: boolean }): AccionDeMenu[] {
+  alDescartar,
+}: Quehaceres & {
+  cambios: boolean
+  // En la edición a pantalla completa no hay barra de cambios abajo: «Descartar los cambios» va acá, sólo con cambios.
+  alDescartar?: () => void
+}): AccionDeMenu[] {
   return [
+    ...(cambios && alDescartar
+      ? [
+          {
+            tipo: 'accion' as const,
+            clave: 'descartar-los-cambios',
+            etiqueta: 'Descartar los cambios',
+            despuesDeCerrar: true,
+            alElegir: alDescartar,
+          },
+          { tipo: 'separador' as const, clave: 'antes-de-columnas' },
+        ]
+      : []),
     columnas(alAbrirColumnas, cambios),
     ...(cambios
       ? [{ tipo: 'nota' as const, clave: 'motivo-de-columnas', texto: AVISO_CON_CAMBIOS_DE_FILAS }]
