@@ -138,7 +138,7 @@ test('E2E la dueña: lejos del bloque no se lee nada; al saltar llegan las últi
   await page.setViewportSize({ width: ancho, height: 320 })
   const lecturas = vigilarLecturas(page)
   await page.goto(`/vehiculos/${vehiculos.veintidos}`)
-  await expect(indice(page)).toHaveText(['Cotizaciones', 'Relacionados', 'Actividad', 'Vitrina'])
+  await expect(indice(page)).toHaveText(['Cotizaciones', 'Relacionados', 'Actividad'])
   await expect(page.getByRole('navigation', { name: 'Índice de la ficha' })).toHaveAttribute(
     'data-hidratado',
     'true',
@@ -202,10 +202,10 @@ test('E2E sin cotizaciones.ver no hay bloque ni entrada en el índice y ?seccion
   await entrar(page, sinClave, { fresco: true })
   const lecturas = vigilarLecturas(page)
   await page.goto(`/vehiculos/${vehiculos.propios}?seccion=cotizaciones`)
-  await expect(indice(page).getByText('Vitrina')).toBeVisible()
-  await expect(indice(page).getByText('Cotizaciones')).toHaveCount(0)
-  await expect(bloque(page)).toHaveCount(0)
   await expect(page.getByRole('heading', { name: 'Pestaña propios', level: 1 })).toBeInViewport()
+  // Sin ninguno de los bloques de ventas, la derecha no tiene índice.
+  await expect(indice(page)).toHaveCount(0)
+  await expect(bloque(page)).toHaveCount(0)
   expect(lecturas).toEqual([])
 })
 

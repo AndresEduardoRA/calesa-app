@@ -172,7 +172,7 @@ test('con el permiso se publica con su precio, mirando lo que verá el visitante
   await panel(page).getByRole('button', { name: 'Guardar' }).click()
   await descartarAviso(page, 'Publicado en la web')
   await expect(panel(page)).toBeHidden()
-  // La insignia de la cabecera (la primera; el bloque «Vitrina» de la derecha dice lo mismo).
+  // La insignia de la cabecera (la primera).
   await expect(aLaVista(page.getByText('Publicado, no visible').first())).toBeVisible()
   expect(await vitrinaPublica(CLAVE_DE_COREA)).toEqual([])
 
