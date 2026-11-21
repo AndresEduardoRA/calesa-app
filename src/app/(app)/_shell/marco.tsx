@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { MenuMovil } from './menu-movil'
+import { RecargarEnElMenu, RecargarLaPagina } from '@/shared/ui/recargar-la-pagina'
 import { HuecoBuscador } from './huecos/buscador'
 import { ConmutadorLive } from './conmutador-live'
+import { Flotantes } from './flotantes'
 import { LateralPlegable } from './lateral-plegable'
 
 type Props = {
@@ -24,7 +26,7 @@ type Props = {
   campana?: ReactNode
   // El buscador global (`huecos/buscador.tsx`); sin él, el botón con la paleta y sin acciones (sólo busca).
   buscador?: ReactNode
-  // Lo que flota sobre toda pantalla, como la burbuja del chat (`huecos/chat.tsx`).
+  // Lo que flota sobre toda pantalla, como la burbuja del chat (`huecos/chat.tsx`): va a la derecha de «Copiar el enlace de esta página» (`flotantes.tsx`).
   flotante?: ReactNode
   children: ReactNode
 }
@@ -69,7 +71,10 @@ export function Marco({
                 {tipoCambio}
               </div>
             ) : null}
+            {/* Con la barra angosta «Recargar la página» no entra en ella: queda acá. */}
+            <RecargarEnElMenu />
           </MenuMovil>
+          <RecargarLaPagina />
           {buscador}
           <div className="ml-auto flex shrink-0 items-center gap-1">
             {altaDeLead}
@@ -86,11 +91,12 @@ export function Marco({
           </div>
         </header>
         {aviso}
-        <main id="contenido" className="flex-1 p-4 md:p-6">
+        {/* `md:pb-14`: el último renglón y el paginador quedan por encima de lo que flota abajo a la derecha (`flotantes.tsx`). */}
+        <main id="contenido" className="flex-1 p-4 md:p-6 md:pb-14">
           {children}
         </main>
       </div>
-      {flotante}
+      <Flotantes>{flotante}</Flotantes>
     </div>
   )
 }

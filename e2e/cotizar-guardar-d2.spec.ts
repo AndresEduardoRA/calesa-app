@@ -130,7 +130,7 @@ test('la base rechaza la hoja abierta (firma alterada): «Recargar» la reabre c
   await expect(
     page.getByText('Esta hoja ya no se puede guardar: recárgala. Lo que escribiste vuelve.'),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Recargar' }).click()
+  await page.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(page.getByText('Recuperamos lo que habías escrito y no guardaste.')).toBeVisible()
   await expect(celdaDeLaHoja(page, 'pub')).toContainText('400,00')
   expect(cotizacionGuardada(guardados.pedidos[0]?.intento ?? '').filas).toBe(0)

@@ -93,12 +93,18 @@ test('`?seccion=` desplaza la columna derecha y, al volver a la ficha, cada colu
   expect(await desplazamientoDeLaVentana(page)).toBeLessThanOrEqual(1)
   // La derecha, donde la dejó el salto: con el embudo del lead ya dibujado (llega con su código y el bloque crece; el salto lo sigue).
   await expect(page.getByRole('group', { name: /^Etapas de/ })).toBeVisible()
+  // El salto termina cuando el bloque queda 1 rem bajo el borde de la columna o la columna llega a su final (según el alto de la ficha): se
+  // espera a que la posición quede quieta, sin atar la prueba a cuál de las dos pasó.
+  let anterior = -1
   await expect
     .poll(async () => {
-      const { sobra, arriba } = await medidaDe(columnaPrincipal(page))
-      return sobra - arriba
+      const { arriba } = await medidaDe(columnaPrincipal(page))
+      const quieta = Math.abs(arriba - anterior) <= 1
+      anterior = arriba
+      await page.waitForTimeout(300)
+      return quieta
     })
-    .toBeLessThanOrEqual(1)
+    .toBe(true)
   // La izquierda, a su final.
   const principal = (await medidaDe(columnaPrincipal(page))).arriba
   await columnaLateral(page).evaluate((e) => {

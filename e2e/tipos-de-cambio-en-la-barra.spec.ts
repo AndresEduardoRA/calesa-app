@@ -210,7 +210,7 @@ test('dos sesiones dan el conflicto con nombre y valor', async ({ page, browser 
   await capturar(page, info, 'conflicto')
 
   // «Recargar» trae su versión; guardar de nuevo pasa.
-  await popover.getByRole('button', { name: 'Recargar' }).click()
+  await popover.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(campo).toHaveValue('12,4')
   await campo.fill('12,50')
   await campo.press('Enter')

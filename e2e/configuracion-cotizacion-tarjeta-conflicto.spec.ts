@@ -86,7 +86,7 @@ test('E3: un PT409 se dice con el mensaje de la base, conserva lo escrito, no en
   )
   await expect(guardar(page)).toBeDisabled()
   expect(comoTexto(borradorGuardado(origenId())?.definicion)).toContain('Título de la otra persona')
-  await page.getByRole('button', { name: /Recargar/ }).click()
+  await page.getByRole('button', { name: /^Recargar$/ }).click()
   await expect(page.getByText(/El borrador de esta plantilla cambió/)).toHaveCount(0)
   await expect(delTitulo(page)).toHaveText('Título de la otra persona')
 })

@@ -164,7 +164,7 @@ test('E4: si otra persona cambió el vehículo entre abrir y elegir, avisa con �
     `update public.vehiculos set atributos = atributos || '{"color":"Azul"}'::jsonb where id = ${literal(id)}::uuid`,
   )
   await grupo(page).getByRole('button', { name: 'autos', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Recargar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Recargar', exact: true })).toBeVisible()
   await expect(panel(page)).toBeVisible()
   expect(fila(id, "atributos->>'tipo_vehiculo'")).toBe('AUTOMOBILE')
 })

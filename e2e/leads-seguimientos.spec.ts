@@ -152,7 +152,7 @@ test('editar con una versión vieja da el conflicto sin perder lo escrito; recar
   await expect(editando.getByLabel('Resumen')).toHaveValue('Lo que escribí acá')
   expect((await seguimientosEnLaBase(lead.id))[0]?.titulo).toBe('Desde la otra ventana')
 
-  await editando.getByRole('button', { name: 'Recargar' }).click()
+  await editando.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(editando.getByLabel('Resumen')).toHaveValue('Lo que escribí acá')
   await editando.getByRole('button', { name: 'Guardar' }).click()
   await expect(seguimiento(page, 'Lo que escribí acá')).toBeVisible()

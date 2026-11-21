@@ -217,7 +217,7 @@ test('«Recargar» tras un conflicto con 500 cargados: dos pedidos, lo escrito q
     () => modal.getByRole('button', { name: 'Guardar' }).click(),
     '«Guardar» con el seguimiento cambiado',
   )
-  await expect(modal.getByRole('button', { name: 'Recargar' })).toBeVisible()
+  await expect(modal.getByRole('button', { name: 'Recargar', exact: true })).toBeVisible()
 
   // La primera página y, como el que se edita no vino en ella, ése por su id: dos pedidos.
   const pagina = contarPedidos(page, 'lead_seguimientos')
@@ -229,12 +229,12 @@ test('«Recargar» tras un conflicto con 500 cargados: dos pedidos, lo escrito q
       conRespuesta(
         page,
         esRpc('lead_seguimiento'),
-        () => modal.getByRole('button', { name: 'Recargar' }).click(),
+        () => modal.getByRole('button', { name: 'Recargar', exact: true }).click(),
         '«Recargar»: el seguimiento por su id',
       ),
     '«Recargar»: la primera página',
   )
-  await expect(modal.getByRole('button', { name: 'Recargar' })).toHaveCount(0)
+  await expect(modal.getByRole('button', { name: 'Recargar', exact: true })).toHaveCount(0)
   expect(pagina).toHaveLength(1)
   expect(porId).toHaveLength(1)
   await expect(modal.getByLabel('Resumen')).toHaveValue('Escrito con 500 cargados')

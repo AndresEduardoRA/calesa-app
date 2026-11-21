@@ -12,7 +12,7 @@ type Props = {
 }
 
 const CLASE =
-  'fixed right-4 bottom-20 z-40 inline-flex h-[44px] w-[44px] items-center justify-center rounded-full bg-(--color-primario) text-(--color-sobre-primario) shadow-(--shadow-md) outline-none hover:opacity-90 focus-visible:shadow-(--shadow-focus) md:bottom-4'
+  'relative h-[44px] w-[44px] items-center justify-center rounded-full bg-(--color-primario) text-(--color-sobre-primario) shadow-(--shadow-md) outline-none hover:opacity-90 focus-visible:shadow-(--shadow-focus)'
 
 function ContadorDeLaBurbuja({ noLeidos }: { noLeidos: number }) {
   const texto = textoDeNoLeidos(noLeidos)
@@ -32,8 +32,8 @@ function etiquetaDe(noLeidos: number): string {
   return texto ? `Chat, ${noLeidos > 99 ? 'más de 99' : texto} sin leer` : 'Chat'
 }
 
-// La burbuja flotante: un botón que abre el panel desde 768 px y, en el celular (donde un panel taparía el pie y las listas), un enlace a `/chat`. Va
-// por debajo de los modales (`z-40` contra `z-50`) y, en el celular, más arriba que el toaster.
+// La burbuja flotante: un botón que abre el panel desde 768 px y, en el celular (donde un panel taparía el pie y las listas), un enlace a `/chat`. El lugar (abajo a la derecha, por debajo de los
+// modales y, en el celular, más arriba que el toaster) lo da `<Flotantes>` del marco, que la deja a la derecha de «Copiar el enlace».
 export const BurbujaDelWidget = forwardRef<HTMLButtonElement, Props>(function BurbujaDelWidget(
   { noLeidos, abierto, alAlternar },
   ref,
@@ -52,7 +52,7 @@ export const BurbujaDelWidget = forwardRef<HTMLButtonElement, Props>(function Bu
         <MessageSquareIcon aria-hidden className="size-5" />
         <ContadorDeLaBurbuja noLeidos={noLeidos} />
       </button>
-      <Link href="/chat" aria-label={etiqueta} className={`${CLASE} md:hidden`}>
+      <Link href="/chat" aria-label={etiqueta} className={`${CLASE} inline-flex md:hidden`}>
         <MessageSquareIcon aria-hidden className="size-5" />
         <ContadorDeLaBurbuja noLeidos={noLeidos} />
       </Link>

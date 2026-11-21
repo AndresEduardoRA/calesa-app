@@ -305,7 +305,7 @@ test('dos personas editando el mismo origen: la segunda ve el conflicto y no pie
   await expect(
     page.getByText('Otra persona cambió este origen mientras lo editabas.'),
   ).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Recargar' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Recargar', exact: true })).toBeVisible()
   await expect(page.getByLabel('Nombre', { exact: true })).toHaveValue('Corea Norte')
   expect((await origenDeLaBase('corea')).nombre).toBe('Corea del Sur')
 

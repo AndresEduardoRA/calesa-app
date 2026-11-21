@@ -69,7 +69,7 @@ test('PT409: si otra persona guardó antes, «Recargar» conserva lo tipeado y �
 
   sql('update public.ajustes_empresa set actualizado_en = clock_timestamp() where id = 1')
   await legales.getByRole('button', { name: 'Guardar', exact: true }).click()
-  const recargar = legales.getByRole('button', { name: 'Recargar' })
+  const recargar = legales.getByRole('button', { name: 'Recargar', exact: true })
   await expect(recargar).toBeVisible()
   await recargar.click()
   await expect(recargar).toBeHidden()

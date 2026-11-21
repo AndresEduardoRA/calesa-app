@@ -132,7 +132,7 @@ test('cambiado en otra pestaña: el conflicto conserva lo escrito y «Recargar»
   await expect(modal.getByText(/desde otra ventana/)).toBeVisible()
   await expect(modal.getByRole('button', { name: 'Guardar' })).toBeDisabled()
   await expect(modal.getByLabel('De qué es')).toHaveValue('Lo mío')
-  await modal.getByRole('button', { name: 'Recargar' }).click()
+  await modal.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(modal.getByRole('button', { name: 'Guardar' })).toBeEnabled()
   await expect(modal.getByLabel('De qué es')).toHaveValue('Lo mío')
   await modal.getByRole('button', { name: 'Guardar' }).click()
@@ -164,7 +164,7 @@ test('completado en otra pestaña con el modal abierto: lo dice y no se guarda',
     p_completado: true,
   })
   await modal.getByRole('button', { name: 'Guardar' }).click()
-  await modal.getByRole('button', { name: 'Recargar' }).click()
+  await modal.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(modal.getByText(/Ese recordatorio está completado/)).toBeVisible()
   await expect(modal.getByLabel('De qué es')).toHaveValue('Escrito antes')
   await expect(modal.getByRole('button', { name: 'Guardar' })).toBeDisabled()

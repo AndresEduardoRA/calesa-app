@@ -673,6 +673,10 @@ eliminar-nivel&nivel=<id>`; para quien configura sin ver los roles, apagada con 
 
 ## Reglas transversales
 
+- **Recargar y copiar el enlace (marco, toda pantalla con sesión):** en la barra superior, a la izquierda del buscador, «Recargar la página» (ícono, recarga completa del
+  navegador; con cambios sin guardar pregunta el navegador, como con F5); en una barra de menos de 28 rem (el celular angosto) no entra y queda al pie del menú. Abajo a la derecha, a la izquierda del botón del chat, «Copiar el enlace de esta página»
+  (flotante, secundario: más chico, contorno y sin relleno de acento): copia la URL de ahora con su consulta y avisa «Enlace copiado.»; si el portapapeles falla, un modal
+  con el enlace seleccionado. Donde el chat no está (`/chat`, sin `chat.participar`) queda solo en ese lugar. Los dos son de 44 px en el celular y van por debajo de los modales.
 - **Estados obligatorios en toda pantalla:** cargando (esqueleto propio por patrón), vacío primera vez, vacío por filtro, error con
   reintentar, sin permiso — `.claude/rules/ui.md`. **Cargando**: toda página de `(app)` tiene su propio `loading.tsx` con la forma de lo
   que dibuja después; no vale el heredado (`scripts/guardas/estados-de-ruta.test.ts`).

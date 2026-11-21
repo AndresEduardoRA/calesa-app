@@ -896,6 +896,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
   acción; se suscribe diferida y otra vez al volver la red.
 - **Widget del chat** — `chat/features/widget`, `<WidgetChat>`: botón flotante con los no leídos que abre el chat fuera de `/chat` (en el
   celular, enlace a `/chat`); docs y pruebas le dicen «la burbuja», que no es la **burbuja de un mensaje**.
+- **Recargar la página** — `<RecargarLaPagina>` de `shared/ui`: botón de la barra superior, a la izquierda del buscador; recarga completa del navegador.
+- **Copiar el enlace de esta página** — `<CopiarElEnlaceDeLaPagina>` de `shared/ui`: botón flotante secundario, a la izquierda del botón del chat (`<Flotantes>` del marco);
+  copia la URL actual o, si el portapapeles falla, la deja seleccionada en un modal.
 - **Push** — `suscripciones_push`: suscripción web push del navegador.
 - **Actividad** — `actividad` / `registrar_actividad()`: auditoría inmutable, 14 días.
 - **Actividad reciente** — `ActividadReciente` (`actividad/pantallas/actividad-reciente.ts`): los últimos 5 cambios de un registro como frases, cada uno
@@ -1037,6 +1040,9 @@ ese nombre: nunca un sinónimo ni su traducción al inglés.
 - **Shell** — `shell.ts` y `shell.client.ts` de un módulo, `src/app/(app)/layout.tsx`: marco de toda pantalla.
 - **Pantalla (entrada)** — `pantallas/<pantalla>.ts` de un módulo: entrada por la que `src/app` trae los componentes de una pantalla.
 - **Carril** — un worktree con su propia pila de Supabase (`scripts/worktree/preparar.sh`, `docs/FLUJO.md`).
+- **E2E afectados** — `node scripts/e2e-afectados.mjs [--correr]`: los e2e que una rama puede romper aunque no sean de su módulo (los
+  dirigidos, los que nombran un texto visible que cambió o que un texto nuevo vuelve ambiguo, y los de las pantallas de un compartido), con
+  tope de 40; se corren en local antes de publicar. No son los **dirigidos** del CI (`scripts/e2e-dirigidos.mjs`), que son un subconjunto.
 - **Área (de un módulo)** — una parte de un módulo: sus carpetas `features/<área>/`, `entities/<área>/`, `infra/<área>/`, sus entradas
   `areas/<área>/` y `pantallas/<área>.ts`. No importa otra área (`cotizaciones`).
 - **Núcleo (de un módulo)** — lo que comparten las áreas de un módulo (en `cotizaciones`: la hoja, guardar, el motor…); no importa ningún área.

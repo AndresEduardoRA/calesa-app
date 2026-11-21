@@ -234,7 +234,7 @@ test('dos personas renombrando el mismo nivel: la segunda ve el conflicto, lo es
   await capturar(page, info, 'niveles-conflicto')
   expect(nivelEnLaBase(nombre('Conflicto B'))).toBeDefined()
   // «Recargar» trae la versión nueva sin perder lo escrito, y entonces sí se guarda.
-  await primera.getByRole('button', { name: 'Recargar' }).click()
+  await primera.getByRole('button', { name: 'Recargar', exact: true }).click()
   await expect(page.getByText('Otra persona cambió este nivel mientras lo editabas.')).toBeHidden()
   await expect(primera.getByLabel('Nombre')).toHaveValue(nombre('Conflicto A'))
   await primera.getByRole('button', { name: 'Guardar' }).click()

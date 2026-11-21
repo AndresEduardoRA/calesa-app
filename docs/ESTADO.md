@@ -45,7 +45,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 - **e2e completo:** el de escritorio, verde sobre `0391e343` (2026-11-19, la verificación de `main` antes del cierre); el de la noche
   (los dos proyectos) sobre `c880e916` cayó en dos specs de escritorio por carreras de la prueba (el visor de la imagen abierto y
   la primera flecha del asa), ya arregladas: el issue `noche-roja` #395 se cierra con la próxima noche en verde. El último Nivel 3 con celular (sobre `20815f1c`): 898 en verde, 31 saltadas, 0 caídas, 38,2 min.
-- **CI:** Nivel 1 siempre, «Base» si cambia código, los e2e dirigidos (o el completo de escritorio en 4 bloques si toca un disparador),
+- **CI:** Nivel 1 siempre, «Base» si cambia código, los e2e dirigidos (o el completo de escritorio en 8 bloques si toca un disparador),
   y `Listo · todo en verde`, el único check que `main` exige; el completo con los dos proyectos, cada noche.
 - **Base:** una sola migración (`20261119203236_base.sql`), aplastada con la huella de la base idéntica (`pnpm db:aplastar`).
 - **Despliegue:** el ensayo en seco en `listo` (`pnpm despliegue:en-seco`).
@@ -53,7 +53,7 @@ recibe actualizaciones sueltas: una rama, un PR que se integra solo con el CI en
 ## Al borde
 
 - Presupuestos: la hoja, 467 nodos de 500; JS de `/cotizaciones/nuevo` 462,6 de 465 KB, de `/cotizaciones/[id]` 475,0 de 480 y de `/cotizaciones` 386,9 de 390. Con la regla del 5 % se sube el tope (`docs/RENDIMIENTO.md`).
-- El e2e completo con los dos proyectos tarda ≈ 95 min de reloj (5a-4b): en CI va en 4 bloques.
+- El e2e completo con los dos proyectos tarda ≈ 95 min de reloj (5a-4b): en CI va en 8 bloques (el de escritorio de un PR, ≈ 13 min).
 
 ## Siguiente
 
