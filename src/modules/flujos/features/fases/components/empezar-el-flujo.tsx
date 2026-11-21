@@ -11,6 +11,10 @@ import { useFlujosParaCopiar } from '../../configuracion/hooks/use-flujos-para-c
 
 type Props = { flujo: FlujoParaConfigurar; nombreDelFlujo: string }
 
+// Los dos botones van en una fila si caben y, si no (columna angosta o texto al 200 %), uno debajo del otro a todo el ancho; el texto envuelve antes
+// que ensanchar la página.
+const CLASE_DEL_BOTON = 'h-auto min-h-11 max-w-full grow whitespace-normal md:min-h-8'
+
 // El hueco `sinFases`: el vacío de un flujo sin fases con las dos maneras de empezarlo. «Empezar con las fases de…» abre `?panel=copiar-fases` y
 // «Empezar en blanco», `?panel=nueva-fase`; los dos modales los monta `AccionesDeLaLista` (en la barra, que sigue montada cuando el flujo se llena).
 // Sin otro origen con fases de donde copiar, sólo «Nueva fase».
@@ -32,10 +36,10 @@ export function EmpezarElFlujo({ nombreDelFlujo }: Props) {
           : 'Arma las fases una por una.'
       }
       accion={
-        <div className="grid w-full gap-2 sm:flex sm:w-auto">
+        <div className="flex w-full max-w-lg flex-wrap justify-center gap-2">
           {conCopia ? (
             <Button
-              className="h-11 md:h-8"
+              className={CLASE_DEL_BOTON}
               onClick={() => {
                 copiar.abrir()
               }}
@@ -45,7 +49,7 @@ export function EmpezarElFlujo({ nombreDelFlujo }: Props) {
             </Button>
           ) : null}
           <Button
-            className="h-11 md:h-8"
+            className={CLASE_DEL_BOTON}
             variant={conCopia ? 'outline' : 'default'}
             onClick={() => {
               nueva.abrir()
